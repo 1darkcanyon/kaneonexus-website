@@ -1,0 +1,16 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+*~
+
+# IDE files
+.vscode/
+.idea/
+
+# Deployment files
+deploy-config.txt
+*.key
