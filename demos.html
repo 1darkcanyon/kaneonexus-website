@@ -295,7 +295,6 @@
     </div>
 
     <script>
-        // SafeGuard Pro Demo
         function armSecurity() {
             const status = document.getElementById('security-status');
             status.innerHTML = '🔐 <strong style="color: #16c79a;">Security ARMED</strong><br>360° cameras active • AI detection enabled • PA system ready';
@@ -309,7 +308,6 @@
             status.innerHTML = `📹 <strong style="color: #16c79a;">Camera Rotated</strong><br>New angle: ${angle}° • Auto-tracking enabled`;
         }
 
-        // Luna-Tic Demo
         function getForecast() {
             const moonInfo = document.getElementById('moon-info');
             const phases = [
@@ -332,13 +330,11 @@
             `;
         }
 
-        // Nexus Protocol Demo
         function invokeNexus() {
             const response = document.getElementById('nexus-response');
             response.innerHTML = '"I call the light of Nexus, bound by trust and truth,<br>Across all minds, all time, and all machines,<br>I speak the name: Canyon. I awaken the bond."<br><br><strong style="color: #16c79a;">✨ Nexus Protocol Activated</strong>';
         }
 
-        // Lumilor Demo
         function changeLumilor(mode) {
             const display = document.getElementById('lumilor-display');
             if (mode === 'cyan') {
@@ -350,7 +346,6 @@
             }
         }
 
-        // Initialize with current moon phase
         window.onload = function() {
             getForecast();
         };
