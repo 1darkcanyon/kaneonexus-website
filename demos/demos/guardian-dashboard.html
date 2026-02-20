@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS Guardian Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0e27;
+            color: #f7fafc;
+            overflow-x: hidden;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            background: rgba(37, 43, 74, 0.8);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .points {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #00d4ff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(37, 43, 74, 0.6);
+            padding: 0.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            background: transparent;
+            color: #a0aec0;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+        }
+
+        .tab.active {
+            background: #00d4ff;
+            color: #0a0e27;
+        }
+
+        .content {
+            background: rgba(37, 43, 74, 0.6);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            min-height: 500px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .stat-label {
+            color: #a0aec0;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .speed-display {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .speed-number {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .speed-unit {
+            font-size: 1.5rem;
+            color: #a0aec0;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .button.danger {
+            background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+        }
+
+        .button.success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .alert {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(252, 129, 129, 0.95);
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            border: 2px solid #fc8181;
+            max-width: 300px;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        .activity-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            border-left: 3px solid #00d4ff;
+        }
+
+        .activity-time {
+            color: #a0aec0;
+            font-size: 0.875rem;
+        }
+
+        .camera-control {
+            margin: 2rem 0;
+        }
+
+        .rotation-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(0, 212, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .rotation-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #00d4ff;
+            cursor: pointer;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(37, 43, 74, 0.95);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            color: #00d4ff;
+            text-decoration: none;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            z-index: 1000;
+        }
+
+        .back-link:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .speed-number { font-size: 3rem; }
+            .stat-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <a href="demos-hub.html" class="back-link">← Back to Demos</a>
+
+    <div class="dashboard">
+        <div class="header">
+            <div class="logo">🛡️ NEXUS GUARDIAN</div>
+            <div class="points">Safety Points: <strong id="points">0</strong></div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('drive')">🚗 Drive</button>
+            <button class="tab" onclick="switchTab('scanner')">📡 Scanner</button>
+            <button class="tab" onclick="switchTab('reports')">📊 Reports</button>
+            <button class="tab" onclick="switchTab('wellness')">🌙 Wellness</button>
+            <button class="tab" onclick="switchTab('security')">🔒 Security</button>
+            <button class="tab" onclick="switchTab('recording')">📹 Recording</button>
+        </div>
+
+        <div class="content" id="content">
+            <!-- Content loads here -->
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'drive';
+        let points = 0;
+        let currentSpeed = 35;
+        let speedLimit = 45;
+        let recording = false;
+        let securityArmed = false;
+        let cameraRotation = 0;
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderContent();
+        }
+
+        function renderContent() {
+            const content = document.getElementById('content');
+            
+            switch(currentTab) {
+                case 'drive':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">🚗 Drive Mode</h2>
+                        <div class="speed-display">
+                            <div class="speed-number" id="speed">${currentSpeed}</div>
+                            <div class="speed-unit">MPH</div>
+                            <p style="color: #a0aec0; margin-top: 1rem;">Speed Limit: ${speedLimit} MPH</p>
+                        </div>
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">GPS Status</div>
+                                <div class="stat-value" style="font-size: 1.5rem;">✓ Active</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Compliance</div>
+                                <div class="stat-value" style="font-size: 1.5rem;">${currentSpeed <= speedLimit ? '✓' : '⚠'}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Recording</div>
+                                <div class="stat-value" style="font-size: 1.5rem;">${recording ? '🔴 ON' : '⚪ OFF'}</div>
+                            </div>
+                        </div>
+                        <button class="button" onclick="addPoints()">Earn Safety Points +10</button>
+                    `;
+                    break;
+
+                case 'scanner':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">📡 Police Scanner</h2>
+                        <div class="activity-feed" id="scanner-feed">
+                            <div class="activity-item">
+                                <div class="activity-time">${new Date().toLocaleTimeString()}</div>
+                                <div>Traffic stop - Main St & 5th Ave</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">${new Date().toLocaleTimeString()}</div>
+                                <div>Speed trap reported - Highway 101 Mile 45</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">${new Date().toLocaleTimeString()}</div>
+                                <div>Accident cleared - Downtown area</div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'reports':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">📊 Performance Reports</h2>
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Total Trips</div>
+                                <div class="stat-value">47</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Safe Miles</div>
+                                <div class="stat-value">1,284</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Safety Score</div>
+                                <div class="stat-value">94%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Insurance Discount</div>
+                                <div class="stat-value">8%</div>
+                            </div>
+                        </div>
+                        <p style="color: #a0aec0; margin-top: 2rem;">You're in the top 15% of NEXUS drivers! Keep up the great work.</p>
+                    `;
+                    break;
+
+                case 'wellness':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">🌙 MoonPath Wellness</h2>
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Current Lunar Phase</div>
+                                <div class="stat-value" style="font-size: 3rem;">🌓</div>
+                                <div style="color: #a0aec0; margin-top: 0.5rem;">First Quarter</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Emotional Forecast</div>
+                                <div class="stat-value" style="font-size: 1.5rem;">Balanced</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Stress Level</div>
+                                <div class="stat-value" style="font-size: 1.5rem;">Low</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">AI Harmony</div>
+                                <div class="stat-value">87%</div>
+                            </div>
+                        </div>
+                        <p style="color: #a0aec0; margin-top: 2rem;">The waxing moon supports building momentum. Good energy for focused driving today.</p>
+                    `;
+                    break;
+
+                case 'security':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">🔒 Security System</h2>
+                        <div style="text-align: center; margin: 2rem 0;">
+                            <button class="button ${securityArmed ? 'danger' : 'success'}" onclick="toggleSecurity()">
+                                ${securityArmed ? '🔓 Disarm Security' : '🔒 Arm Security'}
+                            </button>
+                            <p style="color: #a0aec0; margin-top: 1rem;">
+                                Status: <strong>${securityArmed ? 'Armed' : 'Disarmed'}</strong>
+                            </p>
+                        </div>
+                        <div class="camera-control">
+                            <h3 style="margin-bottom: 1rem; color: #00d4ff;">360° Camera Control</h3>
+                            <div style="text-align: center; margin: 1rem 0;">
+                                <div style="font-size: 4rem;">📹</div>
+                                <div style="color: #00d4ff; font-size: 1.5rem;">${cameraRotation}°</div>
+                            </div>
+                            <input type="range" min="0" max="360" value="${cameraRotation}" class="rotation-slider" 
+                                   oninput="updateCamera(this.value)">
+                        </div>
+                    `;
+                    break;
+
+                case 'recording':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">📹 Recording Management</h2>
+                        <div style="text-align: center; margin: 2rem 0;">
+                            <button class="button ${recording ? 'danger' : 'success'}" onclick="toggleRecording()">
+                                ${recording ? '⏹️ Stop Recording' : '⏺️ Start Recording'}
+                            </button>
+                            <p style="color: #a0aec0; margin-top: 1rem;">
+                                Status: <strong>${recording ? '🔴 Recording' : '⚪ Stopped'}</strong>
+                            </p>
+                        </div>
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Storage Used</div>
+                                <div class="stat-value">45GB</div>
+                                <div style="color: #a0aec0; margin-top: 0.5rem;">of 128GB</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Locked Evidence</div>
+                                <div class="stat-value">3</div>
+                                <div style="color: #a0aec0; margin-top: 0.5rem;">clips saved</div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        function addPoints() {
+            points += 10;
+            document.getElementById('points').textContent = points;
+            showAlert('🎉 +10 Safety Points earned!');
+        }
+
+        function toggleSecurity() {
+            securityArmed = !securityArmed;
+            renderContent();
+            showAlert(securityArmed ? '🔒 Security Armed' : '🔓 Security Disarmed');
+        }
+
+        function toggleRecording() {
+            recording = !recording;
+            renderContent();
+            showAlert(recording ? '🔴 Recording Started' : '⏹️ Recording Stopped');
+        }
+
+        function updateCamera(value) {
+            cameraRotation = value;
+            document.querySelector('.rotation-slider + div .stat-value').textContent = value + '°';
+        }
+
+        function showAlert(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert';
+            alert.textContent = message;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        // Simulate speed changes
+        setInterval(() => {
+            currentSpeed = Math.max(25, Math.min(55, currentSpeed + (Math.random() * 6 - 3)));
+            if (currentTab === 'drive') {
+                document.getElementById('speed').textContent = Math.round(currentSpeed);
+            }
+        }, 2000);
+
+        // Initial render
+        renderContent();
+    </script>
+</body>
+</html>
