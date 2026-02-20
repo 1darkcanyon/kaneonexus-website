@@ -1,0 +1,455 @@
+cat > /home/claude/maintenance-hub.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS Maintenance Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06091a;--panel:#0d1535;--panel2:#111d45;
+  --cyan:#00d4ff;--cyan2:#0099cc;--green:#00ff88;
+  --gold:#ffcc00;--red:#ff2244;--orange:#ff8c00;--purple:#9966ff;
+  --dim:#4a6080;--text:#c0d4f0;--border:rgba(0,212,255,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);font-size:15px;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.04) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+
+.hdr{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:58px;background:rgba(6,9,26,.96);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
+.hdr-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:1.1rem;color:var(--cyan);letter-spacing:3px;text-shadow:0 0 18px rgba(0,212,255,.5)}
+.hdr-logo small{display:block;font-size:.55rem;letter-spacing:5px;color:var(--dim);font-weight:400;margin-top:-3px}
+.hdr-right{display:flex;align-items:center;gap:1rem}
+.pill{display:flex;align-items:center;gap:.4rem;padding:4px 12px;border-radius:20px;font-size:.72rem;font-family:'Orbitron',monospace}
+.pill-p{background:rgba(153,102,255,.1);border:1px solid rgba(153,102,255,.3);color:var(--purple)}
+.back{color:var(--dim);text-decoration:none;font-size:.78rem;letter-spacing:2px;transition:color .2s}
+.back:hover{color:var(--cyan)}
+
+.tabs{display:flex;overflow-x:auto;background:var(--panel);border-bottom:1px solid var(--border);position:relative;z-index:10;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:.9rem 1.4rem;border:none;background:none;color:var(--dim);font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--cyan);border-bottom-color:var(--cyan);text-shadow:0 0 10px rgba(0,212,255,.4)}
+
+.page{display:none;position:relative;z-index:1;padding:1.25rem;max-width:1300px;margin:0 auto;animation:fi .3s ease}
+.page.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:border-color .2s}
+.card:hover{border-color:rgba(0,212,255,.28)}
+.card-ttl{font-family:'Orbitron',monospace;font-size:.58rem;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:.9rem}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem}
+@media(max-width:800px){.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+.big{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;line-height:1}
+.lbl{font-size:.6rem;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-top:3px}
+
+.bar{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin-top:4px}
+.bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.fc{background:linear-gradient(90deg,var(--cyan2),var(--cyan));box-shadow:0 0 8px rgba(0,212,255,.3)}
+.fg{background:linear-gradient(90deg,#00cc66,var(--green))}
+.fr{background:linear-gradient(90deg,#cc0022,var(--red))}
+.fo{background:linear-gradient(90deg,#cc6600,var(--orange))}
+.fp{background:linear-gradient(90deg,#6633cc,var(--purple))}
+
+.al{padding:.65rem .9rem;border-radius:8px;font-size:.82rem;margin-bottom:.4rem}
+.al-s{background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.25);color:var(--green)}
+.al-d{background:rgba(255,34,68,.07);border:1px solid rgba(255,34,68,.25);color:var(--red)}
+.al-w{background:rgba(255,204,0,.07);border:1px solid rgba(255,204,0,.25);color:var(--gold)}
+.al-i{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);color:var(--cyan)}
+
+.bdg{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.bdg-c{background:rgba(0,212,255,.12);color:var(--cyan);border:1px solid rgba(0,212,255,.25)}
+.bdg-g{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+.bdg-o{background:rgba(255,204,0,.12);color:var(--gold);border:1px solid rgba(255,204,0,.25)}
+.bdg-r{background:rgba(255,34,68,.12);color:var(--red);border:1px solid rgba(255,34,68,.25)}
+.bdg-or{background:rgba(255,140,0,.12);color:var(--orange);border:1px solid rgba(255,140,0,.25)}
+.bdg-p{background:rgba(153,102,255,.12);color:var(--purple);border:1px solid rgba(153,102,255,.25)}
+
+.btn{padding:.55rem 1rem;border:none;border-radius:7px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-c{background:linear-gradient(135deg,var(--cyan2),var(--cyan));color:#000}
+.btn-c:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,212,255,.35)}
+.btn-out{background:transparent;border:1px solid var(--border);color:var(--dim)}
+.btn-out:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* Health ring */
+.hring{position:relative;width:150px;height:150px;margin:0 auto}
+.hring svg{transform:rotate(-90deg)}
+.hring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Orbitron',monospace}
+
+/* System status row */
+.sys-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.sys-row:last-child{border-bottom:none}
+.sys-l{display:flex;align-items:center;gap:.65rem}
+.sys-icon{font-size:1.1rem}
+.sys-name{font-size:.82rem}
+.sys-sub{font-size:.68rem;color:var(--dim)}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dg{background:var(--green);box-shadow:0 0 6px rgba(0,255,136,.5)}
+.do{background:var(--gold);box-shadow:0 0 6px rgba(255,204,0,.5)}
+.dr{background:var(--red);box-shadow:0 0 6px rgba(255,34,68,.5)}
+
+/* OBD card */
+.obd{background:var(--panel2);border:1px solid;border-radius:10px;padding:.9rem;margin-bottom:.65rem;cursor:pointer;transition:all .2s}
+.obd:hover{transform:translateX(2px)}
+.obd.crit{border-color:rgba(255,34,68,.28)}
+.obd.warn{border-color:rgba(255,204,0,.28)}
+.obd.info{border-color:rgba(0,212,255,.18)}
+.obd-hdr{display:flex;align-items:center;gap:.65rem;margin-bottom:.4rem}
+.obd-code{font-family:'Orbitron',monospace;font-size:.95rem;font-weight:700}
+.obd-name{font-size:.88rem;font-weight:600}
+.obd-desc{font-size:.78rem;color:var(--dim);margin-bottom:.6rem}
+.obd-foot{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.obd-detail{display:none;margin-top:.75rem;padding:.7rem;background:rgba(0,0,0,.2);border-radius:6px;font-size:.78rem;color:var(--dim);line-height:1.7}
+.obd-detail strong{color:var(--text)}
+.obd-detail .diy-cost{color:var(--gold);font-weight:700;margin-top:.4rem;display:block}
+
+/* Schedule row */
+.sched{display:flex;align-items:center;gap:.9rem;padding:.8rem;background:var(--panel2);border:1px solid var(--border);border-radius:10px;margin-bottom:.45rem;cursor:pointer;transition:all .2s}
+.sched:hover{border-color:rgba(0,212,255,.25);transform:translateX(2px)}
+.sched-icon{font-size:1.4rem}
+.sched-info{flex:1}
+.sched-name{font-size:.85rem;font-weight:600}
+.sched-sub{font-size:.7rem;color:var(--dim);margin-top:1px}
+.sched-due{text-align:right}
+.sched-mi{font-family:'Orbitron',monospace;font-size:.85rem}
+.sched-dt{font-size:.65rem;color:var(--dim)}
+
+/* Training card */
+.train{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.6rem;cursor:pointer;transition:all .22s}
+.train:hover{border-color:rgba(0,212,255,.28);transform:translateY(-2px)}
+.train-hdr{display:flex;align-items:flex-start;gap:.9rem;margin-bottom:.65rem}
+.train-icon{font-size:1.9rem}
+.train-title{font-family:'Orbitron',monospace;font-size:.7rem;font-weight:700;letter-spacing:2px}
+.train-desc{font-size:.77rem;color:var(--dim);margin-top:3px}
+.train-foot{display:flex;align-items:center;justify-content:space-between}
+
+/* Cert level */
+.cert{display:flex;align-items:center;gap:1rem;padding:.9rem;border-radius:10px;margin-bottom:.45rem;border:1px solid}
+.cert.earned{background:rgba(0,212,255,.04);border-color:rgba(0,212,255,.22)}
+.cert.current{background:rgba(153,102,255,.06);border-color:rgba(153,102,255,.28)}
+.cert.locked{opacity:.4;border-color:rgba(255,255,255,.06)}
+.cert-medal{font-size:1.9rem}
+.cert-info{flex:1}
+.cert-name{font-family:'Orbitron',monospace;font-size:.7rem;font-weight:700;letter-spacing:2px}
+.cert-req{font-size:.72rem;color:var(--dim);margin-top:2px}
+.cert-pts{font-family:'Orbitron',monospace;font-size:.95rem}
+
+/* History item */
+.hist{display:flex;align-items:center;gap:.9rem;padding:.75rem;background:var(--panel2);border:1px solid var(--border);border-radius:10px;margin-bottom:.4rem;transition:all .2s}
+.hist:hover{border-color:rgba(0,212,255,.2)}
+.hist-thumb{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.hist-info{flex:1}
+.hist-name{font-size:.83rem;font-weight:600}
+.hist-meta{font-size:.68rem;color:var(--dim);margin-top:1px}
+.hist-cost{text-align:right;font-family:'Orbitron',monospace;font-size:.85rem}
+
+/* Sensor wheel */
+.swh{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.swhi{padding:.55rem;background:var(--panel2);border-radius:8px;border:1px solid var(--border);text-align:center}
+.swhi-val{font-family:'Orbitron',monospace;font-size:.95rem}
+.swhi-lbl{font-size:.58rem;color:var(--dim);letter-spacing:1px}
+
+/* notif dot */
+.ndot{display:inline-block;width:7px;height:7px;background:var(--red);border-radius:50%;margin-left:4px;vertical-align:middle;animation:blink 1.5s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* scan animation */
+@keyframes scan{0%{top:0;opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+.scan-box{position:relative;overflow:hidden;border-radius:8px}
+.scan-box::after{content:'';position:absolute;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:scan 2s linear infinite;box-shadow:0 0 8px var(--cyan)}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-logo">NEXUS<small>MAINTENANCE HUB</small></div>
+  <div class="hdr-right">
+    <div class="pill pill-p">🔧 APPRENTICE</div>
+    <a href="demos-hub.html" class="back">← HUB</a>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab on" onclick="go('overview',this)">🔍 OVERVIEW</button>
+  <button class="tab" onclick="go('diag',this)">⚡ DIAGNOSTICS<span class="ndot"></span></button>
+  <button class="tab" onclick="go('sched',this)">📅 SCHEDULE</button>
+  <button class="tab" onclick="go('training',this)">🎓 TRAINING</button>
+  <button class="tab" onclick="go('history',this)">📋 HISTORY</button>
+</nav>
+
+<!-- ══ OVERVIEW ══ -->
+<div id="overview" class="page on">
+  <div class="g2">
+    <div class="card">
+      <div class="card-ttl">Vehicle Health Score</div>
+      <div class="hring" style="margin-bottom:1rem">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="60" fill="none" stroke="rgba(0,212,255,.08)" stroke-width="12"/>
+          <circle cx="75" cy="75" r="60" fill="none" stroke="var(--green)" stroke-width="12"
+            stroke-dasharray="377" stroke-dashoffset="57" stroke-linecap="round"
+            style="filter:drop-shadow(0 0 10px rgba(0,255,136,.4))"/>
+        </svg>
+        <div class="hring-txt">
+          <div style="font-size:2.2rem;font-weight:900;color:var(--green)">85</div>
+          <div style="font-size:.5rem;letter-spacing:3px;color:var(--dim)">/ 100</div>
+        </div>
+      </div>
+      <div style="text-align:center"><div class="bdg bdg-g">GOOD CONDITION</div><div style="font-size:.7rem;color:var(--dim);margin-top:.4rem">Last scan: Today 8:42 AM</div></div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">System Status</div>
+      <div class="sys-row"><div class="sys-l"><div class="sys-icon">🛢️</div><div><div class="sys-name">Engine Oil</div><div class="sys-sub">Next change: 2,400 mi</div></div></div><div style="display:flex;align-items:center;gap:.4rem"><div class="bdg bdg-g">GOOD</div><div class="sdot dg"></div></div></div>
+      <div class="sys-row"><div class="sys-l"><div class="sys-icon">🔋</div><div><div class="sys-name">Battery</div><div class="sys-sub">12.6V — 78% health</div></div></div><div style="display:flex;align-items:center;gap:.4rem"><div class="bdg bdg-o">WATCH</div><div class="sdot do"></div></div></div>
+      <div class="sys-row"><div class="sys-l"><div class="sys-icon">🛞</div><div><div class="sys-name">Tires</div><div class="sys-sub">Avg 36 PSI · 7/32 tread</div></div></div><div style="display:flex;align-items:center;gap:.4rem"><div class="bdg bdg-g">GOOD</div><div class="sdot dg"></div></div></div>
+      <div class="sys-row"><div class="sys-l"><div class="sys-icon">🔴</div><div><div class="sys-name">Brake Pads</div><div class="sys-sub">Front: 4mm remaining</div></div></div><div style="display:flex;align-items:center;gap:.4rem"><div class="bdg bdg-r">SERVICE</div><div class="sdot dr"></div></div></div>
+      <div class="sys-row"><div class="sys-l"><div class="sys-icon">❄️</div><div><div class="sys-name">Coolant</div><div class="sys-sub">Level optimal · pH 7.2</div></div></div><div style="display:flex;align-items:center;gap:.4rem"><div class="bdg bdg-g">GOOD</div><div class="sdot dg"></div></div></div>
+      <div class="sys-row"><div class="sys-l"><div class="sys-icon">💨</div><div><div class="sys-name">Air Filter</div><div class="sys-sub">12,000 mi remaining</div></div></div><div style="display:flex;align-items:center;gap:.4rem"><div class="bdg bdg-g">GOOD</div><div class="sdot dg"></div></div></div>
+    </div>
+  </div>
+  <div class="g4">
+    <div class="card" style="text-align:center"><div class="card-ttl">Total Mileage</div><div class="big" style="color:var(--cyan)">47,832</div><div class="lbl">MILES</div></div>
+    <div class="card" style="text-align:center"><div class="card-ttl">DIY Savings</div><div class="big" style="color:var(--green)">$1,247</div><div class="lbl">SAVED</div></div>
+    <div class="card" style="text-align:center"><div class="card-ttl">Tasks Done</div><div class="big" style="color:var(--gold)">28</div><div class="lbl">SERVICE ITEMS</div></div>
+    <div class="card" style="text-align:center"><div class="card-ttl">Next Service</div><div class="big" style="color:var(--orange)">320</div><div class="lbl">MILES AWAY</div></div>
+  </div>
+  <div class="card">
+    <div class="card-ttl">NEXUS AI Recommendations</div>
+    <div class="al al-d">🔴 PRIORITY: Front brake pads at 4mm — replace within 500 miles. DIY estimate: $45 parts, 1.5 hrs.</div>
+    <div class="al al-w">🟡 UPCOMING: Battery at 78% health — trending toward replacement in 3–6 months. Budget ~$180.</div>
+    <div class="al al-i">🔵 NOTE: Oil change due in 2,400 miles. Your driving suggests ~6 weeks. Schedule now?</div>
+    <div class="al al-s">🟢 GREAT: Coolant, tires, and filters all excellent — nothing needed for 10,000+ miles.</div>
+  </div>
+</div>
+
+<!-- ══ DIAGNOSTICS ══ -->
+<div id="diag" class="page">
+  <div class="g2">
+    <div class="card">
+      <div class="card-ttl">OBD-II Live Scan</div>
+      <div class="scan-box" style="padding:.9rem;background:var(--panel2);border-radius:8px;margin-bottom:.75rem;min-height:70px">
+        <div style="font-family:monospace;font-size:.74rem;color:var(--cyan)">PORT: OBD-II · Protocol: CAN · CONNECTED ✓</div>
+        <div style="font-size:.72rem;color:var(--dim);margin-top:4px">Scanning ECU modules... 12/12 responding</div>
+        <div style="font-size:.72rem;color:var(--green);margin-top:4px">3 codes found — 1 critical, 1 pending, 1 stored</div>
+      </div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.75rem">
+        <button class="btn btn-c" onclick="runScan()">🔄 RUN SCAN</button>
+        <button class="btn btn-out" onclick="clearCodes()">🗑️ CLEAR CODES</button>
+      </div>
+      <div id="scan-fb"></div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">Live Sensor Data</div>
+      <div class="swh">
+        <div class="swhi"><div class="swhi-val" style="color:var(--cyan)" id="s-rpm">1,240</div><div class="swhi-lbl">RPM</div></div>
+        <div class="swhi"><div class="swhi-val" style="color:var(--green)">195°F</div><div class="swhi-lbl">COOLANT TEMP</div></div>
+        <div class="swhi"><div class="swhi-val" style="color:var(--gold)" id="s-mpg">28.4</div><div class="swhi-lbl">MPG INSTANT</div></div>
+        <div class="swhi"><div class="swhi-val" style="color:var(--cyan)" id="s-thr">18%</div><div class="swhi-lbl">THROTTLE</div></div>
+        <div class="swhi"><div class="swhi-val" style="color:var(--green)">0.45V</div><div class="swhi-lbl">O2 SENSOR</div></div>
+        <div class="swhi"><div class="swhi-val" style="color:var(--gold)">8.4 g/s</div><div class="swhi-lbl">AIR FLOW</div></div>
+        <div class="swhi"><div class="swhi-val" style="color:var(--red)">4mm</div><div class="swhi-lbl">BRAKE WEAR</div></div>
+        <div class="swhi"><div class="swhi-val" style="color:var(--gold)">12.6V</div><div class="swhi-lbl">BATTERY</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-ttl">Diagnostic Trouble Codes</div>
+    <div class="obd crit" onclick="toggleObd(this,'p0171-d')">
+      <div class="obd-hdr"><div class="bdg bdg-r">CRITICAL</div><div class="obd-code" style="color:var(--red)">P0171</div><div class="obd-name">System Too Lean (Bank 1)</div></div>
+      <div class="obd-desc">Air-fuel mixture running too lean. Possible causes: vacuum leak, dirty MAF sensor, faulty O2 sensor, or clogged fuel injector.</div>
+      <div class="obd-foot"><div class="bdg bdg-r">ACTIVE</div><div style="font-size:.72rem;color:var(--dim)">First detected: 3 days ago</div><div style="margin-left:auto;font-size:.76rem;color:var(--gold)">DIY: ⭐⭐ Medium</div></div>
+      <div id="p0171-d" class="obd-detail">
+        <strong>Step 1:</strong> Inspect all vacuum lines for cracks near intake manifold<br>
+        <strong>Step 2:</strong> Clean MAF sensor with MAF cleaner spray (~$8 at AutoZone)<br>
+        <strong>Step 3:</strong> Check fuel injectors — listen for uniform ticking<br>
+        <strong>Step 4:</strong> Smoke test intake if above steps don't resolve<br>
+        <span class="diy-cost">DIY cost: $8–$50 vs shop: $150–$400 💰</span>
+      </div>
+    </div>
+    <div class="obd warn" onclick="toggleObd(this,'p0456-d')">
+      <div class="obd-hdr"><div class="bdg bdg-o">PENDING</div><div class="obd-code" style="color:var(--gold)">P0456</div><div class="obd-name">Evap System Small Leak</div></div>
+      <div class="obd-desc">Small vapor leak in evaporative emission system. Often just a loose gas cap — check that first.</div>
+      <div class="obd-foot"><div class="bdg bdg-o">MONITOR</div><div style="font-size:.72rem;color:var(--dim)">First detected: 7 days ago</div><div style="margin-left:auto;font-size:.76rem;color:var(--green)">DIY: ⭐ Easy</div></div>
+      <div id="p0456-d" class="obd-detail">
+        <strong>Step 1:</strong> Check gas cap — tighten fully (click 3 times)<br>
+        <strong>Step 2:</strong> Inspect gas cap o-ring for cracks (~$15 replacement)<br>
+        <strong>Step 3:</strong> If code returns, inspect EVAP hoses<br>
+        <span class="diy-cost">DIY cost: $0–$20 💰</span>
+      </div>
+    </div>
+    <div class="obd info" onclick="toggleObd(this,'p0497-d')">
+      <div class="obd-hdr"><div class="bdg bdg-c">STORED</div><div class="obd-code" style="color:var(--cyan)">P0497</div><div class="obd-name">Evap Control System Low Purge Flow</div></div>
+      <div class="obd-desc">Historical code — no longer active. Canister purge valve may have had a temporary sticking issue.</div>
+      <div class="obd-foot"><div class="bdg bdg-c">HISTORICAL</div><div style="font-size:.72rem;color:var(--dim)">Cleared: 30 days ago</div></div>
+      <div id="p0497-d" class="obd-detail">Monitor if P0497 returns. If so, test canister purge valve with a multimeter — replace if faulty (~$35 part).<span class="diy-cost">DIY cost: $35 vs shop: $150+ 💰</span></div>
+    </div>
+    <div class="al al-i" style="margin-top:.5rem">🤖 <strong>NEXUS AI:</strong> P0171 is most urgent — start with MAF sensor cleaning ($10, takes 10 minutes). Click any code above for a full step-by-step DIY guide.</div>
+  </div>
+</div>
+
+<!-- ══ SCHEDULE ══ -->
+<div id="sched" class="page">
+  <div class="g2">
+    <div class="card">
+      <div class="card-ttl">Mileage-Based Maintenance</div>
+      <div class="sched" onclick="schedFb('Brake Pad Replacement — reminder set for 320 mi')"><div class="sched-icon">🔴</div><div class="sched-info"><div class="sched-name">Brake Pad Replacement (Front)</div><div class="sched-sub">Critical — at 4mm minimum threshold</div><div class="bar" style="margin-top:5px"><div class="bar-fill fr" style="width:95%"></div></div></div><div class="sched-due"><div class="sched-mi" style="color:var(--red)">320 mi</div><div class="sched-dt">URGENT</div></div></div>
+      <div class="sched" onclick="schedFb('Oil Change — reminder set for 2,400 mi')"><div class="sched-icon">🛢️</div><div class="sched-info"><div class="sched-name">Engine Oil & Filter Change</div><div class="sched-sub">5W-30 full synthetic</div><div class="bar" style="margin-top:5px"><div class="bar-fill fo" style="width:73%"></div></div></div><div class="sched-due"><div class="sched-mi" style="color:var(--gold)">2,400 mi</div><div class="sched-dt">~6 weeks</div></div></div>
+      <div class="sched" onclick="schedFb('Tire Rotation — reminder set for 4,200 mi')"><div class="sched-icon">🛞</div><div class="sched-info"><div class="sched-name">Tire Rotation</div><div class="sched-sub">Front-to-rear cross pattern</div><div class="bar" style="margin-top:5px"><div class="bar-fill fc" style="width:55%"></div></div></div><div class="sched-due"><div class="sched-mi" style="color:var(--cyan)">4,200 mi</div><div class="sched-dt">~3 months</div></div></div>
+      <div class="sched"><div class="sched-icon">🔋</div><div class="sched-info"><div class="sched-name">Battery Replacement (Proactive)</div><div class="sched-sub">78% health — trending down</div><div class="bar" style="margin-top:5px"><div class="bar-fill fo" style="width:40%"></div></div></div><div class="sched-due"><div class="sched-mi" style="color:var(--gold)">~6 mo</div><div class="sched-dt">WATCH</div></div></div>
+      <div id="sched-fb" style="margin-top:.5rem"></div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">Upcoming Deadlines</div>
+      <div class="sched"><div class="sched-icon">📋</div><div class="sched-info"><div class="sched-name">Vehicle Registration</div><div class="sched-sub">DMV renewal — CA</div></div><div class="sched-due"><div class="sched-mi" style="color:var(--orange)">Apr 15</div><div class="sched-dt">55 days</div></div></div>
+      <div class="sched"><div class="sched-icon">🔍</div><div class="sched-info"><div class="sched-name">Smog Check Due</div><div class="sched-sub">Biennial — CA requirement</div></div><div class="sched-due"><div class="sched-mi" style="color:var(--cyan)">May 30</div><div class="sched-dt">100 days</div></div></div>
+      <div class="sched"><div class="sched-icon">🛡️</div><div class="sched-info"><div class="sched-name">Insurance Renewal</div><div class="sched-sub">Progressive — auto-renews</div></div><div class="sched-due"><div class="sched-mi" style="color:var(--green)">Aug 1</div><div class="sched-dt">163 days</div></div></div>
+      <div style="margin-top:1rem">
+        <div class="card-ttl">Add Quick Reminder</div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <button class="btn btn-c" onclick="addReminder('Car Wash & Detail','30 days')">+ Car Wash</button>
+          <button class="btn btn-out" onclick="addReminder('Wheel Alignment','60 days')">+ Alignment</button>
+          <button class="btn btn-out" onclick="addReminder('Spark Plug Check','15K mi')">+ Spark Plugs</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TRAINING ══ -->
+<div id="training" class="page">
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-ttl">NEXUS Certification Ladder</div>
+    <div class="cert earned"><div class="cert-medal">🔧</div><div class="cert-info"><div class="cert-name" style="color:var(--cyan)">APPRENTICE</div><div class="cert-req">Oil changes, filters, wipers, fluid top-offs</div><div class="bar" style="margin-top:5px"><div class="bar-fill fc" style="width:60%"></div></div><div style="font-size:.68rem;color:var(--dim);margin-top:3px">120 / 200 points</div></div><div style="text-align:right"><div class="cert-pts" style="color:var(--cyan)">120 pts</div><div class="bdg bdg-c" style="margin-top:4px">IN PROGRESS</div></div></div>
+    <div class="cert locked"><div class="cert-medal">⚙️</div><div class="cert-info"><div class="cert-name">TECHNICIAN</div><div class="cert-req">Brakes, suspension, diagnostics, battery</div></div><div style="text-align:right"><div class="cert-pts" style="color:var(--dim)">200 pts</div><div class="bdg" style="background:rgba(100,100,100,.1);color:var(--dim);border:1px solid rgba(100,100,100,.2);margin-top:4px">LOCKED</div></div></div>
+    <div class="cert locked"><div class="cert-medal">🔩</div><div class="cert-info"><div class="cert-name">SPECIALIST</div><div class="cert-req">Advanced systems, electrical, AC, timing</div></div><div style="text-align:right"><div class="cert-pts" style="color:var(--dim)">500 pts</div><div class="bdg" style="background:rgba(100,100,100,.1);color:var(--dim);border:1px solid rgba(100,100,100,.2);margin-top:4px">LOCKED</div></div></div>
+    <div class="cert locked"><div class="cert-medal">🏆</div><div class="cert-info"><div class="cert-name">MASTER MECHANIC</div><div class="cert-req">Engine rebuilds, transmission, full overhauls</div></div><div style="text-align:right"><div class="cert-pts" style="color:var(--dim)">1000 pts</div><div class="bdg" style="background:rgba(100,100,100,.1);color:var(--dim);border:1px solid rgba(100,100,100,.2);margin-top:4px">LOCKED</div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-ttl">Training Modules — Apprentice Level</div>
+    <div class="train" onclick="openTrain(this,'Oil Change & Filter')"><div class="train-hdr"><div class="train-icon">🛢️</div><div><div class="train-title" style="color:var(--green)">OIL CHANGE & FILTER</div><div class="train-desc">Save $50–$100 every 5,000 miles. Master this foundation task with NEXUS guidance.</div></div></div><div class="train-foot"><div style="display:flex;gap:.4rem"><div class="bdg bdg-g">COMPLETE ✓</div><div class="bdg bdg-c">+25 PTS</div></div><div style="font-size:.72rem;color:var(--dim)">⏱ 45 min · 7 steps</div></div></div>
+    <div class="train" onclick="openTrain(this,'Air Filter Replacement')"><div class="train-hdr"><div class="train-icon">💨</div><div><div class="train-title" style="color:var(--green)">AIR FILTER REPLACEMENT</div><div class="train-desc">Easiest DIY job — no tools needed. Engine and cabin filters.</div></div></div><div class="train-foot"><div style="display:flex;gap:.4rem"><div class="bdg bdg-g">COMPLETE ✓</div><div class="bdg bdg-c">+15 PTS</div></div><div style="font-size:.72rem;color:var(--dim)">⏱ 15 min · 4 steps</div></div></div>
+    <div class="train" id="brake-train" onclick="toggleBrake()"><div class="train-hdr"><div class="train-icon">🔴</div><div><div class="train-title" style="color:var(--orange)">BRAKE PAD REPLACEMENT</div><div class="train-desc">Save $200–$400. Critical safety skill. NEXUS AI guides every step with torque specs.</div></div></div><div class="train-foot"><div style="display:flex;gap:.4rem"><div class="bdg bdg-or">IN PROGRESS</div><div class="bdg bdg-o">+40 PTS</div></div><div style="font-size:.72rem;color:var(--dim)">⏱ 2 hrs · 12 steps</div></div>
+      <div id="brake-expand" style="display:none;margin-top:.75rem;border-top:1px solid var(--border);padding-top:.75rem">
+        <div style="font-size:.8rem;color:var(--cyan);font-weight:700;margin-bottom:.4rem">Current Progress — Step 4 of 12</div>
+        <div style="font-size:.78rem;display:flex;flex-direction:column;gap:.25rem">
+          <div style="color:var(--green)">✅ Step 1: Gather tools (jack, lug wrench, C-clamp, brake fluid)</div>
+          <div style="color:var(--green)">✅ Step 2: Loosen lug nuts, jack up vehicle safely</div>
+          <div style="color:var(--green)">✅ Step 3: Remove wheel, locate caliper</div>
+          <div style="color:var(--cyan)">▶️ Step 4: Remove caliper bolts — torque spec: 25 ft-lbs</div>
+          <div style="color:var(--dim)">⬜ Step 5: Remove old pads, compress piston</div>
+          <div style="color:var(--dim)">⬜ Steps 6–12: Install, bed in, test drive</div>
+        </div>
+        <div class="bar" style="margin-top:.65rem"><div class="bar-fill fo" style="width:33%"></div></div>
+        <div style="font-size:.68rem;color:var(--dim);margin-top:3px">33% complete</div>
+        <button class="btn btn-c" style="width:100%;margin-top:.6rem" onclick="event.stopPropagation()">▶ CONTINUE MODULE</button>
+      </div>
+    </div>
+    <div class="train" onclick="openTrain(this,'Wiper Replacement')"><div class="train-hdr"><div class="train-icon">🌧️</div><div><div class="train-title">WIPER BLADE REPLACEMENT</div><div class="train-desc">3-minute job. Never pay a shop for wipers again.</div></div></div><div class="train-foot"><div class="bdg bdg-c">AVAILABLE</div><div style="font-size:.72rem;color:var(--dim)">⏱ 10 min · 3 steps</div></div></div>
+  </div>
+</div>
+
+<!-- ══ HISTORY ══ -->
+<div id="history" class="page">
+  <div class="g4" style="margin-bottom:1rem">
+    <div class="card" style="text-align:center"><div class="card-ttl">Total Spent</div><div class="big" style="color:var(--cyan)">$3,842</div><div class="lbl">ALL SERVICE</div></div>
+    <div class="card" style="text-align:center"><div class="card-ttl">DIY Completed</div><div class="big" style="color:var(--green)">18</div><div class="lbl">TASKS YOURSELF</div></div>
+    <div class="card" style="text-align:center"><div class="card-ttl">DIY Savings</div><div class="big" style="color:var(--green)">$1,247</div><div class="lbl">MONEY SAVED</div></div>
+    <div class="card" style="text-align:center"><div class="card-ttl">Shop Visits</div><div class="big" style="color:var(--gold)">10</div><div class="lbl">PROFESSIONAL</div></div>
+  </div>
+  <div class="card">
+    <div class="card-ttl">Complete Service History</div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.75rem">
+      <button class="btn btn-c" onclick="filterH('all')">All</button>
+      <button class="btn btn-out" onclick="filterH('diy')">DIY Only</button>
+      <button class="btn btn-out" onclick="filterH('shop')">Shop Only</button>
+    </div>
+    <div id="hist-list">
+      <div class="hist" data-type="diy"><div class="hist-thumb" style="background:rgba(0,255,136,.1)">🛢️</div><div class="hist-info"><div class="hist-name">Oil Change & Filter — DIY ✓</div><div class="hist-meta">Feb 1, 2026 · 47,512 mi · Mobil 1 5W-30 · NEXUS Certified</div></div><div class="hist-cost"><div style="color:var(--green)">$28</div><div style="font-size:.62rem;color:var(--dim)">saved $72</div></div></div>
+      <div class="hist" data-type="diy"><div class="hist-thumb" style="background:rgba(255,204,0,.1)">🔋</div><div class="hist-info"><div class="hist-name">Battery Test & Terminal Clean — DIY ✓</div><div class="hist-meta">Jan 15, 2026 · 46,890 mi · Voltage: 12.6V after service</div></div><div class="hist-cost"><div style="color:var(--green)">$0</div><div style="font-size:.62rem;color:var(--dim)">saved $45</div></div></div>
+      <div class="hist" data-type="shop"><div class="hist-thumb" style="background:rgba(0,212,255,.1)">🛞</div><div class="hist-info"><div class="hist-name">Tire Rotation — Discount Tire</div><div class="hist-meta">Jan 3, 2026 · 45,800 mi · Front-to-rear cross pattern</div></div><div class="hist-cost"><div style="color:var(--cyan)">$0</div><div style="font-size:.62rem;color:var(--dim)">free w/ purchase</div></div></div>
+      <div class="hist" data-type="diy"><div class="hist-thumb" style="background:rgba(255,140,0,.1)">🔧</div><div class="hist-info"><div class="hist-name">Throttle Body Cleaning — DIY ✓</div><div class="hist-meta">Dec 12, 2025 · 44,320 mi · Fixed idle roughness</div></div><div class="hist-cost"><div style="color:var(--green)">$12</div><div style="font-size:.62rem;color:var(--dim)">saved $180</div></div></div>
+      <div class="hist" data-type="shop"><div class="hist-thumb" style="background:rgba(153,102,255,.1)">⚙️</div><div class="hist-info"><div class="hist-name">Transmission Fluid — Jiffy Lube</div><div class="hist-meta">Nov 5, 2025 · 43,000 mi · Dexron VI ATF</div></div><div class="hist-cost"><div style="color:var(--text)">$140</div><div style="font-size:.62rem;color:var(--dim)">shop visit</div></div></div>
+      <div class="hist" data-type="shop"><div class="hist-thumb" style="background:rgba(255,34,68,.1)">🔴</div><div class="hist-info"><div class="hist-name">Rear Brake Pad & Rotor — Midas</div><div class="hist-meta">Sep 2, 2025 · 40,000 mi · Warranty: 12 mo / 12K mi</div></div><div class="hist-cost"><div style="color:var(--text)">$310</div><div style="font-size:.62rem;color:var(--dim)">shop visit</div></div></div>
+    </div>
+    <div class="al al-i" style="margin-top:.75rem">🤖 <strong>NEXUS Analysis:</strong> You've saved $1,247 across 18 DIY tasks. 94% completion rate on NEXUS-guided work. Technician certification in ~3 months at this pace.</div>
+  </div>
+</div>
+
+<script>
+function go(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  btn.querySelectorAll('.ndot').forEach(d=>d.remove());
+}
+
+function toggleObd(card,detId){
+  const d=document.getElementById(detId);
+  d.style.display=d.style.display==='block'?'none':'block';
+}
+
+function runScan(){
+  const fb=document.getElementById('scan-fb');
+  fb.innerHTML='<div class="al al-i">⚡ Scanning all ECU modules...</div>';
+  setTimeout(()=>{fb.innerHTML='<div class="al al-w">Scan complete — 3 codes found. P0171 active and requires attention.</div>'},2500);
+}
+
+function clearCodes(){
+  document.getElementById('scan-fb').innerHTML='<div class="al al-s">✅ Historical codes cleared. Active P0171 cannot clear until issue is resolved.</div>';
+}
+
+// Live sensors
+const rpms=['820','1,100','1,450','1,240','2,200','1,800','950'];
+const thrs=['5%','12%','28%','18%','45%','22%','8%'];
+setInterval(()=>{
+  const i=Math.floor(Math.random()*rpms.length);
+  const r=document.getElementById('s-rpm');const t=document.getElementById('s-thr');
+  if(r)r.textContent=rpms[i];if(t)t.textContent=thrs[i];
+},3000);
+
+function schedFb(msg){
+  const fb=document.getElementById('sched-fb');
+  fb.innerHTML='<div class="al al-i">📅 '+msg+'</div>';
+  setTimeout(()=>{fb.innerHTML=''},3500);
+}
+
+function addReminder(name,when){
+  const list=document.querySelector('#sched .card');
+  const d=document.createElement('div');
+  d.className='sched';
+  d.innerHTML=`<div class="sched-icon">📌</div><div class="sched-info"><div class="sched-name">${name}</div><div class="sched-sub">Custom reminder</div></div><div class="sched-due"><div class="sched-mi" style="color:var(--cyan)">${when}</div><div class="sched-dt">CUSTOM</div></div>`;
+  list.appendChild(d);
+}
+
+function openTrain(card,name){
+  const existing=card.querySelector('.train-open-msg');
+  if(existing){existing.remove();return}
+  const d=document.createElement('div');
+  d.className='train-open-msg al al-i';
+  d.style.marginTop='.65rem';
+  d.textContent='🎓 Opening module: '+name+' — NEXUS AI will guide you step by step.';
+  card.appendChild(d);
+}
+
+function toggleBrake(){
+  const e=document.getElementById('brake-expand');
+  e.style.display=e.style.display==='block'?'none':'block';
+}
+
+function filterH(type){
+  document.querySelectorAll('#hist-list .hist').forEach(item=>{
+    if(type==='all'){item.style.opacity='1'}
+    else{item.style.opacity=item.dataset.type===type?'1':'0.28'}
+  });
+}
+</script>
+</body>
+</html>
+HTMLEOF
+echo "Maintenance done: $(wc -c < /home/claude/maintenance-hub.html) bytes"
