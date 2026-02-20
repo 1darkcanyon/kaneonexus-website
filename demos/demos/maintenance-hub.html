@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS Maintenance Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0e27;
+            color: #f7fafc;
+            padding: 2rem;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            background: rgba(37, 43, 74, 0.8);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(37, 43, 74, 0.6);
+            padding: 0.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            background: transparent;
+            color: #a0aec0;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+        .tab:hover { background: rgba(0, 212, 255, 0.1); color: #00d4ff; }
+        .tab.active { background: #00d4ff; color: #0a0e27; }
+        .content {
+            background: rgba(37, 43, 74, 0.6);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            min-height: 500px;
+        }
+        .health-score {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .score-circle {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #48bb78;
+        }
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .system-card {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        .code-item {
+            background: rgba(252, 129, 129, 0.1);
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0.5rem;
+            border-left: 3px solid #fc8181;
+            cursor: pointer;
+        }
+        .code-item:hover {
+            background: rgba(252, 129, 129, 0.2);
+        }
+        .back-link {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(37, 43, 74, 0.95);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            color: #00d4ff;
+            text-decoration: none;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            z-index: 1000;
+        }
+        .cert-badge {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <a href="demos-hub.html" class="back-link">← Back to Demos</a>
+
+    <div class="container">
+        <div class="header">
+            <div style="font-size: 1.5rem; font-weight: bold; color: #00d4ff;">🔧 NEXUS MAINTENANCE HUB</div>
+            <div class="cert-badge">Technician Level - 250 pts</div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+            <button class="tab" onclick="switchTab('diagnostics')">🔍 Diagnostics</button>
+            <button class="tab" onclick="switchTab('schedule')">📅 Schedule</button>
+            <button class="tab" onclick="switchTab('training')">🎓 Training</button>
+            <button class="tab" onclick="switchTab('history')">📜 History</button>
+        </div>
+
+        <div class="content" id="content"></div>
+    </div>
+
+    <script>
+        let currentTab = 'overview';
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderContent();
+        }
+
+        function renderContent() {
+            const content = document.getElementById('content');
+            
+            switch(currentTab) {
+                case 'overview':
+                    content.innerHTML = `
+                        <div class="health-score">
+                            <div class="score-circle">82</div>
+                            <h3 style="color: #a0aec0; margin-top: 1rem;">Vehicle Health Score</h3>
+                        </div>
+                        
+                        <div class="system-grid">
+                            <div class="system-card">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
+                                <div style="color: #a0aec0;">Engine</div>
+                                <div style="color: #48bb78; font-weight: bold; margin-top: 0.5rem;">Good</div>
+                            </div>
+                            <div class="system-card">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">💧</div>
+                                <div style="color: #a0aec0;">Fluids</div>
+                                <div style="color: #f6ad55; font-weight: bold; margin-top: 0.5rem;">Check Soon</div>
+                            </div>
+                            <div class="system-card">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌬️</div>
+                                <div style="color: #a0aec0;">Air System</div>
+                                <div style="color: #48bb78; font-weight: bold; margin-top: 0.5rem;">Good</div>
+                            </div>
+                            <div class="system-card">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔋</div>
+                                <div style="color: #a0aec0;">Battery</div>
+                                <div style="color: #48bb78; font-weight: bold; margin-top: 0.5rem;">85%</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(246, 173, 85, 0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #f6ad55; margin-top: 2rem;">
+                            <strong>⚠️ Priority Alert:</strong> Oil change due in 250 miles or 2 weeks
+                        </div>
+                    `;
+                    break;
+
+                case 'diagnostics':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">🔍 OBD-II Diagnostic Codes</h2>
+                        
+                        <div class="code-item" onclick="alert('AI Explanation: Catalyst efficiency below threshold. Common causes: O2 sensor failure or catalytic converter wear. Estimated cost: $150-$2000. Recommended: Diagnose O2 sensors first.')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="color: #fc8181;">P0420</strong>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">Catalyst System Efficiency Below Threshold</div>
+                                </div>
+                                <div style="color: #fc8181; font-weight: bold;">MEDIUM</div>
+                            </div>
+                        </div>
+
+                        <div class="code-item" onclick="alert('AI Explanation: Engine running lean. Common causes: vacuum leak or MAF sensor issue. Estimated cost: $50-$400. Usually an easy DIY fix.')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="color: #f6ad55;">P0171</strong>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">System Too Lean (Bank 1)</div>
+                                </div>
+                                <div style="color: #f6ad55; font-weight: bold;">LOW</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(72, 187, 120, 0.1); padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;">
+                            <strong style="color: #48bb78;">✓ Resolved:</strong> P0300 (Misfire) - Spark plugs replaced - $120
+                        </div>
+
+                        <p style="color: #a0aec0; margin-top: 2rem; font-style: italic;">
+                            💡 Click any code for detailed AI explanation, repair guidance, and cost estimates
+                        </p>
+                    `;
+                    break;
+
+                case 'schedule':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">📅 Maintenance Schedule</h2>
+                        
+                        <div style="background: rgba(252, 129, 129, 0.1); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #fc8181; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="font-size: 1.25rem;">Oil Change</strong>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">Due: Nov 15, 2025 or 45,000 mi</div>
+                                    <div style="margin-top: 0.5rem;">Current: 44,750 mi (250 mi remaining)</div>
+                                </div>
+                                <div style="color: #fc8181; font-weight: bold;">OVERDUE SOON</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(0, 212, 255, 0.1); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #00d4ff; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="font-size: 1.25rem;">Brake Inspection</strong>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">Due: Nov 30, 2025 or 46,000 mi</div>
+                                    <div style="margin-top: 0.5rem;">Current: 44,750 mi (1,250 mi remaining)</div>
+                                </div>
+                                <div style="color: #00d4ff; font-weight: bold;">UPCOMING</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(72, 187, 120, 0.1); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #48bb78;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="font-size: 1.25rem;">Tire Rotation</strong>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">Due: Dec 15, 2025 or 48,000 mi</div>
+                                    <div style="margin-top: 0.5rem;">Current: 44,750 mi (3,250 mi remaining)</div>
+                                </div>
+                                <div style="color: #48bb78; font-weight: bold;">ON TRACK</div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'training':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">🎓 NEXUS Certification Program</h2>
+                        
+                        <div style="text-align: center; margin: 2rem 0;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">Current Level: <strong style="color: #00d4ff;">Technician</strong></div>
+                            <div style="color: #a0aec0;">250 / 500 points to Specialist</div>
+                            <div style="margin: 1rem auto; max-width: 600px; height: 12px; background: rgba(0, 212, 255, 0.2); border-radius: 6px;">
+                                <div style="width: 50%; height: 100%; background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%); border-radius: 6px;"></div>
+                            </div>
+                        </div>
+
+                        <h3 style="margin: 2rem 0 1rem 0; color: #00d4ff;">Available Training Modules</h3>
+
+                        <div style="background: rgba(72, 187, 120, 0.1); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1rem; border: 2px solid #48bb78;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <strong style="font-size: 1.25rem;">✓ Basic Oil Change</strong>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">Beginner | 50 points</div>
+                                </div>
+                                <div style="color: #48bb78; font-weight: bold;">COMPLETED</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(72, 187, 120, 0.1); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1rem; border: 2px solid #48bb78;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <strong style="font-size: 1.25rem;">✓ Brake System Fundamentals</strong>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">Intermediate | 75 points</div>
+                                </div>
+                                <div style="color: #48bb78; font-weight: bold;">COMPLETED</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(0, 212, 255, 0.1); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1rem; border: 1px solid #00d4ff; cursor: pointer;" onclick="alert('Coming soon! This module teaches OBD-II scanner usage and diagnostic trouble code interpretation.')">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <strong style="font-size: 1.25rem;">Engine Diagnostics with OBD-II</strong>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">Intermediate | 100 points</div>
+                                </div>
+                                <div style="color: #00d4ff; font-weight: bold;">START →</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(183, 148, 246, 0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #b794f6; margin-top: 2rem;">
+                            <strong>💡 Career Path:</strong> Complete all modules to earn your NEXUS Master Technician certification - recognized by employers and worth $15-25/hr wage increase!
+                        </div>
+                    `;
+                    break;
+
+                case 'history':
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 2rem; color: #00d4ff;">📜 Service History</h2>
+                        
+                        <div style="background: rgba(0, 212, 255, 0.1); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; text-align: center;">
+                                <div>
+                                    <div style="font-size: 2rem; color: #00d4ff; font-weight: bold;">$2,340</div>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">Total Spent</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 2rem; color: #48bb78; font-weight: bold;">$1,180</div>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">DIY Savings</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 2rem; color: #b794f6; font-weight: bold;">17</div>
+                                    <div style="color: #a0aec0; margin-top: 0.5rem;">Services</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 style="margin-bottom: 1rem; color: #00d4ff;">Recent Services</h3>
+
+                        <div style="background: rgba(37, 43, 74, 0.6); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <strong>Oil Change</strong>
+                                <strong style="color: #00d4ff;">$45</strong>
+                            </div>
+                            <div style="color: #a0aec0; font-size: 0.9rem;">Sept 20, 2025 | DIY with NEXUS guidance</div>
+                            <div style="color: #a0aec0; font-size: 0.9rem; margin-top: 0.5rem;">Synthetic 5W-30, filter replaced</div>
+                        </div>
+
+                        <div style="background: rgba(37, 43, 74, 0.6); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <strong>Brake Pad Replacement</strong>
+                                <strong style="color: #00d4ff;">$180</strong>
+                            </div>
+                            <div style="color: #a0aec0; font-size: 0.9rem;">July 1, 2025 | NEXUS Certified Shop</div>
+                            <div style="color: #a0aec0; font-size: 0.9rem; margin-top: 0.5rem;">Front pads replaced, rotors resurfaced</div>
+                        </div>
+
+                        <div style="background: rgba(37, 43, 74, 0.6); padding: 1.5rem; border-radius: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <strong>Spark Plug Replacement</strong>
+                                <strong style="color: #00d4ff;">$120</strong>
+                            </div>
+                            <div style="color: #a0aec0; font-size: 0.9rem;">May 15, 2025 | DIY with NEXUS guidance</div>
+                            <div style="color: #a0aec0; font-size: 0.9rem; margin-top: 0.5rem;">All 6 plugs replaced, resolved P0300 code</div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        // Initial render
+        renderContent();
+    </script>
+</body>
+</html>
