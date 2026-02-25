@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Lunar Phase Visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cyan:#16c79a;--teal:#11698e;--dark:#02040a;--card:#080f18;
+  --glow:rgba(22,199,154,0.2);--star-glow:rgba(200,220,255,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--dark);color:#b0c8e8;font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+canvas#space{position:fixed;inset:0;z-index:0;}
+
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px;}
+
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.back{font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:var(--cyan);text-decoration:none;opacity:0.7;transition:opacity 0.2s;}
+.back:hover{opacity:1;}
+.nav-title{font-family:'Orbitron',monospace;font-size:0.85rem;letter-spacing:0.2em;color:rgba(22,199,154,0.5);}
+
+/* Main orbital scene */
+.scene-wrap{display:flex;justify-content:center;align-items:center;margin:20px 0 32px;}
+canvas#orbital{display:block;}
+
+/* Data band */
+.data-band{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;
+  margin-bottom:28px;
+}
+.data-cell{
+  background:rgba(8,15,24,0.8);border:1px solid rgba(22,199,154,0.15);border-radius:10px;
+  padding:16px;text-align:center;backdrop-filter:blur(4px);
+}
+.data-icon{font-size:1.4rem;margin-bottom:6px;}
+.data-label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;color:rgba(22,199,154,0.4);margin-bottom:4px;}
+.data-val{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:var(--cyan);}
+.data-sub{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(176,200,232,0.4);margin-top:3px;}
+
+/* Month strip */
+.month-label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:rgba(22,199,154,0.35);margin-bottom:14px;}
+.phase-strip{
+  display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;
+}
+.phase-strip::-webkit-scrollbar{height:3px;}
+.phase-strip::-webkit-scrollbar-thumb{background:rgba(22,199,154,0.2);}
+.phase-item{
+  flex:0 0 auto;background:rgba(8,15,24,0.7);border:1px solid rgba(22,199,154,0.1);
+  border-radius:8px;padding:10px 10px 8px;text-align:center;cursor:pointer;
+  transition:border-color 0.2s;min-width:56px;
+}
+.phase-item:hover,.phase-item.today{border-color:rgba(22,199,154,0.5);}
+.phase-item.today{background:rgba(22,199,154,0.05);}
+.phase-emoji{font-size:1.4rem;}
+.phase-day{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:rgba(22,199,154,0.35);margin-top:4px;}
+
+/* Tidal section */
+.tidal-section{background:rgba(8,15,24,0.8);border:1px solid rgba(22,199,154,0.12);border-radius:14px;padding:24px;backdrop-filter:blur(4px);}
+.tidal-label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:rgba(22,199,154,0.4);margin-bottom:16px;}
+canvas#tidalWave{width:100%;height:80px;display:block;}
+
+footer{text-align:center;padding:40px 0 20px;font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(22,199,154,0.2);}
+</style>
+</head>
+<body>
+<canvas id="space"></canvas>
+<div class="wrap">
+  <nav class="nav">
+    <a class="back" href="index.html">← NEXUS HUB</a>
+    <span class="nav-title">🔮 LUNAR PHASE VISUALIZER</span>
+    <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(22,199,154,0.3);" id="live-ts"></span>
+  </nav>
+
+  <div class="scene-wrap">
+    <canvas id="orbital" width="560" height="560"></canvas>
+  </div>
+
+  <div class="data-band">
+    <div class="data-cell">
+      <div class="data-icon">🌙</div>
+      <div class="data-label">PHASE</div>
+      <div class="data-val" id="d-phase">—</div>
+      <div class="data-sub" id="d-day">DAY — OF CYCLE</div>
+    </div>
+    <div class="data-cell">
+      <div class="data-icon">💡</div>
+      <div class="data-label">ILLUMINATION</div>
+      <div class="data-val" id="d-illum">—</div>
+      <div class="data-sub">VISIBLE SURFACE</div>
+    </div>
+    <div class="data-cell">
+      <div class="data-icon">🌊</div>
+      <div class="data-label">TIDAL FORCE</div>
+      <div class="data-val" id="d-tide">—</div>
+      <div class="data-sub">RELATIVE PULL</div>
+    </div>
+    <div class="data-cell">
+      <div class="data-icon">📅</div>
+      <div class="data-label">NEXT FULL MOON</div>
+      <div class="data-val" id="d-next">—</div>
+      <div class="data-sub" id="d-next-days">— DAYS AWAY</div>
+    </div>
+    <div class="data-cell">
+      <div class="data-icon">♾️</div>
+      <div class="data-label">CYCLE PROGRESS</div>
+      <div class="data-val" id="d-pct">—</div>
+      <div class="data-sub">OF 29.53 DAYS</div>
+    </div>
+  </div>
+
+  <div class="month-label">// 30-DAY PHASE CALENDAR</div>
+  <div class="phase-strip" id="phaseStrip"></div>
+
+  <br>
+
+  <div class="tidal-section">
+    <div class="tidal-label">// TIDAL INFLUENCE WAVE — 30 DAY PATTERN</div>
+    <canvas id="tidalWave"></canvas>
+  </div>
+
+  <footer>NEXUS LUNAR VISUALIZER · INTEGRATED INTELLIGENCE SOLUTIONS · CANYON (KANEON)</footer>
+</div>
+
+<script>
+// Space background
+const sp=document.getElementById('space');
+const spCtx=sp.getContext('2d');
+sp.width=window.innerWidth; sp.height=window.innerHeight;
+// Stars
+const stars=[];
+for(let i=0;i<400;i++) stars.push({x:Math.random()*sp.width,y:Math.random()*sp.height,r:Math.random()*1.8,o:Math.random(),s:Math.random()*3+1});
+function drawSpace(){
+  spCtx.fillStyle='#02040a'; spCtx.fillRect(0,0,sp.width,sp.height);
+  stars.forEach(s=>{
+    s.o+=0.005*s.s*(Math.random()>0.5?1:-1);
+    s.o=Math.max(0.05,Math.min(1,s.o));
+    spCtx.beginPath(); spCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    spCtx.fillStyle=`rgba(200,220,255,${s.o})`; spCtx.fill();
+  });
+}
+setInterval(drawSpace,100); drawSpace();
+
+// Moon calc
+function getMoonData(date){
+  const known=new Date('2000-01-06');
+  const diff=(date-known)/(1000*60*60*24);
+  const cycle=((diff%29.53)+29.53)%29.53;
+  const illum=Math.round(50*(1-Math.cos(cycle/29.53*Math.PI*2)));
+  const pct=Math.round(cycle/29.53*100);
+  const names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
+  const emojis=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+  const idx=Math.floor(cycle/29.53*8)%8;
+  const tidal=Math.round(50+50*Math.cos((cycle/29.53-0.5)*Math.PI*2));
+  return {cycle,illum,pct,day:Math.round(cycle),name:names[idx],emoji:emojis[idx],idx,tidal};
+}
+
+// Orbital canvas
+const oc=document.getElementById('orbital');
+const octx=oc.getContext('2d');
+const CX=280,CY=280,EARTH_R=28,MOON_R=20,ORBIT_R=200;
+
+function drawOrbital(data){
+  octx.clearRect(0,0,560,560);
+  const angle=(data.cycle/29.53)*Math.PI*2;
+
+  // Orbit path
+  octx.beginPath(); octx.arc(CX,CY,ORBIT_R,0,Math.PI*2);
+  octx.strokeStyle='rgba(22,199,154,0.08)'; octx.lineWidth=1; octx.stroke();
+
+  // Orbit dashes
+  octx.setLineDash([4,12]);
+  octx.beginPath(); octx.arc(CX,CY,ORBIT_R,0,Math.PI*2);
+  octx.strokeStyle='rgba(22,199,154,0.15)'; octx.lineWidth=1.5; octx.stroke();
+  octx.setLineDash([]);
+
+  // Sun direction indicator
+  const sunAngle=-0.3;
+  const sx=CX+Math.cos(sunAngle)*320, sy=CY+Math.sin(sunAngle)*320;
+  octx.beginPath(); octx.moveTo(CX,CY); octx.lineTo(sx,sy);
+  octx.strokeStyle='rgba(240,192,60,0.06)'; octx.lineWidth=1; octx.stroke();
+
+  // Sun glow (distant)
+  const sunGrd=octx.createRadialGradient(sx,sy,0,sx,sy,80);
+  sunGrd.addColorStop(0,'rgba(240,192,60,0.3)');
+  sunGrd.addColorStop(1,'transparent');
+  octx.fillStyle=sunGrd; octx.fillRect(sx-80,sy-80,160,160);
+  octx.beginPath(); octx.arc(sx,sy,12,0,Math.PI*2);
+  octx.fillStyle='rgba(240,192,60,0.7)'; octx.fill();
+
+  // Earth
+  const earthGrd=octx.createRadialGradient(CX-8,CY-8,2,CX,CY,EARTH_R);
+  earthGrd.addColorStop(0,'#2a6a8a');
+  earthGrd.addColorStop(0.4,'#1a4a6a');
+  earthGrd.addColorStop(0.7,'#0d2a40');
+  earthGrd.addColorStop(1,'#080f18');
+  octx.beginPath(); octx.arc(CX,CY,EARTH_R,0,Math.PI*2);
+  octx.fillStyle=earthGrd; octx.fill();
+  octx.strokeStyle='rgba(22,199,154,0.3)'; octx.lineWidth=1.5; octx.stroke();
+
+  // Earth atmosphere
+  const atmGrd=octx.createRadialGradient(CX,CY,EARTH_R,CX,CY,EARTH_R+10);
+  atmGrd.addColorStop(0,'rgba(22,199,154,0.15)');
+  atmGrd.addColorStop(1,'transparent');
+  octx.beginPath(); octx.arc(CX,CY,EARTH_R+10,0,Math.PI*2);
+  octx.fillStyle=atmGrd; octx.fill();
+
+  // Moon position
+  const mx=CX+Math.cos(angle)*ORBIT_R;
+  const my=CY+Math.sin(angle)*ORBIT_R;
+
+  // Moon glow
+  const moonGlow=octx.createRadialGradient(mx,my,MOON_R,mx,my,MOON_R*3);
+  moonGlow.addColorStop(0,`rgba(220,220,180,${0.15+data.illum/200})`);
+  moonGlow.addColorStop(1,'transparent');
+  octx.fillStyle=moonGlow; octx.fillRect(mx-MOON_R*3,my-MOON_R*3,MOON_R*6,MOON_R*6);
+
+  // Moon base
+  octx.save(); octx.beginPath(); octx.arc(mx,my,MOON_R,0,Math.PI*2); octx.clip();
+  const moonBase=octx.createRadialGradient(mx-5,my-5,2,mx,my,MOON_R);
+  moonBase.addColorStop(0,'#e0e0c0');
+  moonBase.addColorStop(0.6,'#b0b090');
+  moonBase.addColorStop(1,'#707060');
+  octx.fillStyle=moonBase; octx.fill();
+  // shadow
+  const litFraction=data.illum/100;
+  if(data.idx!==4){
+    const shadowX=mx+(data.cycle<14.76?MOON_R*0.8:-MOON_R*0.8);
+    const shGrd=octx.createRadialGradient(shadowX,my,0,shadowX,my,MOON_R*2);
+    shGrd.addColorStop(0,'rgba(4,8,16,0.97)');
+    shGrd.addColorStop(0.5,'rgba(4,8,16,0.7)');
+    shGrd.addColorStop(1,'transparent');
+    octx.fillStyle=shGrd; octx.fillRect(mx-MOON_R,my-MOON_R,MOON_R*2,MOON_R*2);
+  }
+  octx.restore();
+  octx.strokeStyle='rgba(200,200,160,0.4)'; octx.lineWidth=1.5;
+  octx.beginPath(); octx.arc(mx,my,MOON_R,0,Math.PI*2); octx.stroke();
+
+  // Line Earth->Moon
+  octx.beginPath(); octx.moveTo(CX,CY); octx.lineTo(mx,my);
+  octx.strokeStyle='rgba(22,199,154,0.06)'; octx.lineWidth=1; octx.stroke();
+
+  // Phase label near moon
+  octx.font="bold 10px 'Share Tech Mono',monospace";
+  octx.fillStyle='rgba(22,199,154,0.7)';
+  octx.fillText(data.emoji+' '+data.name.toUpperCase(), mx+MOON_R+8, my-4);
+}
+
+function updateData(data){
+  document.getElementById('d-phase').textContent=data.name.toUpperCase();
+  document.getElementById('d-day').textContent=`DAY ${data.day} OF CYCLE`;
+  document.getElementById('d-illum').textContent=data.illum+'%';
+  document.getElementById('d-tide').textContent=data.tidal+'%';
+  document.getElementById('d-pct').textContent=data.pct+'%';
+  // Next full moon
+  const daysToFull=data.cycle<=14.76?(14.76-data.cycle):(29.53-data.cycle+14.76);
+  const nextFull=new Date(Date.now()+daysToFull*864e5);
+  document.getElementById('d-next').textContent=nextFull.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  document.getElementById('d-next-days').textContent=`${Math.ceil(daysToFull)} DAYS AWAY`;
+}
+
+// Phase strip
+function buildStrip(){
+  const strip=document.getElementById('phaseStrip');
+  const emojis=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+  const today=new Date();
+  for(let i=0;i<30;i++){
+    const d=new Date(today); d.setDate(today.getDate()+i);
+    const md=getMoonData(d);
+    const item=document.createElement('div');
+    item.className='phase-item'+(i===0?' today':'');
+    item.innerHTML=`<div class="phase-emoji">${emojis[md.idx]}</div><div class="phase-day">${d.getDate()}</div>`;
+    item.title=md.name;
+    strip.appendChild(item);
+  }
+}
+buildStrip();
+
+// Tidal wave
+function drawTidal(){
+  const canvas=document.getElementById('tidalWave');
+  canvas.width=canvas.offsetWidth||900; canvas.height=80;
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width, h=canvas.height;
+  const today=new Date();
+
+  ctx.fillStyle='rgba(8,15,24,0)'; ctx.fillRect(0,0,w,h);
+
+  // Draw wave
+  ctx.beginPath();
+  ctx.moveTo(0,h);
+  for(let i=0;i<=w;i++){
+    const d=new Date(today); d.setDate(today.getDate()+(i/w*30));
+    const md=getMoonData(d);
+    const y=h-(md.tidal/100)*(h*0.8);
+    if(i===0) ctx.moveTo(i,y); else ctx.lineTo(i,y);
+  }
+  ctx.lineTo(w,h); ctx.closePath();
+  const fillGrd=ctx.createLinearGradient(0,0,0,h);
+  fillGrd.addColorStop(0,'rgba(22,199,154,0.25)');
+  fillGrd.addColorStop(1,'rgba(22,199,154,0.02)');
+  ctx.fillStyle=fillGrd; ctx.fill();
+
+  ctx.beginPath();
+  for(let i=0;i<=w;i++){
+    const d=new Date(today); d.setDate(today.getDate()+(i/w*30));
+    const md=getMoonData(d);
+    const y=h-(md.tidal/100)*(h*0.8);
+    if(i===0) ctx.moveTo(i,y); else ctx.lineTo(i,y);
+  }
+  ctx.strokeStyle='rgba(22,199,154,0.6)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  // Today marker
+  ctx.beginPath(); ctx.moveTo(0,h*0.1); ctx.lineTo(0,h);
+  ctx.strokeStyle='rgba(22,199,154,0.4)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='rgba(22,199,154,0.6)'; ctx.font="9px 'Share Tech Mono',monospace";
+  ctx.fillText('TODAY',4,h*0.08);
+}
+drawTidal();
+
+// Main loop
+function frame(){
+  const data=getMoonData(new Date());
+  drawOrbital(data);
+  updateData(data);
+  document.getElementById('live-ts').textContent=new Date().toISOString().slice(0,19)+'Z';
+}
+frame();
+setInterval(frame,2000);
+</script>
+</body>
+</html>
