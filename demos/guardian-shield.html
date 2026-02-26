@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GUARDIAN SHIELD — Citizen Safety Network</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void: #050810;
+      --deep: #080d1a;
+      --card: #0a1020;
+      --card2: #0d1528;
+      --blue: #1a73e8;
+      --blue-glow: rgba(26,115,232,0.3);
+      --blue-dim: rgba(26,115,232,0.08);
+      --gold: #f4b942;
+      --gold-glow: rgba(244,185,66,0.3);
+      --red: #e74c3c;
+      --red-glow: rgba(231,76,60,0.3);
+      --green: #2ecc71;
+      --green-glow: rgba(46,204,113,0.25);
+      --amber: #f39c12;
+      --purple: #9b59b6;
+      --text: #d0e0f0;
+      --muted: #3a5070;
+      --border: rgba(26,115,232,0.2);
+      --border-gold: rgba(244,185,66,0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--void);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(26,115,232,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,115,232,0.03) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(26,115,232,0.08), transparent 70%); top: -150px; left: -100px; }
+    .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(244,185,66,0.06), transparent 70%); bottom: 0; right: -100px; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 28px;
+      background: rgba(5,8,16,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .shield-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--blue), var(--gold));
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      animation: shieldPulse 3s ease infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes shieldPulse {
+      0%, 100% { filter: drop-shadow(0 0 6px var(--blue-glow)); }
+      50% { filter: drop-shadow(0 0 18px var(--gold-glow)); }
+    }
+
+    .brand-text {
+      font-family: 'Orbitron', monospace;
+      font-size: 1rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 3px;
+    }
+
+    .brand-text span { color: var(--gold); }
+
+    .nav-center {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--green);
+      letter-spacing: 1px;
+    }
+
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: blink 1.5s ease infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    .nav-right {
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .nav-btn {
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+
+    .btn-gold {
+      background: transparent;
+      border: 1px solid var(--border-gold);
+      color: var(--gold);
+    }
+    .btn-gold:hover { background: var(--gold); color: var(--void); }
+
+    /* ── MAIN LAYOUT ── */
+    .app {
+      position: relative; z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      grid-template-rows: auto 1fr;
+      height: calc(100vh - 71px);
+    }
+
+    /* ── MAP AREA ── */
+    .map-area {
+      position: relative;
+      background: var(--deep);
+      overflow: hidden;
+      grid-row: 1 / 3;
+    }
+
+    /* Simulated map */
+    .map-canvas {
+      width: 100%; height: 100%;
+      position: relative;
+      background:
+        radial-gradient(ellipse at 30% 40%, rgba(26,115,232,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 70%, rgba(244,185,66,0.04) 0%, transparent 40%),
+        linear-gradient(180deg, #050912 0%, #080e1c 100%);
+    }
+
+    /* Road grid on map */
+    .map-canvas::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(26,115,232,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,115,232,0.08) 1px, transparent 1px),
+        linear-gradient(rgba(26,115,232,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,115,232,0.04) 1px, transparent 1px);
+      background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+    }
+
+    /* Roads */
+    .road {
+      position: absolute;
+      background: rgba(26,115,232,0.15);
+      border: 1px solid rgba(26,115,232,0.1);
+    }
+
+    .road.h { height: 12px; left: 0; right: 0; }
+    .road.v { width: 12px; top: 0; bottom: 0; }
+    .road.main { background: rgba(26,115,232,0.25); }
+    .road.main.h { height: 20px; }
+    .road.main.v { width: 20px; }
+
+    /* Map pins */
+    .map-pin {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 10;
+      animation: pinFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes pinFloat {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -60%) scale(1.05); }
+    }
+
+    .pin-core {
+      width: 36px; height: 36px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+
+    .map-pin:hover .pin-core { transform: rotate(-45deg) scale(1.2); }
+
+    .pin-emoji {
+      transform: rotate(45deg);
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .pin-pulse {
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      animation: pinPulse 2s ease infinite;
+      pointer-events: none;
+    }
+
+    @keyframes pinPulse {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+
+    .pin-type-speed .pin-core { background: linear-gradient(135deg, var(--amber), #e67e22); }
+    .pin-type-speed .pin-pulse { border: 2px solid var(--amber); }
+
+    .pin-type-misconduct .pin-core { background: linear-gradient(135deg, var(--red), #c0392b); }
+    .pin-type-misconduct .pin-pulse { border: 2px solid var(--red); }
+
+    .pin-type-checkpoint .pin-core { background: linear-gradient(135deg, var(--blue), #1557b0); }
+    .pin-type-checkpoint .pin-pulse { border: 2px solid var(--blue); }
+
+    .pin-type-hazard .pin-core { background: linear-gradient(135deg, var(--green), #27ae60); }
+    .pin-type-hazard .pin-pulse { border: 2px solid var(--green); }
+
+    .pin-type-classaction .pin-core { background: linear-gradient(135deg, var(--purple), #8e44ad); }
+    .pin-type-classaction .pin-pulse { border: 2px solid var(--purple); }
+
+    /* User location */
+    .user-location {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+    }
+
+    .user-dot {
+      width: 16px; height: 16px;
+      background: var(--blue);
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 4px rgba(26,115,232,0.3);
+      position: relative; z-index: 2;
+    }
+
+    .user-ring {
+      position: absolute;
+      inset: -20px;
+      border-radius: 50%;
+      border: 2px solid rgba(26,115,232,0.3);
+      animation: userRing 2.5s ease infinite;
+    }
+
+    @keyframes userRing {
+      0% { transform: scale(0.5); opacity: 0.8; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+
+    /* Map tooltip */
+    .map-tooltip {
+      position: absolute;
+      background: var(--card2);
+      border: 1px solid var(--border-gold);
+      border-radius: 10px;
+      padding: 12px 16px;
+      min-width: 200px;
+      z-index: 50;
+      display: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    .map-tooltip.show { display: block; }
+
+    .tooltip-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+
+    .tooltip-body { font-size: 0.85rem; color: var(--text); line-height: 1.4; }
+    .tooltip-time { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--muted); margin-top: 6px; }
+
+    .tooltip-amend {
+      margin-top: 8px;
+      padding: 4px 8px;
+      background: rgba(155,89,182,0.15);
+      border: 1px solid rgba(155,89,182,0.3);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: #c39bd3;
+    }
+
+    /* Map overlays */
+    .map-overlay-top {
+      position: absolute;
+      top: 16px; left: 16px; right: 16px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    .map-overlay-top > * { pointer-events: all; }
+
+    .location-badge {
+      background: rgba(5,8,16,0.85);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--blue);
+      letter-spacing: 1px;
+      backdrop-filter: blur(10px);
+    }
+
+    .alert-count-badge {
+      background: rgba(5,8,16,0.85);
+      border: 1px solid rgba(231,76,60,0.3);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--red);
+      letter-spacing: 1px;
+      backdrop-filter: blur(10px);
+    }
+
+    .map-legend {
+      position: absolute;
+      bottom: 16px; left: 16px;
+      background: rgba(5,8,16,0.85);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      z-index: 30;
+      backdrop-filter: blur(10px);
+    }
+
+    .legend-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .legend-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Report button */
+    .report-fab {
+      position: absolute;
+      bottom: 24px; right: 24px;
+      z-index: 30;
+    }
+
+    .fab-btn {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--gold));
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 24px rgba(26,115,232,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .fab-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 32px rgba(26,115,232,0.6);
+    }
+
+    /* ── SIDE PANEL ── */
+    .side-panel {
+      background: var(--card);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      grid-row: 1 / 3;
+    }
+
+    .panel-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: rgba(5,8,16,0.5);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px 8px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.5rem;
+      letter-spacing: 1px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+      text-transform: uppercase;
+    }
+
+    .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .tab:hover { color: var(--text); }
+
+    .tab-content { display: none; flex: 1; overflow-y: auto; padding: 16px; }
+    .tab-content.active { display: block; }
+    .tab-content::-webkit-scrollbar { width: 3px; }
+    .tab-content::-webkit-scrollbar-thumb { background: var(--border); }
+
+    /* Feed items */
+    .feed-item {
+      background: var(--card2);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+      border-left: 3px solid;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .feed-item:hover { transform: translateX(-3px); box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+
+    .feed-item.speed { border-color: var(--amber); }
+    .feed-item.misconduct { border-color: var(--red); }
+    .feed-item.checkpoint { border-color: var(--blue); }
+    .feed-item.hazard { border-color: var(--green); }
+    .feed-item.classaction { border-color: var(--purple); }
+
+    .feed-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .feed-type {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .feed-time {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+    }
+
+    .feed-body { font-size: 0.85rem; line-height: 1.4; color: var(--text); }
+
+    .feed-footer {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .confirm-btn {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      border: 1px solid var(--border-gold);
+      color: var(--gold);
+      background: transparent;
+      transition: all 0.2s;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .confirm-btn:hover { background: var(--gold); color: var(--void); }
+
+    .confirm-count {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .amend-tag {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: rgba(155,89,182,0.15);
+      border: 1px solid rgba(155,89,182,0.3);
+      color: #c39bd3;
+    }
+
+    /* Rights section */
+    .rights-item {
+      background: var(--card2);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    .rights-item:hover { border-color: var(--purple); }
+
+    .rights-item.open .rights-body { display: block; }
+
+    .rights-header {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .amend-number {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--gold);
+      min-width: 40px;
+    }
+
+    .amend-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      color: var(--text);
+    }
+
+    .amend-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .rights-body {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .rights-body p {
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .rights-tip {
+      padding: 8px 12px;
+      background: rgba(46,204,113,0.08);
+      border: 1px solid rgba(46,204,113,0.2);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+
+    /* Lawyer AI button */
+    .lawyer-ai-card {
+      background: linear-gradient(135deg, rgba(155,89,182,0.15), rgba(26,115,232,0.1));
+      border: 1px solid rgba(155,89,182,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .lawyer-ai-card:hover {
+      border-color: var(--purple);
+      box-shadow: 0 0 24px rgba(155,89,182,0.2);
+      transform: translateY(-2px);
+    }
+
+    .lawyer-icon { font-size: 2rem; margin-bottom: 8px; }
+
+    .lawyer-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      color: var(--purple);
+      margin-bottom: 6px;
+    }
+
+    .lawyer-sub { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
+
+    .lawyer-btn {
+      margin-top: 12px;
+      display: inline-block;
+      padding: 8px 20px;
+      background: transparent;
+      border: 1px solid var(--purple);
+      border-radius: 6px;
+      color: var(--purple);
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .lawyer-btn:hover { background: var(--purple); color: #fff; }
+
+    /* Class action section */
+    .class-action-card {
+      background: linear-gradient(135deg, rgba(231,76,60,0.1), rgba(155,89,182,0.08));
+      border: 1px solid rgba(231,76,60,0.25);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .ca-header {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      color: var(--red);
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .ca-progress {
+      background: rgba(255,255,255,0.06);
+      border-radius: 4px;
+      height: 6px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .ca-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--red), var(--purple));
+      transition: width 0.5s ease;
+    }
+
+    .ca-stats {
+      display: flex; justify-content: space-between;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .ca-join-btn {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid var(--red);
+      border-radius: 6px;
+      color: var(--red);
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .ca-join-btn:hover { background: var(--red); color: #fff; }
+
+    /* ── REPORT MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: var(--card2);
+      border: 1px solid var(--border-gold);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      overflow: hidden;
+      animation: modalIn 0.3s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(26,115,232,0.08), rgba(244,185,66,0.05));
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .modal-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 3px;
+      color: var(--gold);
+    }
+
+    .modal-close {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+    .modal-body { padding: 24px; }
+
+    .report-types {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .report-type-btn {
+      padding: 14px 10px;
+      border-radius: 10px;
+      border: 2px solid;
+      background: transparent;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .report-type-btn .rt-icon { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+    .report-type-btn .rt-label { font-family: 'Orbitron', monospace; font-size: 0.55rem; letter-spacing: 2px; display: block; }
+    .report-type-btn .rt-amend { font-size: 0.65rem; color: var(--muted); display: block; margin-top: 4px; }
+
+    .report-type-btn.speed { border-color: rgba(243,156,18,0.3); color: var(--amber); }
+    .report-type-btn.speed:hover, .report-type-btn.speed.selected { background: rgba(243,156,18,0.1); border-color: var(--amber); }
+
+    .report-type-btn.misconduct { border-color: rgba(231,76,60,0.3); color: var(--red); }
+    .report-type-btn.misconduct:hover, .report-type-btn.misconduct.selected { background: rgba(231,76,60,0.1); border-color: var(--red); }
+
+    .report-type-btn.checkpoint { border-color: rgba(26,115,232,0.3); color: var(--blue); }
+    .report-type-btn.checkpoint:hover, .report-type-btn.checkpoint.selected { background: rgba(26,115,232,0.1); border-color: var(--blue); }
+
+    .report-type-btn.hazard { border-color: rgba(46,204,113,0.3); color: var(--green); }
+    .report-type-btn.hazard:hover, .report-type-btn.hazard.selected { background: rgba(46,204,113,0.1); border-color: var(--green); }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 3px;
+      color: var(--blue);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--blue); }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-select option { background: #0d1528; }
+
+    .anon-toggle {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      transition: border-color 0.3s;
+    }
+
+    .anon-toggle:hover { border-color: var(--blue); }
+
+    .toggle-switch {
+      width: 36px; height: 20px;
+      background: var(--blue);
+      border-radius: 10px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: left 0.2s;
+    }
+
+    .toggle-switch.off { background: var(--muted); }
+    .toggle-switch.off .toggle-knob { left: 19px; }
+
+    .anon-text { font-size: 0.85rem; }
+    .anon-text span { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--muted); display: block; margin-top: 2px; }
+
+    .evidence-row {
+      display: flex; gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .evidence-btn {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .evidence-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .evidence-btn span { display: block; font-size: 1.2rem; margin-bottom: 4px; }
+
+    .submit-report-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--blue), #1557b0);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 16px rgba(26,115,232,0.3);
+    }
+
+    .submit-report-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(26,115,232,0.5);
+    }
+
+    /* Lawyer AI Modal */
+    .lawyer-modal .modal-header { background: linear-gradient(135deg, rgba(155,89,182,0.15), rgba(26,115,232,0.08)); }
+    .lawyer-modal .modal-title { color: var(--purple); }
+
+    .lawyer-chat {
+      height: 300px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .lawyer-msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      max-width: 85%;
+    }
+
+    .lawyer-msg.ai {
+      background: rgba(155,89,182,0.12);
+      border: 1px solid rgba(155,89,182,0.2);
+      color: var(--text);
+      align-self: flex-start;
+    }
+
+    .lawyer-msg.user {
+      background: rgba(26,115,232,0.12);
+      border: 1px solid rgba(26,115,232,0.2);
+      color: var(--text);
+      align-self: flex-end;
+    }
+
+    .lawyer-input-row {
+      display: flex; gap: 8px;
+    }
+
+    .lawyer-input {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .lawyer-input:focus { border-color: var(--purple); }
+
+    .lawyer-send {
+      padding: 10px 16px;
+      background: transparent;
+      border: 1px solid var(--purple);
+      border-radius: 8px;
+      color: var(--purple);
+      font-family: 'Orbitron', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .lawyer-send:hover { background: var(--purple); color: #fff; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .app { grid-template-columns: 1fr; grid-template-rows: 50vh 1fr; }
+      .map-area { grid-row: 1; }
+      .side-panel { grid-row: 2; grid-column: 1; }
+      nav { padding: 12px 16px; }
+      .nav-center { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="shield-icon">🛡️</div>
+    <div>
+      <div class="brand-text">GUARDIAN <span>SHIELD</span></div>
+    </div>
+  </div>
+  <div class="nav-center">
+    <div class="live-dot"></div>
+    <span>COMMUNITY NETWORK ACTIVE</span>
+  </div>
+  <div class="nav-right">
+    <a href="/demos/" class="nav-btn btn-ghost">← DEMOS</a>
+    <button class="nav-btn btn-gold" onclick="openModal('reportModal')">+ REPORT</button>
+  </div>
+</nav>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- MAP -->
+  <div class="map-area">
+    <div class="map-canvas" id="mapCanvas">
+
+      <!-- Roads -->
+      <div class="road h main" style="top:30%"></div>
+      <div class="road h" style="top:50%"></div>
+      <div class="road h" style="top:70%"></div>
+      <div class="road v main" style="left:35%"></div>
+      <div class="road v" style="left:60%"></div>
+      <div class="road v" style="left:80%"></div>
+
+      <!-- User Location -->
+      <div class="user-location" style="left:50%;top:50%">
+        <div class="user-ring"></div>
+        <div class="user-dot"></div>
+      </div>
+
+      <!-- Map pins (pre-populated) -->
+      <div class="map-pin pin-type-speed" style="left:28%;top:28%" onclick="showTooltip(event,'Speed Trap','Officer clocked multiple vehicles on I-40 westbound. Radar gun visible.','2 MIN AGO','','3 confirmations')">
+        <div class="pin-pulse"></div>
+        <div class="pin-core"><span class="pin-emoji">📡</span></div>
+      </div>
+
+      <div class="map-pin pin-type-misconduct" style="left:65%;top:35%" onclick="showTooltip(event,'Misconduct Report','Unlawful stop, no probable cause stated. Officer refused badge number. Recording denied.','8 MIN AGO','4th Amendment','7 confirmations')">
+        <div class="pin-pulse"></div>
+        <div class="pin-core"><span class="pin-emoji">⚠️</span></div>
+      </div>
+
+      <div class="map-pin pin-type-checkpoint" style="left:40%;top:65%" onclick="showTooltip(event,'Checkpoint','DUI checkpoint on Main St. Moving slowly, 15 min delay reported.','12 MIN AGO','','5 confirmations')">
+        <div class="pin-pulse"></div>
+        <div class="pin-core"><span class="pin-emoji">🚔</span></div>
+      </div>
+
+      <div class="map-pin pin-type-hazard" style="left:75%;top:60%" onclick="showTooltip(event,'Road Hazard','Large pothole in right lane. Debris visible. Use left lane.','18 MIN AGO','','4 confirmations')">
+        <div class="pin-pulse"></div>
+        <div class="pin-core"><span class="pin-emoji">⚡</span></div>
+      </div>
+
+      <div class="map-pin pin-type-classaction" style="left:55%;top:28%" onclick="showTooltip(event,'Class Action Zone','Pattern of unlawful stops detected in this area. 12 reports in 30 days. Legal action forming.','ONGOING','14th Amendment','12 confirmations')">
+        <div class="pin-pulse"></div>
+        <div class="pin-core"><span class="pin-emoji">⚖️</span></div>
+      </div>
+
+      <!-- Tooltip -->
+      <div class="map-tooltip" id="mapTooltip">
+        <div class="tooltip-title" id="ttTitle"></div>
+        <div class="tooltip-body" id="ttBody"></div>
+        <div class="tooltip-time" id="ttTime"></div>
+        <div class="tooltip-amend" id="ttAmend" style="display:none"></div>
+      </div>
+
+      <!-- Overlays -->
+      <div class="map-overlay-top">
+        <div class="location-badge" id="locationBadge">📍 Locating...</div>
+        <div class="alert-count-badge" id="alertBadge">⚠ 5 ACTIVE ALERTS</div>
+      </div>
+
+      <!-- Legend -->
+      <div class="map-legend">
+        <div class="legend-title">// MAP KEY</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Speed Trap</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Misconduct</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Checkpoint</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Hazard</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Class Action Zone</div>
+      </div>
+
+      <!-- FAB -->
+      <div class="report-fab">
+        <button class="fab-btn" onclick="openModal('reportModal')" title="Submit Report">📢</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+    <div class="panel-tabs">
+      <div class="tab active" onclick="switchTab('feed')">FEED</div>
+      <div class="tab" onclick="switchTab('rights')">RIGHTS</div>
+      <div class="tab" onclick="switchTab('action')">ACTION</div>
+    </div>
+
+    <!-- FEED TAB -->
+    <div class="tab-content active" id="tab-feed">
+
+      <div class="feed-item misconduct" onclick="highlightPin()">
+        <div class="feed-header">
+          <div class="feed-type" style="color:var(--red)">⚠️ MISCONDUCT</div>
+          <div class="feed-time">8 min ago</div>
+        </div>
+        <div class="feed-body">Unlawful stop reported. No probable cause. Officer refused badge number. Attempted to block recording device.</div>
+        <div class="feed-footer">
+          <button class="confirm-btn" onclick="confirmReport(this)">✓ Confirm</button>
+          <span class="confirm-count">7 confirmations</span>
+          <span class="amend-tag">4th Amend.</span>
+        </div>
+      </div>
+
+      <div class="feed-item classaction">
+        <div class="feed-header">
+          <div class="feed-type" style="color:var(--purple)">⚖️ CLASS ACTION FORMING</div>
+          <div class="feed-time">Ongoing</div>
+        </div>
+        <div class="feed-body">Pattern detected: 12 unlawful stop reports from same precinct in 30 days. Anonymous pool forming for collective legal action.</div>
+        <div class="feed-footer">
+          <button class="confirm-btn" style="border-color:rgba(155,89,182,0.5);color:var(--purple)" onclick="openModal('reportModal')">⚖ Join Pool</button>
+          <span class="confirm-count">12 reports</span>
+          <span class="amend-tag">14th Amend.</span>
+        </div>
+      </div>
+
+      <div class="feed-item speed">
+        <div class="feed-header">
+          <div class="feed-type" style="color:var(--amber)">📡 SPEED TRAP</div>
+          <div class="feed-time">2 min ago</div>
+        </div>
+        <div class="feed-body">Radar unit on I-40 westbound near exit 24. Officer positioned behind billboard. Active pulling vehicles.</div>
+        <div class="feed-footer">
+          <button class="confirm-btn" onclick="confirmReport(this)">✓ Confirm</button>
+          <span class="confirm-count">3 confirmations</span>
+        </div>
+      </div>
+
+      <div class="feed-item checkpoint">
+        <div class="feed-header">
+          <div class="feed-type" style="color:var(--blue)">🚔 CHECKPOINT</div>
+          <div class="feed-time">12 min ago</div>
+        </div>
+        <div class="feed-body">DUI checkpoint on Main St heading south. All lanes slowed. Approx 15 min delay. Officers checking IDs.</div>
+        <div class="feed-footer">
+          <button class="confirm-btn" onclick="confirmReport(this)">✓ Confirm</button>
+          <span class="confirm-count">5 confirmations</span>
+        </div>
+      </div>
+
+      <div class="feed-item hazard">
+        <div class="feed-header">
+          <div class="feed-type" style="color:var(--green)">⚡ ROAD HAZARD</div>
+          <div class="feed-time">18 min ago</div>
+        </div>
+        <div class="feed-body">Large pothole right lane, debris scattered. Stay left. Not yet marked by city.</div>
+        <div class="feed-footer">
+          <button class="confirm-btn" onclick="confirmReport(this)">✓ Confirm</button>
+          <span class="confirm-count">4 confirmations</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHTS TAB -->
+    <div class="tab-content" id="tab-rights">
+
+      <div class="lawyer-ai-card" onclick="openModal('lawyerModal')">
+        <div class="lawyer-icon">⚖️</div>
+        <div class="lawyer-title">LEGAL AI ADVISOR</div>
+        <div class="lawyer-sub">Know your rights instantly. Ask about your situation and get clear, plain-language guidance backed by constitutional law.</div>
+        <div class="lawyer-btn">ASK LEGAL AI →</div>
+      </div>
+
+      <div class="rights-item" onclick="toggleRights(this)">
+        <div class="rights-header">
+          <div class="amend-number">4th</div>
+          <div>
+            <div class="amend-title">UNLAWFUL SEARCH & SEIZURE</div>
+            <div class="amend-sub">Your right to be free from unreasonable stops</div>
+          </div>
+        </div>
+        <div class="rights-body">
+          <p>Police must have <strong>reasonable suspicion</strong> to stop you and <strong>probable cause</strong> to search you or your vehicle. "You looked suspicious" is not enough.</p>
+          <div class="rights-tip">✓ You can ask: "Am I being detained or am I free to go?"</div>
+          <div class="rights-tip">✓ You can refuse a search — say clearly: "I do not consent to a search."</div>
+          <div class="rights-tip">✓ You have the right to record police in public spaces.</div>
+        </div>
+      </div>
+
+      <div class="rights-item" onclick="toggleRights(this)">
+        <div class="rights-header">
+          <div class="amend-number">5th</div>
+          <div>
+            <div class="amend-title">RIGHT TO REMAIN SILENT</div>
+            <div class="amend-sub">You cannot be forced to incriminate yourself</div>
+          </div>
+        </div>
+        <div class="rights-body">
+          <p>You have the right to remain silent during any police interaction. You do not have to answer questions beyond identifying yourself in states with stop-and-identify laws.</p>
+          <div class="rights-tip">✓ Say clearly: "I am exercising my right to remain silent."</div>
+          <div class="rights-tip">✓ Ask for a lawyer before any questioning.</div>
+          <div class="rights-tip">✓ Silence cannot be used as evidence of guilt.</div>
+        </div>
+      </div>
+
+      <div class="rights-item" onclick="toggleRights(this)">
+        <div class="rights-header">
+          <div class="amend-number">1st</div>
+          <div>
+            <div class="amend-title">RIGHT TO RECORD</div>
+            <div class="amend-sub">Recording police in public is constitutionally protected</div>
+          </div>
+        </div>
+        <div class="rights-body">
+          <p>You have the First Amendment right to record police performing their duties in public. Officers cannot legally order you to stop recording or confiscate your device without a warrant.</p>
+          <div class="rights-tip">✓ Hold your ground calmly: "I have a right to record in public."</div>
+          <div class="rights-tip">✓ Do not physically interfere — record from a safe distance.</div>
+          <div class="rights-tip">✓ Back up footage immediately to cloud storage.</div>
+        </div>
+      </div>
+
+      <div class="rights-item" onclick="toggleRights(this)">
+        <div class="rights-header">
+          <div class="amend-number">14th</div>
+          <div>
+            <div class="amend-title">EQUAL PROTECTION</div>
+            <div class="amend-sub">No discrimination in law enforcement</div>
+          </div>
+        </div>
+        <div class="rights-body">
+          <p>The 14th Amendment guarantees equal protection under the law. Selective enforcement based on race, religion, national origin, or other protected characteristics is unconstitutional.</p>
+          <div class="rights-tip">✓ Document the stop: time, location, officer badge, reason given.</div>
+          <div class="rights-tip">✓ Pattern evidence is powerful — this app helps build that case.</div>
+          <div class="rights-tip">✓ File a complaint with the department's internal affairs.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ACTION TAB -->
+    <div class="tab-content" id="tab-action">
+
+      <div class="class-action-card">
+        <div class="ca-header">🔥 ACTIVE CLASS ACTION — PRECINCT 7</div>
+        <div class="ca-progress"><div class="ca-bar" style="width:60%"></div></div>
+        <div class="ca-stats">
+          <span>12 / 20 REQUIRED REPORTS</span>
+          <span>60% TO THRESHOLD</span>
+        </div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;">Pattern: Unlawful stops without probable cause. Same area, multiple officers. Reports span 30 days.</div>
+        <button class="ca-join-btn" onclick="joinClassAction()">JOIN ANONYMOUSLY →</button>
+      </div>
+
+      <div class="class-action-card" style="border-color:rgba(244,185,66,0.2)">
+        <div class="ca-header" style="color:var(--amber)">📋 FORMING — HIGHWAY 40 SPEED TRAP PATTERN</div>
+        <div class="ca-progress"><div class="ca-bar" style="width:30%;background:linear-gradient(90deg,var(--amber),var(--gold))"></div></div>
+        <div class="ca-stats">
+          <span>6 / 20 REQUIRED REPORTS</span>
+          <span>30% TO THRESHOLD</span>
+        </div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;">Suspected quota enforcement. Same location, same shift window. Revenue generation pattern flagged.</div>
+        <button class="ca-join-btn" style="border-color:var(--amber);color:var(--amber)" onclick="joinClassAction()">JOIN ANONYMOUSLY →</button>
+      </div>
+
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;">
+        <div style="font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--blue);margin-bottom:10px;">📞 FILE OFFICIAL COMPLAINT</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;line-height:1.5;">Submit to department internal affairs, civilian review board, or the DOJ Civil Rights Division.</div>
+        <button class="ca-join-btn" style="border-color:var(--blue);color:var(--blue)" onclick="alert('In the full version, this connects to official complaint filing portals.')">FILE COMPLAINT →</button>
+      </div>
+
+      <div class="lawyer-ai-card" onclick="openModal('lawyerModal')" style="margin-bottom:0">
+        <div class="lawyer-icon">⚖️</div>
+        <div class="lawyer-title">CONSULT LEGAL AI</div>
+        <div class="lawyer-sub">Get personalized guidance on your situation, filing options, and next steps.</div>
+        <div class="lawyer-btn">OPEN LEGAL AI →</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-overlay" id="reportModal" onclick="closeModalOutside(event,'reportModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">// SUBMIT REPORT</div>
+      <button class="modal-close" onclick="closeModal('reportModal')">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="report-types">
+        <button class="report-type-btn speed" onclick="selectType(this,'speed')">
+          <span class="rt-icon">📡</span>
+          <span class="rt-label">SPEED TRAP</span>
+        </button>
+        <button class="report-type-btn misconduct selected" onclick="selectType(this,'misconduct')">
+          <span class="rt-icon">⚠️</span>
+          <span class="rt-label">MISCONDUCT</span>
+          <span class="rt-amend">4th / 14th Amend.</span>
+        </button>
+        <button class="report-type-btn checkpoint" onclick="selectType(this,'checkpoint')">
+          <span class="rt-icon">🚔</span>
+          <span class="rt-label">CHECKPOINT</span>
+        </button>
+        <button class="report-type-btn hazard" onclick="selectType(this,'hazard')">
+          <span class="rt-icon">⚡</span>
+          <span class="rt-label">HAZARD</span>
+        </button>
+      </div>
+
+      <div class="anon-toggle" onclick="toggleAnon(this)">
+        <div class="toggle-switch" id="anonSwitch"><div class="toggle-knob"></div></div>
+        <div class="anon-text">
+          Submit Anonymously
+          <span>Your identity is never stored or shared without your consent</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" placeholder="Describe what happened — location, officer behavior, what was said..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Badge / Car Number (if known)</label>
+        <input type="text" class="form-input" placeholder="Optional — helps build pattern data">
+      </div>
+
+      <div class="evidence-row">
+        <button class="evidence-btn"><span>📷</span>Add Photo</button>
+        <button class="evidence-btn"><span>🎥</span>Add Video</button>
+        <button class="evidence-btn"><span>🎙️</span>Add Audio</button>
+      </div>
+
+      <button class="submit-report-btn" onclick="submitReport()">SUBMIT REPORT →</button>
+
+    </div>
+  </div>
+</div>
+
+<!-- LAWYER AI MODAL -->
+<div class="modal-overlay" id="lawyerModal" onclick="closeModalOutside(event,'lawyerModal')">
+  <div class="modal lawyer-modal">
+    <div class="modal-header">
+      <div class="modal-title">// LEGAL AI ADVISOR</div>
+      <button class="modal-close" onclick="closeModal('lawyerModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="lawyer-chat" id="lawyerChat">
+        <div class="lawyer-msg ai">
+          Hello. I'm your Legal AI Advisor — powered by NEXUS.<br><br>
+          I can help you understand your constitutional rights, guide you through what to do during or after a police encounter, and explain your options for filing complaints or joining class action cases.<br><br>
+          <strong>What's your situation?</strong>
+        </div>
+      </div>
+      <div class="lawyer-input-row">
+        <input type="text" class="lawyer-input" id="lawyerInput" placeholder="Describe your situation or ask a question..." onkeydown="if(event.key==='Enter')sendLawyerMsg()">
+        <button class="lawyer-send" onclick="sendLawyerMsg()">SEND →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── LOCATION ─────────────────────────────────────────────────────────────────
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude, longitude } = pos.coords;
+      document.getElementById('locationBadge').textContent =
+        `📍 ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+    }, () => {
+      document.getElementById('locationBadge').textContent = '📍 Location unavailable';
+    });
+  }
+
+  // ── TABS ─────────────────────────────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => {
+      const names = ['feed','rights','action'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  // ── MODALS ────────────────────────────────────────────────────────────────────
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  function closeModalOutside(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+  // ── MAP TOOLTIP ───────────────────────────────────────────────────────────────
+  function showTooltip(e, title, body, time, amend, confirms) {
+    e.stopPropagation();
+    const tt = document.getElementById('mapTooltip');
+    const pin = e.currentTarget;
+    const rect = pin.getBoundingClientRect();
+    const mapRect = document.getElementById('mapCanvas').getBoundingClientRect();
+
+    document.getElementById('ttTitle').textContent = title;
+    document.getElementById('ttBody').textContent = body;
+    document.getElementById('ttTime').textContent = `${time} · ${confirms}`;
+
+    const amendEl = document.getElementById('ttAmend');
+    if (amend) { amendEl.textContent = amend + ' applies'; amendEl.style.display = 'block'; }
+    else { amendEl.style.display = 'none'; }
+
+    const left = rect.left - mapRect.left + 20;
+    const top = rect.top - mapRect.top - 10;
+    tt.style.left = Math.min(left, mapRect.width - 220) + 'px';
+    tt.style.top = Math.max(top - 120, 10) + 'px';
+    tt.classList.add('show');
+  }
+
+  document.getElementById('mapCanvas').addEventListener('click', () => {
+    document.getElementById('mapTooltip').classList.remove('show');
+  });
+
+  // ── CONFIRM REPORT ────────────────────────────────────────────────────────────
+  function confirmReport(btn) {
+    const countEl = btn.nextElementSibling;
+    const current = parseInt(countEl.textContent);
+    countEl.textContent = (current + 1) + ' confirmations';
+    btn.textContent = '✓ Confirmed';
+    btn.style.background = 'rgba(46,204,113,0.15)';
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
+    btn.disabled = true;
+    document.getElementById('alertBadge').textContent = '⚠ 5 ACTIVE ALERTS';
+  }
+
+  // ── TOGGLE ANON ───────────────────────────────────────────────────────────────
+  function toggleAnon(el) {
+    const sw = document.getElementById('anonSwitch');
+    sw.classList.toggle('off');
+  }
+
+  // ── SELECT TYPE ───────────────────────────────────────────────────────────────
+  function selectType(el, type) {
+    document.querySelectorAll('.report-type-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ── SUBMIT REPORT ─────────────────────────────────────────────────────────────
+  function submitReport() {
+    closeModal('reportModal');
+    // Add new pin to map
+    const types = ['speed','misconduct','checkpoint','hazard'];
+    const emojis = { speed:'📡', misconduct:'⚠️', checkpoint:'🚔', hazard:'⚡' };
+    const selected = document.querySelector('.report-type-btn.selected');
+    const type = selected ? selected.classList[1] : 'hazard';
+    const emoji = emojis[type];
+
+    const pin = document.createElement('div');
+    pin.className = `map-pin pin-type-${type}`;
+    pin.style.left = (35 + Math.random() * 30) + '%';
+    pin.style.top = (35 + Math.random() * 30) + '%';
+    pin.innerHTML = `<div class="pin-pulse"></div><div class="pin-core"><span class="pin-emoji">${emoji}</span></div>`;
+    pin.onclick = (e) => showTooltip(e, type.toUpperCase(), 'Just reported by community member. Awaiting confirmations.', 'JUST NOW', '', '0 confirmations');
+    document.getElementById('mapCanvas').appendChild(pin);
+
+    // Update count
+    const badge = document.getElementById('alertBadge');
+    const count = parseInt(badge.textContent.match(/\d+/)[0]) + 1;
+    badge.textContent = `⚠ ${count} ACTIVE ALERTS`;
+
+    // Add to feed
+    addFeedItem(type, emoji);
+  }
+
+  function addFeedItem(type, emoji) {
+    const feed = document.getElementById('tab-feed');
+    const item = document.createElement('div');
+    item.className = `feed-item ${type}`;
+    item.innerHTML = `
+      <div class="feed-header">
+        <div class="feed-type">${emoji} ${type.toUpperCase()}</div>
+        <div class="feed-time">Just now</div>
+      </div>
+      <div class="feed-body">Community report submitted. Location confirmed via GPS. Awaiting peer confirmation.</div>
+      <div class="feed-footer">
+        <button class="confirm-btn" onclick="confirmReport(this)">✓ Confirm</button>
+        <span class="confirm-count">0 confirmations</span>
+      </div>
+    `;
+    feed.insertBefore(item, feed.firstChild);
+  }
+
+  // ── JOIN CLASS ACTION ─────────────────────────────────────────────────────────
+  function joinClassAction() {
+    const bars = document.querySelectorAll('.ca-bar');
+    bars[0].style.width = '65%';
+    const stats = document.querySelectorAll('.ca-stats span');
+    stats[0].textContent = '13 / 20 REQUIRED REPORTS';
+    stats[1].textContent = '65% TO THRESHOLD';
+    alert('You\'ve been anonymously added to the class action pool. You will be notified when the threshold is reached and legal action is initiated.');
+  }
+
+  // ── TOGGLE RIGHTS ─────────────────────────────────────────────────────────────
+  function toggleRights(el) {
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.rights-item').forEach(r => r.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+  }
+
+  // ── HIGHLIGHT PIN ─────────────────────────────────────────────────────────────
+  function highlightPin() {
+    const pin = document.querySelector('.pin-type-misconduct');
+    if (pin) { pin.style.zIndex = 50; pin.style.transform = 'translate(-50%,-50%) scale(1.4)'; setTimeout(() => { pin.style.transform = ''; pin.style.zIndex = ''; }, 1000); }
+  }
+
+  // ── LAWYER AI ─────────────────────────────────────────────────────────────────
+  const legalResponses = {
+    keywords: [
+      { k: ['stop','pull','pulled over'], r: "If you've been pulled over, you have rights. You must provide your license, registration, and insurance — but you do not have to answer other questions. Clearly state: \"I am exercising my right to remain silent.\" If you believe the stop was unlawful (no traffic violation, no reasonable suspicion), note the time, location, and badge number and file a report here immediately." },
+      { k: ['search','searching','searched'], r: "You can refuse a vehicle search if police don't have a warrant or probable cause. Say clearly and calmly: \"I do not consent to a search.\" This protects your 4th Amendment rights and does not give them permission to search — if they proceed anyway, that evidence may be suppressed in court." },
+      { k: ['record','recording','film','filmed'], r: "You have a First Amendment right to record police in any public space. If an officer orders you to stop, calmly state: \"I have a constitutional right to record police in public.\" They cannot legally confiscate your phone without a warrant. Immediately back up your footage to cloud storage." },
+      { k: ['4th','fourth','unreasonable'], r: "The 4th Amendment protects you from unreasonable searches and seizures. Police need reasonable suspicion to stop you and probable cause to search you. If neither was present, any evidence gathered may be inadmissible. Document everything and consider joining the class action pool if this is a recurring pattern in your area." },
+      { k: ['14th','fourteenth','discrimination','racial'], r: "The 14th Amendment guarantees equal protection. Selective enforcement based on race, ethnicity, or other protected characteristics is unconstitutional. Pattern evidence is key — this is exactly why this app exists. Your anonymous report contributes to building the case. Consider consulting a civil rights attorney." },
+      { k: ['class action','lawsuit','sue','suing'], r: "Class action suits against police departments require documented patterns — multiple people, same type of violation, same area or officers. This app anonymously pools reports to identify those patterns. When we hit the threshold (20 confirmed reports), we connect the pool with civil rights attorneys who handle these cases, often on contingency (no upfront cost to you)." },
+      { k: ['rights','right'], r: "Your key constitutional protections during police encounters: 4th Amendment (unreasonable search & seizure), 5th Amendment (right to silence, self-incrimination), 1st Amendment (right to record in public), 14th Amendment (equal protection, due process). Tap the RIGHTS tab for detailed guidance on each." },
+    ],
+    default: "That's an important situation. In general, stay calm, clearly invoke your rights verbally, document everything you can, and report the incident here to contribute to pattern detection. For specific legal advice, I'd recommend connecting with a civil rights attorney — many offer free consultations for police misconduct cases. Would you like more information on any specific right or next step?"
+  };
+
+  function sendLawyerMsg() {
+    const input = document.getElementById('lawyerInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const chat = document.getElementById('lawyerChat');
+
+    const userMsg = document.createElement('div');
+    userMsg.className = 'lawyer-msg user';
+    userMsg.textContent = text;
+    chat.appendChild(userMsg);
+    input.value = '';
+    chat.scrollTop = chat.scrollHeight;
+
+    setTimeout(() => {
+      const lower = text.toLowerCase();
+      let response = legalResponses.default;
+      for (const item of legalResponses.keywords) {
+        if (item.k.some(k => lower.includes(k))) { response = item.r; break; }
+      }
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'lawyer-msg ai';
+      aiMsg.innerHTML = response;
+      chat.appendChild(aiMsg);
+      chat.scrollTop = chat.scrollHeight;
+    }, 800);
+  }
+</script>
+
+</body>
+</html>

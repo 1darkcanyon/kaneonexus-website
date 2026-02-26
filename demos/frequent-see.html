@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FREQUENT SEE — See What Others Ignore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void: #04060e;
+      --deep: #070a14;
+      --card: #0a0f1e;
+      --card2: #0d1326;
+      --indigo: #4f46e5;
+      --indigo-glow: rgba(79,70,229,0.3);
+      --indigo-dim: rgba(79,70,229,0.08);
+      --teal: #0d9488;
+      --teal-glow: rgba(13,148,136,0.25);
+      --rose: #e11d48;
+      --rose-glow: rgba(225,29,72,0.25);
+      --amber: #d97706;
+      --amber-glow: rgba(217,119,6,0.25);
+      --violet: #7c3aed;
+      --violet-glow: rgba(124,58,237,0.25);
+      --sage: #059669;
+      --sage-glow: rgba(5,150,105,0.2);
+      --gold: #f59e0b;
+      --text: #c8d8f0;
+      --muted: #334866;
+      --border: rgba(79,70,229,0.2);
+      --border-soft: rgba(255,255,255,0.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--void);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(79,70,229,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,70,229,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none; z-index: 0;
+    }
+
+    .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+    .orb1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(79,70,229,0.07), transparent 70%); top: -200px; left: -150px; }
+    .orb2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(13,148,136,0.06), transparent 70%); bottom: 100px; right: -100px; }
+    .orb3 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(225,29,72,0.05), transparent 70%); top: 50%; left: 40%; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px;
+      background: rgba(4,6,14,0.94);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 14px;
+    }
+
+    .eye-logo {
+      width: 40px; height: 40px;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .eye-outer {
+      width: 40px; height: 24px;
+      border: 2px solid var(--indigo);
+      border-radius: 50%;
+      position: relative;
+      box-shadow: 0 0 16px var(--indigo-glow);
+      animation: eyePulse 4s ease infinite;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .eye-inner {
+      width: 12px; height: 12px;
+      background: var(--indigo);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--indigo-glow);
+    }
+
+    @keyframes eyePulse {
+      0%, 100% { box-shadow: 0 0 16px var(--indigo-glow); }
+      50% { box-shadow: 0 0 32px var(--indigo-glow), 0 0 64px rgba(79,70,229,0.1); }
+    }
+
+    .brand-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.1rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #fff;
+    }
+
+    .brand-name span { color: var(--indigo); }
+    .brand-tagline {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin-top: 2px;
+    }
+
+    .nav-live {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--teal);
+      letter-spacing: 1px;
+    }
+
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 8px var(--teal);
+      animation: blink 1.8s ease infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .nav-back {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+    .nav-back:hover { color: var(--indigo); border-color: var(--indigo); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 70px 24px 50px;
+    }
+
+    .hero-eye {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      animation: heroEye 5s ease infinite;
+      display: block;
+    }
+
+    @keyframes heroEye {
+      0%,100%{filter:drop-shadow(0 0 10px var(--indigo-glow))}
+      50%{filter:drop-shadow(0 0 30px var(--indigo-glow)) drop-shadow(0 0 60px rgba(79,70,229,0.2))}
+    }
+
+    .hero-eyebrow {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 6px;
+      color: var(--indigo);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.3s;
+    }
+
+    .hero-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2.2rem, 6vw, 4.5rem);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 50px var(--indigo-glow);
+      margin-bottom: 16px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.5s;
+      line-height: 1.1;
+    }
+
+    .hero-title .see { color: var(--indigo); }
+
+    .hero-quote {
+      font-family: 'Crimson Pro', serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 32px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.7s;
+      line-height: 1.6;
+    }
+
+    .hero-quote span { color: var(--text); }
+
+    .hero-stats {
+      display: flex; justify-content: center; gap: 40px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.9s;
+      flex-wrap: wrap;
+    }
+
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--indigo);
+      display: block;
+    }
+    .stat-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+    }
+
+    @keyframes fadeUp {
+      from{opacity:0;transform:translateY(20px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    /* ── NAV SECTIONS ── */
+    .section-nav {
+      position: relative; z-index: 1;
+      display: flex;
+      overflow-x: auto;
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(4,6,14,0.8);
+      backdrop-filter: blur(10px);
+      padding: 0 16px;
+    }
+
+    .section-nav::-webkit-scrollbar { height: 0; }
+
+    .sec-tab {
+      padding: 14px 20px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+      display: flex; align-items: center; gap: 7px;
+    }
+
+    .sec-tab:hover { color: var(--text); }
+    .sec-tab.active { color: var(--indigo); border-bottom-color: var(--indigo); }
+
+    /* ── MAIN ── */
+    .main-content {
+      position: relative; z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; animation: fadeUp 0.5s ease; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+    }
+
+    .card-body { padding: 24px; }
+
+    /* ── PATTERN TRACKER ── */
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .pattern-card {
+      background: var(--card2);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .pattern-card:hover { transform: translateY(-3px); }
+
+    .pattern-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .pattern-card.level-1 { border-color: rgba(255,255,255,0.06); }
+    .pattern-card.level-1::before { background: var(--muted); }
+
+    .pattern-card.level-3 { border-color: rgba(217,119,6,0.3); }
+    .pattern-card.level-3::before { background: var(--amber); }
+
+    .pattern-card.level-5 { border-color: rgba(225,29,72,0.3); }
+    .pattern-card.level-5::before { background: var(--rose); }
+
+    .pattern-card.level-10 { border-color: rgba(124,58,237,0.5); box-shadow: 0 0 20px rgba(124,58,237,0.15); }
+    .pattern-card.level-10::before { background: linear-gradient(90deg, var(--violet), var(--rose)); }
+
+    .pattern-level {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .level-badge {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .badge-private { background: rgba(255,255,255,0.06); color: var(--muted); }
+    .badge-flagged { background: rgba(217,119,6,0.15); color: var(--amber); border: 1px solid rgba(217,119,6,0.3); }
+    .badge-warning { background: rgba(225,29,72,0.12); color: var(--rose); border: 1px solid rgba(225,29,72,0.3); }
+    .badge-verified { background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.4); }
+
+    .pattern-area {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .pattern-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.4; margin-bottom: 12px; }
+
+    .pattern-progress {
+      background: rgba(255,255,255,0.06);
+      border-radius: 4px;
+      height: 4px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1s ease;
+    }
+
+    .pattern-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+    }
+
+    /* Threshold steps */
+    .threshold-steps {
+      display: flex;
+      gap: 0;
+      margin-bottom: 24px;
+      background: var(--card2);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border-soft);
+    }
+
+    .thresh-step {
+      flex: 1;
+      text-align: center;
+      padding: 0 8px;
+      position: relative;
+    }
+
+    .thresh-step:not(:last-child)::after {
+      content: '→';
+      position: absolute;
+      right: -4px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .thresh-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.4rem;
+      font-weight: 900;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .thresh-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 1px;
+      display: block;
+    }
+
+    /* ── HOME IMPAIRED ── */
+    .dignity-banner {
+      background: linear-gradient(135deg, rgba(13,148,136,0.12), rgba(79,70,229,0.08));
+      border: 1px solid rgba(13,148,136,0.25);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .dignity-quote {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.5rem;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .dignity-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--teal);
+      letter-spacing: 3px;
+    }
+
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .story-card {
+      background: var(--card2);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.3s;
+      cursor: pointer;
+    }
+
+    .story-card:hover { border-color: rgba(13,148,136,0.4); }
+
+    .story-icon { font-size: 1.5rem; margin-bottom: 10px; }
+
+    .story-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+
+    .story-text {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem;
+      color: var(--text);
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    .story-tag {
+      margin-top: 10px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .story-upvote {
+      margin-top: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .upvote-btn {
+      padding: 4px 12px;
+      background: transparent;
+      border: 1px solid rgba(13,148,136,0.3);
+      border-radius: 20px;
+      color: var(--teal);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .upvote-btn:hover { background: rgba(13,148,136,0.1); }
+
+    /* ── OUTREACH SECTIONS ── */
+    .outreach-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .outreach-card {
+      border-radius: 14px;
+      padding: 24px;
+      border: 1px solid;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .outreach-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+    }
+
+    .outreach-card.sexual { background: linear-gradient(135deg, rgba(124,58,237,0.08), transparent); border-color: rgba(124,58,237,0.25); }
+    .outreach-card.sexual::before { background: var(--violet); }
+
+    .outreach-card.domestic { background: linear-gradient(135deg, rgba(225,29,72,0.08), transparent); border-color: rgba(225,29,72,0.2); }
+    .outreach-card.domestic::before { background: var(--rose); }
+
+    .outreach-card.dependency { background: linear-gradient(135deg, rgba(5,150,105,0.08), transparent); border-color: rgba(5,150,105,0.2); }
+    .outreach-card.dependency::before { background: var(--sage); }
+
+    .outreach-card.legal { background: linear-gradient(135deg, rgba(217,119,6,0.08), transparent); border-color: rgba(217,119,6,0.2); }
+    .outreach-card.legal::before { background: var(--amber); }
+
+    .outreach-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+
+    .outreach-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .outreach-card.sexual .outreach-title { color: #a78bfa; }
+    .outreach-card.domestic .outreach-title { color: var(--rose); }
+    .outreach-card.dependency .outreach-title { color: var(--sage); }
+    .outreach-card.legal .outreach-title { color: var(--amber); }
+
+    .outreach-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+
+    .outreach-safe {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      padding: 6px 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .outreach-card.sexual .outreach-safe { background: rgba(124,58,237,0.1); color: #a78bfa; }
+    .outreach-card.domestic .outreach-safe { background: rgba(225,29,72,0.1); color: var(--rose); }
+    .outreach-card.dependency .outreach-safe { background: rgba(5,150,105,0.1); color: var(--sage); }
+
+    .reach-btn {
+      width: 100%;
+      padding: 11px;
+      background: transparent;
+      border-radius: 8px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .outreach-card.sexual .reach-btn { border: 1px solid rgba(124,58,237,0.4); color: #a78bfa; }
+    .outreach-card.sexual .reach-btn:hover { background: rgba(124,58,237,0.15); }
+
+    .outreach-card.domestic .reach-btn { border: 1px solid rgba(225,29,72,0.4); color: var(--rose); }
+    .outreach-card.domestic .reach-btn:hover { background: rgba(225,29,72,0.12); }
+
+    .outreach-card.dependency .reach-btn { border: 1px solid rgba(5,150,105,0.4); color: var(--sage); }
+    .outreach-card.dependency .reach-btn:hover { background: rgba(5,150,105,0.12); }
+
+    .outreach-card.legal .reach-btn { border: 1px solid rgba(217,119,6,0.4); color: var(--amber); }
+    .outreach-card.legal .reach-btn:hover { background: rgba(217,119,6,0.1); }
+
+    /* ── TELL YOUR STORY ── */
+    .story-submit-card {
+      background: var(--card2);
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .story-submit-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 3px;
+      color: var(--indigo);
+      margin-bottom: 8px;
+    }
+
+    .story-submit-sub {
+      font-family: 'Crimson Pro', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .story-categories {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .story-cat {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border: 1px solid var(--border-soft);
+      color: var(--muted);
+      transition: all 0.2s;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .story-cat:hover, .story-cat.selected {
+      border-color: var(--indigo);
+      color: var(--indigo);
+      background: var(--indigo-dim);
+    }
+
+    .story-field {
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      padding: 16px;
+      color: var(--text);
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      resize: vertical;
+      min-height: 140px;
+      outline: none;
+      transition: border-color 0.3s;
+      margin-bottom: 16px;
+    }
+
+    .story-field:focus { border-color: var(--indigo); }
+    .story-field::placeholder { color: var(--muted); font-style: italic; }
+
+    .story-anon-row {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .anon-pill {
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border: 1px solid;
+      transition: all 0.2s;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .anon-pill.active { background: var(--indigo-dim); border-color: var(--indigo); color: var(--indigo); }
+    .anon-pill.inactive { border-color: var(--border-soft); color: var(--muted); }
+
+    .story-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px var(--indigo-glow);
+    }
+
+    .story-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 30px var(--indigo-glow); }
+
+    /* ── DEPENDENCY "I WANT HELP" ── */
+    .help-hero {
+      text-align: center;
+      padding: 40px 24px;
+      background: linear-gradient(135deg, rgba(5,150,105,0.1), rgba(79,70,229,0.06));
+      border: 1px solid rgba(5,150,105,0.2);
+      border-radius: 16px;
+      margin-bottom: 24px;
+    }
+
+    .help-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 900;
+      color: var(--sage);
+      text-shadow: 0 0 30px var(--sage-glow);
+      margin-bottom: 12px;
+    }
+
+    .help-sub {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 24px;
+      line-height: 1.7;
+    }
+
+    .help-btn {
+      display: inline-block;
+      padding: 16px 40px;
+      background: linear-gradient(135deg, var(--sage), var(--teal));
+      border: none;
+      border-radius: 50px;
+      color: #fff;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 24px var(--sage-glow);
+    }
+
+    .help-btn:hover { transform: scale(1.05); box-shadow: 0 6px 40px var(--sage-glow); }
+
+    .no-shame-row {
+      display: flex; justify-content: center; gap: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .no-shame-item {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .no-shame-item::before { content: '✓'; color: var(--sage); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(10px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: modalIn 0.3s ease;
+    }
+
+    @keyframes modalIn {
+      from{opacity:0;transform:scale(0.9) translateY(20px)}
+      to{opacity:1;transform:scale(1) translateY(0)}
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0;
+      background: var(--card2);
+      z-index: 1;
+    }
+
+    .modal-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+    }
+
+    .modal-close {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-soft);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover { background: var(--rose); color: #fff; }
+
+    .modal-body { padding: 24px; }
+
+    .resource-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .resource-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+
+    .resource-item:hover { border-color: var(--indigo); }
+
+    .resource-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+
+    .resource-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .resource-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
+    .resource-number { font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: var(--teal); margin-top: 4px; }
+
+    .modal-safe-note {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: rgba(5,150,105,0.08);
+      border: 1px solid rgba(5,150,105,0.2);
+      border-radius: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--sage);
+      letter-spacing: 1px;
+      line-height: 1.6;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:600px){
+      nav { padding: 12px 16px; }
+      .hero { padding: 40px 16px 32px; }
+      .hero-stats { gap: 20px; }
+      .main-content { padding: 20px 16px 60px; }
+      .threshold-steps { flex-wrap: wrap; gap: 12px; }
+      .thresh-step::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="eye-logo">
+      <div class="eye-outer"><div class="eye-inner"></div></div>
+    </div>
+    <div>
+      <div class="brand-name">FREQUENT <span>SEE</span></div>
+      <div class="brand-tagline">SEE WHAT OTHERS IGNORE</div>
+    </div>
+  </div>
+  <div class="nav-live"><div class="live-dot"></div>COMMUNITY ACTIVE</div>
+  <a href="/demos/" class="nav-back">← DEMOS</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-eye">👁️</span>
+  <div class="hero-eyebrow">Community Protection Network</div>
+  <h1 class="hero-title">FREQUENT <span class="see">SEE</span></h1>
+  <p class="hero-quote"><span>What happens frequently gets seen.</span><br>Every voice matters. Every pattern counts. Nobody is invisible here.</p>
+  <div class="hero-stats">
+    <div class="stat-item"><span class="stat-num" id="reportCount">247</span><span class="stat-label">REPORTS THIS MONTH</span></div>
+    <div class="stat-item"><span class="stat-num" id="voiceCount">89</span><span class="stat-label">STORIES SHARED</span></div>
+    <div class="stat-item"><span class="stat-num" id="helpCount">34</span><span class="stat-label">PEOPLE REACHED HELP</span></div>
+    <div class="stat-item"><span class="stat-num" id="actionCount">3</span><span class="stat-label">ACTIONS FORMING</span></div>
+  </div>
+</div>
+
+<!-- SECTION TABS -->
+<div class="section-nav">
+  <div class="sec-tab active" onclick="switchSection('tracker')">👁️ PATTERN TRACKER</div>
+  <div class="sec-tab" onclick="switchSection('homeimpaired')">🏠 HOME IMPAIRED</div>
+  <div class="sec-tab" onclick="switchSection('outreach')">💜 OUTREACH</div>
+  <div class="sec-tab" onclick="switchSection('dependency')">🤝 I WANT HELP</div>
+  <div class="sec-tab" onclick="switchSection('stories')">📖 TELL YOUR STORY</div>
+  <div class="sec-tab" onclick="switchSection('police')">🛡️ POLICE SHIELD</div>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+  <!-- ── PATTERN TRACKER ── -->
+  <div class="section active" id="sec-tracker">
+
+    <div class="threshold-steps">
+      <div class="thresh-step">
+        <span class="thresh-num" style="color:var(--muted)">1</span>
+        <span class="thresh-label" style="color:var(--muted)">PRIVATE LOG</span>
+      </div>
+      <div class="thresh-step">
+        <span class="thresh-num" style="color:var(--amber)">3</span>
+        <span class="thresh-label" style="color:var(--amber)">AREA FLAGGED</span>
+      </div>
+      <div class="thresh-step">
+        <span class="thresh-num" style="color:var(--rose)">5</span>
+        <span class="thresh-label" style="color:var(--rose)">COMMUNITY WARNING</span>
+      </div>
+      <div class="thresh-step">
+        <span class="thresh-num" style="color:#a78bfa)">10</span>
+        <span class="thresh-label" style="color:#a78bfa">VERIFIED THREAT</span>
+      </div>
+    </div>
+
+    <div class="pattern-grid">
+
+      <div class="pattern-card level-10">
+        <div class="pattern-level">
+          <div class="level-badge badge-verified">✓ VERIFIED THREAT</div>
+        </div>
+        <div class="pattern-area">📍 Riverside Park Area</div>
+        <div class="pattern-desc">Repeated predatory behavior targeting home-impaired individuals. Same time window, same approach pattern confirmed across 11 independent reports.</div>
+        <div class="pattern-progress"><div class="progress-bar" style="width:100%;background:linear-gradient(90deg,var(--violet),var(--rose))"></div></div>
+        <div class="pattern-footer"><span>11 / 10 confirmed reports</span><span style="color:#a78bfa">LEGAL ACTION FILED</span></div>
+      </div>
+
+      <div class="pattern-card level-5">
+        <div class="pattern-level">
+          <div class="level-badge badge-warning">⚠ COMMUNITY WARNING</div>
+        </div>
+        <div class="pattern-area">📍 Shelter District — Block 4</div>
+        <div class="pattern-desc">Multiple reports of unwanted contact and intimidation near the evening meal line. Pattern consistent across different reporters. No name yet — building case.</div>
+        <div class="pattern-progress"><div class="progress-bar" style="width:60%;background:var(--rose)"></div></div>
+        <div class="pattern-footer"><span>6 / 10 to verified</span><span style="color:var(--rose)">WATCH ZONE ACTIVE</span></div>
+      </div>
+
+      <div class="pattern-card level-3">
+        <div class="pattern-level">
+          <div class="level-badge badge-flagged">⚡ AREA FLAGGED</div>
+        </div>
+        <div class="pattern-area">📍 Downtown Overpass — East</div>
+        <div class="pattern-desc">Littering citations being used repeatedly to displace home-impaired residents. Same officer, same location, no actual littering observed by witnesses.</div>
+        <div class="pattern-progress"><div class="progress-bar" style="width:30%;background:var(--amber)"></div></div>
+        <div class="pattern-footer"><span>3 / 10 to verified</span><span style="color:var(--amber)">BUILDING CASE</span></div>
+      </div>
+
+      <div class="pattern-card level-1">
+        <div class="pattern-level">
+          <div class="level-badge badge-private">🔒 PRIVATE — LOGGED</div>
+        </div>
+        <div class="pattern-area">📍 Central Station Area</div>
+        <div class="pattern-desc">Single report received. Logged privately. Awaiting corroborating reports before flagging. Your report protects others even when you can't see it yet.</div>
+        <div class="pattern-progress"><div class="progress-bar" style="width:10%;background:var(--muted)"></div></div>
+        <div class="pattern-footer"><span>1 / 3 to flag</span><span>MONITORING</span></div>
+      </div>
+
+    </div>
+
+    <div style="text-align:center">
+      <button class="story-submit" style="max-width:300px;display:inline-block" onclick="openModal('reportPatternModal')">+ SUBMIT A REPORT →</button>
+    </div>
+
+  </div>
+
+  <!-- ── HOME IMPAIRED ── -->
+  <div class="section" id="sec-homeimpaired">
+
+    <div class="dignity-banner">
+      <div class="dignity-quote">"Home is a circumstance, not a character.<br>You are not your situation."</div>
+      <div class="dignity-sub">// HOME IMPAIRED — NOT HOPELESS</div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header">
+        <span>🚨</span>
+        <div class="card-title" style="color:var(--rose)">KNOW YOUR RIGHTS — HARASSMENT CHARGES</div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+          <div style="background:var(--card2);border-radius:10px;padding:16px;border-left:3px solid var(--amber)">
+            <div style="font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--amber);margin-bottom:6px">LITTERING CHARGE</div>
+            <div style="font-size:0.85rem;color:var(--muted);line-height:1.6">Often used to cite, fine and forcibly remove home-impaired people. If you did not litter, say clearly: "I did not litter and I do not consent to this citation." Document badge number and request evidence.</div>
+          </div>
+          <div style="background:var(--card2);border-radius:10px;padding:16px;border-left:3px solid var(--rose)">
+            <div style="font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--rose);margin-bottom:6px">CRIMINAL TRESPASS</div>
+            <div style="font-size:0.85rem;color:var(--muted);line-height:1.6">Public spaces cannot be trespassed. If you are in a public park, sidewalk, or plaza — you have a legal right to be there. Sweeps that destroy belongings may violate the 4th Amendment.</div>
+          </div>
+          <div style="background:var(--card2);border-radius:10px;padding:16px;border-left:3px solid var(--violet)">
+            <div style="font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:2px;color:#a78bfa;margin-bottom:6px">LOITERING</div>
+            <div style="font-size:0.85rem;color:var(--muted);line-height:1.6">Simply existing in public is not a crime. Many loitering ordinances have been struck down as unconstitutional. Ask: "What specific law am I violating?" They must answer.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-family:'Orbitron',monospace;font-size:0.65rem;letter-spacing:3px;color:var(--teal);margin-bottom:16px">// REAL STORIES — REAL PEOPLE</div>
+
+    <div class="story-grid">
+      <div class="story-card">
+        <div class="story-icon">👨‍💼</div>
+        <div class="story-name">MARCUS, 47 — VETERAN</div>
+        <div class="story-text">"I did two tours. When I came home the PTSD cost me my job, then my apartment. I'm not a statistic. I'm a person who served this country and got left behind by it."</div>
+        <div class="story-tag">// MILITARY SERVICE · PTSD · SYSTEM FAILURE</div>
+        <div class="story-upvote"><button class="upvote-btn" onclick="upvote(this)">♥ 142</button><span style="font-size:0.75rem;color:var(--muted)">people see you</span></div>
+      </div>
+      <div class="story-card">
+        <div class="story-icon">👩</div>
+        <div class="story-name">DIANA, 34 — MEDICAL DEBT</div>
+        <div class="story-text">"A cancer diagnosis at 31. I fought the disease and won. Then the bills came. $340,000. I had insurance. It wasn't enough. I lost everything in 18 months."</div>
+        <div class="story-tag">// MEDICAL CRISIS · INSURANCE FAILURE</div>
+        <div class="story-upvote"><button class="upvote-btn" onclick="upvote(this)">♥ 89</button><span style="font-size:0.75rem;color:var(--muted)">people see you</span></div>
+      </div>
+      <div class="story-card">
+        <div class="story-icon">👨‍👧</div>
+        <div class="story-name">JAMES, 52 — LAID OFF</div>
+        <div class="story-text">"Plant closed after 22 years. No pension, no severance. I'm 52. Nobody hires you at 52 for the same work. I had a house, a daughter in college. Now I have a tent."</div>
+        <div class="story-tag">// ECONOMIC COLLAPSE · FAMILY · AGE DISCRIMINATION</div>
+        <div class="story-upvote"><button class="upvote-btn" onclick="upvote(this)">♥ 203</button><span style="font-size:0.75rem;color:var(--muted)">people see you</span></div>
+      </div>
+    </div>
+
+    <div style="text-align:center">
+      <button class="story-submit" style="max-width:300px;display:inline-block" onclick="switchSection('stories')">SHARE YOUR STORY →</button>
+    </div>
+
+  </div>
+
+  <!-- ── OUTREACH ── -->
+  <div class="section" id="sec-outreach">
+
+    <div class="dignity-banner" style="background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(225,29,72,0.06));border-color:rgba(124,58,237,0.2)">
+      <div class="dignity-quote">"You are not what was done to you.<br>You deserve help. You deserve safety. You deserve to be heard."</div>
+      <div class="dignity-sub" style="color:#a78bfa">// NO JUDGMENT. NO SHAME. ONLY SUPPORT.</div>
+    </div>
+
+    <div class="outreach-grid">
+
+      <div class="outreach-card sexual">
+        <span class="outreach-icon">💜</span>
+        <div class="outreach-title">SEXUAL ABUSE OUTREACH</div>
+        <div class="outreach-safe">🔒 100% ANONYMOUS · NEVER STORED</div>
+        <div class="outreach-desc">Sexual abuse among the home-impaired community is massively underreported. Survivors often feel there is nowhere to turn. There is. You are believed here. What happened to you was not okay and was not your fault.</div>
+        <button class="reach-btn" onclick="openModal('sexualModal')">I NEED SUPPORT →</button>
+      </div>
+
+      <div class="outreach-card domestic">
+        <span class="outreach-icon">❤️</span>
+        <div class="outreach-title">DOMESTIC VIOLENCE</div>
+        <div class="outreach-safe">🔒 SAFE EXIT AVAILABLE</div>
+        <div class="outreach-desc">Leaving is the most dangerous time. We can help you plan a safe exit, find emergency shelter, connect with advocates, and understand your legal protections — all anonymously if needed.</div>
+        <button class="reach-btn" onclick="openModal('domesticModal')">I NEED A SAFE PATH →</button>
+      </div>
+
+      <div class="outreach-card dependency">
+        <span class="outreach-icon">🤝</span>
+        <div class="outreach-title">DEPENDENCY SUPPORT</div>
+        <div class="outreach-safe">✓ NO LECTURES · NO JUDGMENT</div>
+        <div class="outreach-desc">If you want help, we will help you find it. If you are not ready, that is okay too. This is here when you are. Recovery is possible and you are worth it. The ones that want help will get help.</div>
+        <button class="reach-btn" onclick="switchSection('dependency')">I WANT HELP →</button>
+      </div>
+
+      <div class="outreach-card legal">
+        <span class="outreach-icon">⚖️</span>
+        <div class="outreach-title">LEGAL AID CONNECTOR</div>
+        <div class="outreach-safe">✓ FREE CIVIL RIGHTS ATTORNEYS</div>
+        <div class="outreach-desc">Unlawful citations, trespass sweeps, harassment — you have rights and there are attorneys who fight for them at no cost to you. Document, report, and let us connect you.</div>
+        <button class="reach-btn" onclick="openModal('legalModal')">FIND LEGAL HELP →</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ── DEPENDENCY ── -->
+  <div class="section" id="sec-dependency">
+
+    <div class="help-hero">
+      <div class="help-title">YOU WANT HELP.</div>
+      <div class="help-title" style="font-size:clamp(1rem,2.5vw,1.5rem);margin-bottom:20px">HELP IS HERE.</div>
+      <div class="help-sub">"The ones that want help will get help.<br>The ones that don't, won't.<br>You're here — that means something."</div>
+      <button class="help-btn" onclick="openModal('helpModal')">I WANT HELP NOW →</button>
+      <div class="no-shame-row">
+        <div class="no-shame-item">No judgment</div>
+        <div class="no-shame-item">No lecture</div>
+        <div class="no-shame-item">No prerequisites</div>
+        <div class="no-shame-item">Anonymous option</div>
+        <div class="no-shame-item">Available 24/7</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
+      <div style="background:var(--card2);border:1px solid rgba(5,150,105,0.2);border-radius:12px;padding:20px;text-align:center">
+        <div style="font-size:2rem;margin-bottom:10px">🏥</div>
+        <div style="font-family:'Orbitron',monospace;font-size:0.65rem;letter-spacing:2px;color:var(--sage);margin-bottom:8px">DETOX SUPPORT</div>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.5">Medical detox is safe, supervised, and life-saving. We connect you to facilities that accept you regardless of insurance or income.</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid rgba(79,70,229,0.2);border-radius:12px;padding:20px;text-align:center">
+        <div style="font-size:2rem;margin-bottom:10px">🫂</div>
+        <div style="font-family:'Orbitron',monospace;font-size:0.65rem;letter-spacing:2px;color:var(--indigo);margin-bottom:8px">PEER SUPPORT</div>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.5">Talk to someone who has been where you are. No judgment. Real experience. Real hope. Available right now.</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid rgba(13,148,136,0.2);border-radius:12px;padding:20px;text-align:center">
+        <div style="font-size:2rem;margin-bottom:10px">🏠</div>
+        <div style="font-family:'Orbitron',monospace;font-size:0.65rem;letter-spacing:2px;color:var(--teal);margin-bottom:8px">HOUSING + RECOVERY</div>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.5">Sober living, transitional housing, and recovery programs that provide a roof while you rebuild. You don't have to be stable before you get help.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── TELL YOUR STORY ── -->
+  <div class="section" id="sec-stories">
+
+    <div class="story-submit-card">
+      <div class="story-submit-title">// YOUR STORY MATTERS</div>
+      <div class="story-submit-sub">"Every story shared breaks a stereotype. Every truth told makes the invisible visible. You don't have to justify your humanity — but if you want to share it, we will honor it."</div>
+
+      <div style="font-family:'Orbitron',monospace;font-size:0.55rem;letter-spacing:3px;color:var(--muted);margin-bottom:10px">YOUR EXPERIENCE</div>
+      <div class="story-categories">
+        <div class="story-cat selected" onclick="selectCat(this)">Home Impaired</div>
+        <div class="story-cat" onclick="selectCat(this)">Veteran</div>
+        <div class="story-cat" onclick="selectCat(this)">Medical Crisis</div>
+        <div class="story-cat" onclick="selectCat(this)">Domestic Escape</div>
+        <div class="story-cat" onclick="selectCat(this)">Job Loss</div>
+        <div class="story-cat" onclick="selectCat(this)">Abuse Survivor</div>
+        <div class="story-cat" onclick="selectCat(this)">Recovery Journey</div>
+        <div class="story-cat" onclick="selectCat(this)">Police Harassment</div>
+        <div class="story-cat" onclick="selectCat(this)">Other</div>
+      </div>
+
+      <textarea class="story-field" placeholder="Your story. Your words. Your truth. There is no wrong way to tell it..."></textarea>
+
+      <div style="font-family:'Orbitron',monospace;font-size:0.55rem;letter-spacing:3px;color:var(--muted);margin-bottom:10px">HOW TO SHARE</div>
+      <div class="story-anon-row">
+        <div class="anon-pill active" onclick="selectAnon(this)">🔒 Anonymous</div>
+        <div class="anon-pill inactive" onclick="selectAnon(this)">👤 First Name Only</div>
+        <div class="anon-pill inactive" onclick="selectAnon(this)">✓ Full Name</div>
+      </div>
+
+      <button class="story-submit" onclick="submitStory()">SHARE YOUR STORY →</button>
+    </div>
+
+  </div>
+
+  <!-- ── POLICE SHIELD ── -->
+  <div class="section" id="sec-police">
+    <div class="dignity-banner" style="background:linear-gradient(135deg,rgba(26,115,232,0.1),rgba(244,185,66,0.06));border-color:rgba(26,115,232,0.2)">
+      <div class="dignity-quote">"The shield is meant to protect.<br>When it doesn't — we document, we report, we act."</div>
+      <div class="dignity-sub" style="color:#60a5fa">// GUARDIAN SHIELD INTEGRATED</div>
+    </div>
+    <div style="text-align:center;padding:32px">
+      <div style="font-size:3rem;margin-bottom:16px">🛡️</div>
+      <div style="font-family:'Orbitron',monospace;font-size:0.8rem;letter-spacing:3px;color:#60a5fa;margin-bottom:12px">GUARDIAN SHIELD</div>
+      <div style="font-size:1rem;color:var(--muted);margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.6">Full police accountability map with real-time alerts, rights guidance, class action tools, and legal AI — integrated with Frequent See.</div>
+      <a href="guardian-shield.html" style="display:inline-block;padding:14px 36px;background:transparent;border:2px solid #60a5fa;border-radius:10px;color:#60a5fa;font-family:'Orbitron',monospace;font-size:0.7rem;letter-spacing:3px;text-decoration:none;transition:all 0.3s" onmouseover="this.style.background='rgba(96,165,250,0.1)'" onmouseout="this.style.background='transparent'">OPEN GUARDIAN SHIELD →</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODALS -->
+
+<!-- Report Pattern -->
+<div class="modal-overlay" id="reportPatternModal" onclick="closeOut(event,'reportPatternModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--indigo)">// SUBMIT PATTERN REPORT</div>
+      <button class="modal-close" onclick="closeModal('reportPatternModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:16px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--sage);margin-bottom:8px">🔒 YOUR REPORT IS PRIVATE UNTIL THRESHOLD IS REACHED</div>
+        <select style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:0.95rem;outline:none;margin-bottom:12px">
+          <option value="">Select report type...</option>
+          <option>Predatory behavior toward home-impaired</option>
+          <option>Sexual harassment / assault</option>
+          <option>Unlawful police harassment (littering abuse)</option>
+          <option>Unlawful trespass sweep</option>
+          <option>Domestic violence — abuser location</option>
+          <option>Other pattern behavior</option>
+        </select>
+        <input type="text" placeholder="Location / Area" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:0.95rem;outline:none;margin-bottom:12px">
+        <textarea placeholder="Describe what you witnessed or experienced. Be as specific as possible — time, description, behavior pattern..." style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:0.95rem;outline:none;min-height:100px;resize:vertical;margin-bottom:12px"></textarea>
+        <div class="modal-safe-note">Your report is stored anonymously. It will not become public until independent corroborating reports reach the threshold. False reports are filtered by pattern inconsistency.</div>
+      </div>
+      <button class="story-submit" onclick="submitPatternReport()">SUBMIT ANONYMOUSLY →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sexual Support Modal -->
+<div class="modal-overlay" id="sexualModal" onclick="closeOut(event,'sexualModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" style="color:#a78bfa">// SEXUAL ABUSE SUPPORT</div>
+      <button class="modal-close" onclick="closeModal('sexualModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:1.1rem;color:var(--text);margin-bottom:20px;line-height:1.7">You are believed. What happened to you was not your fault. You deserve support regardless of your housing situation, your past, or anything else.</div>
+      <div class="resource-list">
+        <div class="resource-item">
+          <div class="resource-icon">📞</div>
+          <div>
+            <div class="resource-name" style="color:#a78bfa">RAINN NATIONAL HOTLINE</div>
+            <div class="resource-desc">Free, confidential 24/7 support from trained staff. Chat or call available.</div>
+            <div class="resource-number">1-800-656-HOPE (4673)</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">💬</div>
+          <div>
+            <div class="resource-name" style="color:#a78bfa">CRISIS TEXT LINE</div>
+            <div class="resource-desc">Text-based support — safer if you can't make a call.</div>
+            <div class="resource-number">Text HOME to 741741</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">⚖️</div>
+          <div>
+            <div class="resource-name" style="color:#a78bfa">LEGAL ADVOCATE CONNECT</div>
+            <div class="resource-desc">Civil legal help for survivors — restraining orders, housing protections, evidence documentation.</div>
+            <div class="resource-number">Via Pattern Tracker — Anonymous Report</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-safe-note">All contacts are confidential. You are never required to report to police to access support. Your safety comes first.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Domestic Modal -->
+<div class="modal-overlay" id="domesticModal" onclick="closeOut(event,'domesticModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--rose)">// DOMESTIC VIOLENCE SAFE PATH</div>
+      <button class="modal-close" onclick="closeModal('domesticModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:1.1rem;color:var(--text);margin-bottom:20px;line-height:1.7">Leaving is the most dangerous time — but staying is also dangerous. You deserve safety. We can help you plan.</div>
+      <div class="resource-list">
+        <div class="resource-item">
+          <div class="resource-icon">🆘</div>
+          <div>
+            <div class="resource-name" style="color:var(--rose)">NATIONAL DV HOTLINE</div>
+            <div class="resource-desc">24/7 confidential support, safety planning, local shelter connections.</div>
+            <div class="resource-number">1-800-799-SAFE (7233)</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">💬</div>
+          <div>
+            <div class="resource-name" style="color:var(--rose)">SAFE CHAT — NO VOICE NEEDED</div>
+            <div class="resource-desc">If it's not safe to speak, chat is available. Clears history automatically.</div>
+            <div class="resource-number">thehotline.org/get-help</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">🏠</div>
+          <div>
+            <div class="resource-name" style="color:var(--rose)">EMERGENCY SHELTER FINDER</div>
+            <div class="resource-desc">Anonymous shelter locations near you — many accept people with pets and children.</div>
+            <div class="resource-number">Text START to 88788</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-safe-note">Clear your browser history after visiting this page if it is not safe for others to see. Your safety is the priority.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Help / Dependency Modal -->
+<div class="modal-overlay" id="helpModal" onclick="closeOut(event,'helpModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--sage)">// RECOVERY SUPPORT</div>
+      <button class="modal-close" onclick="closeModal('helpModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:1.1rem;color:var(--text);margin-bottom:20px;line-height:1.7">You reached out. That took courage. Here's what's available right now — no prerequisites, no judgment.</div>
+      <div class="resource-list">
+        <div class="resource-item">
+          <div class="resource-icon">📞</div>
+          <div>
+            <div class="resource-name" style="color:var(--sage)">SAMHSA HELPLINE</div>
+            <div class="resource-desc">Free, confidential treatment referrals 24/7. No insurance required.</div>
+            <div class="resource-number">1-800-662-HELP (4357)</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">🫂</div>
+          <div>
+            <div class="resource-name" style="color:var(--sage)">PEER RECOVERY SUPPORT</div>
+            <div class="resource-desc">Talk to someone in recovery. Real stories. Real hope. No scripts.</div>
+            <div class="resource-number">Text HELLO to 741741</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">🏥</div>
+          <div>
+            <div class="resource-name" style="color:var(--sage)">FIND TREATMENT NOW</div>
+            <div class="resource-desc">Locate detox, inpatient, and outpatient programs near you accepting walk-ins.</div>
+            <div class="resource-number">findtreatment.gov</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-safe-note">Recovery is not linear. Coming back after a setback is still recovery. You are allowed to try again as many times as you need.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Legal Modal -->
+<div class="modal-overlay" id="legalModal" onclick="closeOut(event,'legalModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--amber)">// LEGAL AID CONNECTOR</div>
+      <button class="modal-close" onclick="closeModal('legalModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="resource-list">
+        <div class="resource-item">
+          <div class="resource-icon">⚖️</div>
+          <div>
+            <div class="resource-name" style="color:var(--amber)">NATIONAL HOMELESSNESS LAW CENTER</div>
+            <div class="resource-desc">Legal advocacy specifically for home-impaired rights violations — littering, trespass, sweeps.</div>
+            <div class="resource-number">nlchp.org</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">🏛️</div>
+          <div>
+            <div class="resource-name" style="color:var(--amber)">ACLU CIVIL RIGHTS</div>
+            <div class="resource-desc">4th Amendment violations, discriminatory enforcement, unconstitutional ordinances.</div>
+            <div class="resource-number">aclu.org/get-legal-help</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">📋</div>
+          <div>
+            <div class="resource-name" style="color:var(--amber)">LOCAL LEGAL AID FINDER</div>
+            <div class="resource-desc">Free civil legal services in your area. Income-based, no cost to you.</div>
+            <div class="resource-number">lawhelp.org</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // SECTION SWITCHING
+  function switchSection(name) {
+    document.querySelectorAll('.sec-tab').forEach((t,i) => {
+      const names = ['tracker','homeimpaired','outreach','dependency','stories','police'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    window.scrollTo({top:document.querySelector('.section-nav').offsetTop - 70, behavior:'smooth'});
+  }
+
+  // MODALS
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  function closeOut(e, id) { if(e.target === document.getElementById(id)) closeModal(id); }
+
+  // STORY ANON TOGGLE
+  function selectAnon(el) {
+    document.querySelectorAll('.anon-pill').forEach(p => { p.classList.remove('active'); p.classList.add('inactive'); });
+    el.classList.remove('inactive'); el.classList.add('active');
+  }
+
+  // STORY CATEGORY
+  function selectCat(el) {
+    document.querySelectorAll('.story-cat').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // UPVOTE
+  function upvote(btn) {
+    const num = parseInt(btn.textContent.replace('♥ ',''));
+    btn.textContent = '♥ ' + (num + 1);
+    btn.style.background = 'rgba(13,148,136,0.15)';
+    btn.style.borderColor = 'var(--teal)';
+    btn.disabled = true;
+  }
+
+  // SUBMIT STORY
+  function submitStory() {
+    const field = document.querySelector('.story-field');
+    if (!field.value.trim()) { field.style.borderColor = 'var(--rose)'; return; }
+    field.value = '';
+    field.placeholder = 'Your story has been received. Thank you for your courage in sharing it. 🌙';
+    field.style.borderColor = 'var(--sage)';
+    document.getElementById('voiceCount').textContent = parseInt(document.getElementById('voiceCount').textContent) + 1;
+  }
+
+  // SUBMIT PATTERN REPORT
+  function submitPatternReport() {
+    closeModal('reportPatternModal');
+    document.getElementById('reportCount').textContent = parseInt(document.getElementById('reportCount').textContent) + 1;
+    setTimeout(() => alert('Report received anonymously. Logged privately. You will not be identified. If patterns emerge your report will contribute to community protection. Thank you. 🌙'), 300);
+  }
+
+  // LOCATION
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      console.log('Location active:', pos.coords.latitude, pos.coords.longitude);
+    });
+  }
+
+  // Animate stats
+  function animateCount(el, target, duration) {
+    const start = 0;
+    const step = target / (duration / 16);
+    let current = start;
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = Math.round(current);
+      if (current >= target) clearInterval(timer);
+    }, 16);
+  }
+
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      animateCount(document.getElementById('reportCount'), 247, 2000);
+      animateCount(document.getElementById('voiceCount'), 89, 2000);
+      animateCount(document.getElementById('helpCount'), 34, 1500);
+      animateCount(document.getElementById('actionCount'), 3, 800);
+    }, 1000);
+  });
+</script>
+
+</body>
+</html>
