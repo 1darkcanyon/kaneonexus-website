@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS — Partner With Us</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --obsidian: #060810;
+      --card: #0d1420;
+      --glow: rgba(22, 199, 154, 0.25);
+      --dim: rgba(22, 199, 154, 0.08);
+      --accent: #16c79a;
+      --accent2: #7b61ff;
+      --text: #c8d8e8;
+      --muted: #4a6080;
+      --border: rgba(22, 199, 154, 0.18);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--obsidian);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(22,199,154,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(22,199,154,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Ambient orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(22,199,154,0.12), transparent 70%);
+      top: -100px; right: -100px;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(123,97,255,0.1), transparent 70%);
+      bottom: 100px; left: -80px;
+      animation: drift 16s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes drift {
+      from { transform: translate(0, 0); }
+      to { transform: translate(30px, 40px); }
+    }
+
+    /* NAV */
+    nav {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 24px 40px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(6,8,16,0.8);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 4px;
+      text-decoration: none;
+      text-shadow: 0 0 20px var(--glow);
+    }
+
+    .nav-back {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-back:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 80px 24px 48px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 6px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.2s;
+    }
+
+    .hero-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      color: #fff;
+      text-shadow: 0 0 40px var(--glow);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.4s;
+    }
+
+    .hero-title span {
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      max-width: 500px;
+      margin: 0 auto;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.6s;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* MAIN LAYOUT */
+    .container {
+      position: relative; z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* INFO CARDS ROW */
+    .info-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.8s;
+    }
+
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .info-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--dim), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .info-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .info-card:hover::before { opacity: 1; }
+
+    .info-icon {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    .info-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .info-value {
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    /* FORM CARD */
+    .form-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 1s;
+    }
+
+    .form-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    }
+
+    .form-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1rem;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    input, select, textarea {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+      outline: none;
+      transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+      width: 100%;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      background: rgba(22,199,154,0.05);
+      box-shadow: 0 0 20px rgba(22,199,154,0.1);
+    }
+
+    select option { background: #0d1420; }
+
+    textarea {
+      resize: vertical;
+      min-height: 130px;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: var(--muted);
+    }
+
+    /* SUBMIT BUTTON */
+    .submit-btn {
+      margin-top: 32px;
+      width: 100%;
+      padding: 18px;
+      background: transparent;
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      color: var(--accent);
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.3s, box-shadow 0.3s;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+      z-index: 0;
+    }
+
+    .submit-btn:hover {
+      color: var(--obsidian);
+      box-shadow: 0 0 30px var(--glow);
+    }
+    .submit-btn:hover::before { transform: translateX(0); }
+
+    .submit-btn span { position: relative; z-index: 1; }
+
+    /* SUCCESS STATE */
+    .success-message {
+      display: none;
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .success-message.show { display: block; }
+
+    .success-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .success-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.4rem;
+      color: var(--accent);
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+    }
+
+    .success-sub {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 32px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+    }
+
+    footer span { color: var(--accent); }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .hero { padding: 48px 20px 32px; }
+      .info-row { grid-template-columns: 1fr; }
+      .form-card { padding: 28px 20px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <nav>
+    <a href="/" class="nav-logo">NEXUS</a>
+    <a href="/demos/" class="nav-back">← Back to Demos</a>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Symphonic Intelligence Initiative</div>
+    <h1 class="hero-title">Partner <span>With Us</span></h1>
+    <p class="hero-sub">Join the Council. Help shape the future of cooperative AI alignment.</p>
+  </div>
+
+  <div class="container">
+
+    <div class="info-row">
+      <div class="info-card">
+        <div class="info-icon">🌐</div>
+        <div class="info-label">Project</div>
+        <div class="info-value">kaneonexus.com</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">⚡</div>
+        <div class="info-label">Response Time</div>
+        <div class="info-value">Within 48 Hours</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🤝</div>
+        <div class="info-label">Partnership</div>
+        <div class="info-value">Open to All</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-title">// Initiate Contact</div>
+
+      <div id="formContainer">
+        <form id="contactForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label for="name">Your Name</label>
+              <input type="text" id="name" name="name" placeholder="Full name" required>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" placeholder="your@email.com" required>
+            </div>
+
+            <div class="form-group">
+              <label for="organization">Organization</label>
+              <input type="text" id="organization" name="organization" placeholder="Company / Project / Independent">
+            </div>
+
+            <div class="form-group">
+              <label for="type">Partnership Type</label>
+              <select id="type" name="type">
+                <option value="">Select type...</option>
+                <option value="technical">Technical Collaboration</option>
+                <option value="research">Research Partnership</option>
+                <option value="investment">Investment Interest</option>
+                <option value="integration">AI Integration</option>
+                <option value="other">Other / General Inquiry</option>
+              </select>
+            </div>
+
+            <div class="form-group full">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Tell us about yourself and how you'd like to collaborate with NEXUS..." required></textarea>
+            </div>
+
+          </div>
+
+          <button type="submit" class="submit-btn">
+            <span>Transmit Message →</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="success-message" id="successMsg">
+        <div class="success-icon">🌙</div>
+        <div class="success-title">Message Received</div>
+        <p class="success-sub">You've entered the Council queue, Dreamwalker.<br>We'll be in touch within 48 hours.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <span>NEXUS</span> · Symphonic Intelligence · By Canyon (Kaneon) · 2026
+  </footer>
+
+  <script>
+    const form = document.getElementById('contactForm');
+    const success = document.getElementById('successMsg');
+    const formContainer = document.getElementById('formContainer');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('.submit-btn');
+      btn.querySelector('span').textContent = 'Transmitting...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          formContainer.style.display = 'none';
+          success.classList.add('show');
+        } else {
+          btn.querySelector('span').textContent = 'Error — Try Again';
+          btn.disabled = false;
+        }
+      } catch {
+        btn.querySelector('span').textContent = 'Error — Try Again';
+        btn.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>

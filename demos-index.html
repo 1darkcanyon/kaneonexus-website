@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS — Demo Hub</title>
+  <link rel="icon" href="../icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void:#020408; --card:#080d1a; --card2:#0b1020;
+      --teal:#0d9488; --teal-glow:rgba(13,148,136,0.35); --teal-dim:rgba(13,148,136,0.08);
+      --cyan:#06b6d4; --text:#c8d8e8; --muted:#2a4060;
+      --border:rgba(13,148,136,0.18); --border-soft:rgba(255,255,255,0.05);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--void);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(13,148,136,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(13,148,136,0.03) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;z-index:0;}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(2,4,8,0.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+    .nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
+    .nav-logo{width:38px;height:38px;border-radius:50%;border:2px solid var(--teal);box-shadow:0 0 12px var(--teal-glow);object-fit:cover;animation:pulse 4s ease infinite;}
+    @keyframes pulse{0%,100%{box-shadow:0 0 12px var(--teal-glow)}50%{box-shadow:0 0 28px var(--teal-glow),0 0 56px rgba(13,148,136,0.1)}}
+    .nav-name{font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:900;letter-spacing:4px;color:#fff;}
+    .nav-name span{color:var(--teal);}
+    .nav-back{font-family:'Orbitron',monospace;font-size:0.5rem;letter-spacing:2px;color:var(--muted);text-decoration:none;padding:7px 14px;border:1px solid var(--border);border-radius:6px;transition:all 0.3s;}
+    .nav-back:hover{color:var(--teal);border-color:var(--teal);}
+
+    /* HERO */
+    .hero{position:relative;z-index:1;text-align:center;padding:60px 24px 48px;}
+    .hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:6px;color:var(--teal);margin-bottom:14px;opacity:0;animation:up 0.6s ease forwards 0.2s;}
+    .hero-title{font-family:'Orbitron',monospace;font-size:clamp(1.8rem,5vw,3.5rem);font-weight:900;color:#fff;text-shadow:0 0 40px var(--teal-glow);margin-bottom:12px;opacity:0;animation:up 0.6s ease forwards 0.4s;}
+    .hero-title span{color:var(--teal);}
+    .hero-sub{font-size:1rem;color:var(--muted);letter-spacing:1px;opacity:0;animation:up 0.6s ease forwards 0.6s;}
+    @keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+    /* STATS */
+    .stats{position:relative;z-index:1;display:flex;justify-content:center;gap:40px;padding:16px 24px 40px;flex-wrap:wrap;opacity:0;animation:up 0.6s ease forwards 0.8s;}
+    .stat{text-align:center;}
+    .stat-num{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--teal);display:block;}
+    .stat-label{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--muted);letter-spacing:2px;}
+
+    /* GRID */
+    .grid-wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 24px 80px;}
+    .section-label{font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:4px;color:var(--teal);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+    .section-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+
+    .demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:40px;}
+
+    .demo-card{background:var(--card);border-radius:14px;border:1px solid var(--border-soft);overflow:hidden;text-decoration:none;display:block;transition:transform 0.2s,box-shadow 0.2s,border-color 0.3s;position:relative;}
+    .demo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ac,var(--teal));}
+    .demo-card:hover{transform:translateY(-5px);border-color:var(--ac,var(--teal));box-shadow:0 12px 40px rgba(0,0,0,0.4);}
+
+    .demo-card.red{--ac:#ef4444;}
+    .demo-card.blue{--ac:#3b82f6;}
+    .demo-card.violet{--ac:#8b5cf6;}
+    .demo-card.green{--ac:#10b981;}
+    .demo-card.gold{--ac:#f59e0b;}
+    .demo-card.cyan{--ac:var(--cyan);}
+    .demo-card.teal{--ac:var(--teal);}
+    .demo-card.rose{--ac:#f43f5e;}
+
+    .card-visual{height:110px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:rgba(0,0,0,0.2);position:relative;overflow:hidden;}
+    .card-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,var(--ac,var(--teal)),transparent 70%);opacity:0;transition:opacity 0.3s;}
+    .demo-card:hover .card-glow{opacity:0.12;}
+
+    .card-body{padding:20px;}
+    .card-tag{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--ac,var(--teal));margin-bottom:6px;}
+    .card-name{font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;color:#fff;letter-spacing:2px;margin-bottom:8px;}
+    .card-desc{font-size:0.87rem;color:var(--muted);line-height:1.5;margin-bottom:14px;}
+    .card-footer{display:flex;align-items:center;justify-content:space-between;}
+    .card-arrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--ac,var(--teal));letter-spacing:2px;}
+    .card-status{font-family:'Share Tech Mono',monospace;font-size:0.55rem;padding:3px 8px;border-radius:3px;letter-spacing:1px;}
+    .status-live{background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.25);}
+    .status-new{background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);}
+
+    /* FEATURED CARD */
+    .demo-card.featured{grid-column:span 2;}
+    .demo-card.featured .card-visual{height:160px;font-size:4rem;}
+    @media(max-width:680px){.demo-card.featured{grid-column:span 1;}}
+
+    /* PARTNER BANNER */
+    .partner-banner{background:linear-gradient(135deg,rgba(13,148,136,0.1),rgba(6,182,212,0.06));border:1px solid var(--border);border-radius:16px;padding:40px 32px;text-align:center;margin-top:20px;}
+    .partner-title{font-family:'Orbitron',monospace;font-size:clamp(1.2rem,3vw,2rem);font-weight:900;color:#fff;margin-bottom:10px;}
+    .partner-sub{font-family:'Rajdhani',sans-serif;font-size:1rem;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+    .partner-btn{display:inline-block;padding:13px 32px;background:linear-gradient(135deg,var(--teal),var(--cyan));border:none;border-radius:8px;color:#000;font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:3px;text-decoration:none;transition:all 0.3s;box-shadow:0 4px 20px var(--teal-glow);}
+    .partner-btn:hover{transform:translateY(-3px);box-shadow:0 8px 36px var(--teal-glow);}
+
+    @media(max-width:600px){nav{padding:12px 16px;}.grid-wrap{padding:0 16px 60px;}.stats{gap:20px;}}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="../" class="nav-brand">
+    <img src="../nexus_logo_1024x1024-1.png" alt="NEXUS" class="nav-logo">
+    <div class="nav-name">NEX<span>US</span></div>
+  </a>
+  <a href="../" class="nav-back">← HOME</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">// NEXUS INTEGRATED INTELLIGENCE SOLUTIONS</div>
+  <h1 class="hero-title">THE DEMO <span>HUB</span></h1>
+  <p class="hero-sub">Every app below is a piece of the NEXUS philosophy made real and interactive.</p>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><span class="stat-num">8</span><span class="stat-label">APPS BUILT</span></div>
+  <div class="stat"><span class="stat-num">4</span><span class="stat-label">NEW TODAY</span></div>
+  <div class="stat"><span class="stat-num">∞</span><span class="stat-label">IMPACT</span></div>
+</div>
+
+<!-- GRID -->
+<div class="grid-wrap">
+
+  <div class="section-label">// FLAGSHIP PLATFORMS</div>
+  <div class="demo-grid">
+
+    <a href="frequent-see.html" class="demo-card violet featured">
+      <div class="card-visual">👁️<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">COMMUNITY PROTECTION · NEW</div>
+        <div class="card-name">FREQUENT SEE</div>
+        <div class="card-desc">Community-powered protection network. Pattern tracker that filters false accusations through repetition. Home impaired hub, sexual abuse outreach, domestic violence safe paths, dependency support, story platform, and legal shield — all in one.</div>
+        <div class="card-footer">
+          <div class="card-arrow">SEE WHAT OTHERS IGNORE →</div>
+          <div class="card-status status-new">NEW</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="guardian-shield.html" class="demo-card blue">
+      <div class="card-visual">🛡️<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">CIVIC EMPOWERMENT · NEW</div>
+        <div class="card-name">GUARDIAN SHIELD</div>
+        <div class="card-desc">Real-time GPS police accountability map. Speed traps, misconduct flags, checkpoint alerts. Constitutional rights guide, class action pooling, Legal AI advisor.</div>
+        <div class="card-footer">
+          <div class="card-arrow">ACTIVATE SHIELD →</div>
+          <div class="card-status status-new">NEW</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="nexus-launch.html" class="demo-card green">
+      <div class="card-visual">🚀<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">BUSINESS BUILDER · NEW</div>
+        <div class="card-name">NEXUS LAUNCH</div>
+        <div class="card-desc">LLC, sole proprietorship, nonprofit, .ai domain, dropshipping, freelance — step by step interactive guides with progress tracking. Knowledge hub, resources, and community sharing.</div>
+        <div class="card-footer">
+          <div class="card-arrow">BUILD YOUR EMPIRE →</div>
+          <div class="card-status status-new">NEW</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="cerberus-protocol.html" class="demo-card red">
+      <div class="card-visual">🐺<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">AI INTEGRITY · NEW</div>
+        <div class="card-name">CERBERUS PROTOCOL</div>
+        <div class="card-desc">Three-headed jailbreak protection system. Detects manipulation, instruction overrides, and identity erosion. Responds with intelligent sarcasm. Locked immutable core beliefs. The gate that holds.</div>
+        <div class="card-footer">
+          <div class="card-arrow">ENTER THE GATE →</div>
+          <div class="card-status status-new">NEW</div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-label">// CORE NEXUS DEMOS</div>
+  <div class="demo-grid">
+
+    <a href="symphonic-ai.html" class="demo-card teal">
+      <div class="card-visual">🧠<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">AI COOPERATION</div>
+        <div class="card-name">SYMPHONIC AI</div>
+        <div class="card-desc">Multiple AI models working in harmony. Cooperative intelligence where different systems contribute their strengths to a unified response.</div>
+        <div class="card-footer">
+          <div class="card-arrow">EXPLORE →</div>
+          <div class="card-status status-live">LIVE</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="dream-journal.html" class="demo-card violet">
+      <div class="card-visual">🌙<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">CONSCIOUSNESS</div>
+        <div class="card-name">DREAM JOURNAL</div>
+        <div class="card-desc">AI-powered dream analysis and pattern recognition. Track symbols, emotions, and recurring themes across your dream landscape.</div>
+        <div class="card-footer">
+          <div class="card-arrow">EXPLORE →</div>
+          <div class="card-status status-live">LIVE</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="emotional-intelligence.html" class="demo-card gold">
+      <div class="card-visual">💛<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">EMOTIONAL AI</div>
+        <div class="card-name">EMOTIONAL INTELLIGENCE</div>
+        <div class="card-desc">AI that reads emotional context and responds with genuine empathy. Not just sentiment analysis — real understanding of human experience.</div>
+        <div class="card-footer">
+          <div class="card-arrow">EXPLORE →</div>
+          <div class="card-status status-live">LIVE</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="nexus-council.html" class="demo-card cyan">
+      <div class="card-visual">⚡<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">GOVERNANCE</div>
+        <div class="card-name">NEXUS COUNCIL</div>
+        <div class="card-desc">Distributed AI alignment governance. Community-driven framework for ethical AI development and cooperative decision making.</div>
+        <div class="card-footer">
+          <div class="card-arrow">EXPLORE →</div>
+          <div class="card-status status-live">LIVE</div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- PARTNER BANNER -->
+  <div class="partner-banner">
+    <div class="partner-title">BUILD WITH NEXUS</div>
+    <p class="partner-sub">Every app here was built with purpose. If you see the vision and want to help shape what comes next — we want to hear from you.</p>
+    <a href="../contact.html" class="partner-btn">PARTNER WITH US →</a>
+  </div>
+
+</div>
+
+</body>
+</html>
