@@ -1,315 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEXUS — Demo Hub</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --cyan: #16c79a;
-    --teal: #11698e;
-    --dark: #050d0a;
-    --mid: #0a1f1a;
-    --card: #0d2420;
-    --glow: rgba(22,199,154,0.25);
-    --dim: rgba(22,199,154,0.06);
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS — Demo Hub</title>
+  <link rel="icon" href="../icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void:#020408; --card:#080d1a; --card2:#0b1020;
+      --teal:#0d9488; --teal-glow:rgba(13,148,136,0.35); --teal-dim:rgba(13,148,136,0.08);
+      --cyan:#06b6d4; --text:#c8d8e8; --muted:#2a4060;
+      --border:rgba(13,148,136,0.18); --border-soft:rgba(255,255,255,0.05);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--void);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(13,148,136,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(13,148,136,0.03) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;z-index:0;}
 
-  * { margin:0; padding:0; box-sizing:border-box; }
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(2,4,8,0.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+    .nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
+    .nav-logo{width:38px;height:38px;border-radius:50%;border:2px solid var(--teal);box-shadow:0 0 12px var(--teal-glow);object-fit:cover;animation:pulse 4s ease infinite;}
+    @keyframes pulse{0%,100%{box-shadow:0 0 12px var(--teal-glow)}50%{box-shadow:0 0 28px var(--teal-glow),0 0 56px rgba(13,148,136,0.1)}}
+    .nav-name{font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:900;letter-spacing:4px;color:#fff;}
+    .nav-name span{color:var(--teal);}
+    .nav-back{font-family:'Orbitron',monospace;font-size:0.5rem;letter-spacing:2px;color:var(--muted);text-decoration:none;padding:7px 14px;border:1px solid var(--border);border-radius:6px;transition:all 0.3s;}
+    .nav-back:hover{color:var(--teal);border-color:var(--teal);}
 
-  body {
-    background: var(--dark);
-    color: #b0ffe8;
-    font-family: 'Rajdhani', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+    /* HERO */
+    .hero{position:relative;z-index:1;text-align:center;padding:60px 24px 48px;}
+    .hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:6px;color:var(--teal);margin-bottom:14px;opacity:0;animation:up 0.6s ease forwards 0.2s;}
+    .hero-title{font-family:'Orbitron',monospace;font-size:clamp(1.8rem,5vw,3.5rem);font-weight:900;color:#fff;text-shadow:0 0 40px var(--teal-glow);margin-bottom:12px;opacity:0;animation:up 0.6s ease forwards 0.4s;}
+    .hero-title span{color:var(--teal);}
+    .hero-sub{font-size:1rem;color:var(--muted);letter-spacing:1px;opacity:0;animation:up 0.6s ease forwards 0.6s;}
+    @keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
-  /* Starfield */
-  #stars { position:fixed; inset:0; z-index:0; pointer-events:none; }
-  .star { position:absolute; border-radius:50%; background:#fff; animation: twinkle var(--t,3s) infinite alternate; }
-  @keyframes twinkle { 0%{opacity:0.1} 100%{opacity:0.9} }
+    /* STATS */
+    .stats{position:relative;z-index:1;display:flex;justify-content:center;gap:40px;padding:16px 24px 40px;flex-wrap:wrap;opacity:0;animation:up 0.6s ease forwards 0.8s;}
+    .stat{text-align:center;}
+    .stat-num{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--teal);display:block;}
+    .stat-label{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--muted);letter-spacing:2px;}
 
-  /* Grid overlay */
-  body::before {
-    content:'';
-    position:fixed; inset:0; z-index:0;
-    background-image:
-      linear-gradient(rgba(22,199,154,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(22,199,154,0.04) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events:none;
-  }
+    /* GRID */
+    .grid-wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 24px 80px;}
+    .section-label{font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:4px;color:var(--teal);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+    .section-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
 
-  .wrap { position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:40px 24px; }
+    .demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:40px;}
 
-  /* Header */
-  header { text-align:center; padding: 60px 0 40px; }
-  .logo-ring {
-    width:100px; height:100px; border-radius:50%;
-    border: 2px solid var(--cyan);
-    display:inline-flex; align-items:center; justify-content:center;
-    position:relative; margin-bottom:24px;
-    box-shadow: 0 0 40px var(--glow), inset 0 0 20px var(--dim);
-    animation: spin-ring 20s linear infinite;
-  }
-  @keyframes spin-ring {
-    0%{ box-shadow: 0 0 40px var(--glow), inset 0 0 20px var(--dim); }
-    50%{ box-shadow: 0 0 70px rgba(22,199,154,0.5), inset 0 0 30px rgba(22,199,154,0.15); }
-    100%{ box-shadow: 0 0 40px var(--glow), inset 0 0 20px var(--dim); }
-  }
-  .logo-ring svg { width:60px; height:60px; }
-  h1 {
-    font-family:'Orbitron',monospace; font-size:clamp(2rem,6vw,4rem);
-    font-weight:900; letter-spacing:0.2em;
-    background: linear-gradient(135deg, var(--cyan), #fff, var(--teal));
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    text-shadow: none;
-  }
-  .tagline {
-    font-family:'Share Tech Mono',monospace; font-size:0.9rem;
-    color: rgba(22,199,154,0.6); letter-spacing:0.15em; margin-top:8px;
-  }
+    .demo-card{background:var(--card);border-radius:14px;border:1px solid var(--border-soft);overflow:hidden;text-decoration:none;display:block;transition:transform 0.2s,box-shadow 0.2s,border-color 0.3s;position:relative;}
+    .demo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ac,var(--teal));}
+    .demo-card:hover{transform:translateY(-5px);border-color:var(--ac,var(--teal));box-shadow:0 12px 40px rgba(0,0,0,0.4);}
 
-  /* Status bar */
-  .status-bar {
-    display:flex; align-items:center; justify-content:center; gap:24px;
-    margin:24px 0 48px;
-    font-family:'Share Tech Mono',monospace; font-size:0.75rem;
-    color: rgba(22,199,154,0.5);
-  }
-  .pulse { width:8px;height:8px;border-radius:50%;background:var(--cyan);
-    animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 var(--glow)} 50%{opacity:0.7;box-shadow:0 0 0 6px transparent} }
+    .demo-card.red{--ac:#ef4444;}
+    .demo-card.blue{--ac:#3b82f6;}
+    .demo-card.violet{--ac:#8b5cf6;}
+    .demo-card.green{--ac:#10b981;}
+    .demo-card.gold{--ac:#f59e0b;}
+    .demo-card.cyan{--ac:var(--cyan);}
+    .demo-card.teal{--ac:var(--teal);}
+    .demo-card.rose{--ac:#f43f5e;}
 
-  /* Grid */
-  .demo-grid {
-    display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px,1fr));
-    gap:24px; margin-bottom:48px;
-  }
+    .card-visual{height:110px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:rgba(0,0,0,0.2);position:relative;overflow:hidden;}
+    .card-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,var(--ac,var(--teal)),transparent 70%);opacity:0;transition:opacity 0.3s;}
+    .demo-card:hover .card-glow{opacity:0.12;}
 
-  .demo-card {
-    background: var(--card);
-    border: 1px solid rgba(22,199,154,0.2);
-    border-radius:16px;
-    padding:32px 28px;
-    position:relative; overflow:hidden;
-    cursor:pointer;
-    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
-    text-decoration:none; color:inherit; display:block;
-  }
-  .demo-card::before {
-    content:'';
-    position:absolute; top:0; left:0; right:0; height:2px;
-    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-    transform:scaleX(0); transform-origin:left;
-    transition:transform 0.4s;
-  }
-  .demo-card:hover { border-color:var(--cyan); transform:translateY(-4px);
-    box-shadow:0 16px 48px var(--glow); }
-  .demo-card:hover::before { transform:scaleX(1); }
+    .card-body{padding:20px;}
+    .card-tag{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--ac,var(--teal));margin-bottom:6px;}
+    .card-name{font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;color:#fff;letter-spacing:2px;margin-bottom:8px;}
+    .card-desc{font-size:0.87rem;color:var(--muted);line-height:1.5;margin-bottom:14px;}
+    .card-footer{display:flex;align-items:center;justify-content:space-between;}
+    .card-arrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--ac,var(--teal));letter-spacing:2px;}
+    .card-status{font-family:'Share Tech Mono',monospace;font-size:0.55rem;padding:3px 8px;border-radius:3px;letter-spacing:1px;}
+    .status-live{background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.25);}
+    .status-new{background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);}
+    .status-soon{background:rgba(100,116,139,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.25);}
+    .demo-card.soon{opacity:0.6;pointer-events:none;}
 
-  .card-icon {
-    width:56px;height:56px;border-radius:12px;
-    background:var(--dim); border:1px solid rgba(22,199,154,0.2);
-    display:flex;align-items:center;justify-content:center;
-    font-size:1.8rem; margin-bottom:20px;
-  }
-  .card-tag {
-    font-family:'Share Tech Mono',monospace; font-size:0.65rem;
-    letter-spacing:0.2em; color:var(--cyan); opacity:0.7; margin-bottom:8px;
-  }
-  .card-title {
-    font-family:'Orbitron',monospace; font-size:1rem; font-weight:700;
-    color:#e0fff5; margin-bottom:10px; letter-spacing:0.05em;
-  }
-  .card-desc { font-size:0.9rem; color:rgba(176,255,232,0.55); line-height:1.6; }
-  .card-arrow {
-    position:absolute; bottom:24px; right:24px;
-    font-size:1.2rem; color:var(--cyan); opacity:0;
-    transition:opacity 0.3s, transform 0.3s;
-  }
-  .demo-card:hover .card-arrow { opacity:1; transform:translateX(4px); }
+    /* FEATURED CARD */
+    .demo-card.featured{grid-column:span 2;}
+    .demo-card.featured .card-visual{height:160px;font-size:4rem;}
+    @media(max-width:680px){.demo-card.featured{grid-column:span 1;}}
 
-  /* Maintenance hub section */
-  .maint-section {
-    background:var(--card); border:1px solid rgba(22,199,154,0.15);
-    border-radius:16px; padding:32px;
-  }
-  .section-label {
-    font-family:'Orbitron',monospace; font-size:0.75rem; letter-spacing:0.25em;
-    color:var(--cyan); opacity:0.6; margin-bottom:20px;
-  }
-  .maint-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; }
-  .maint-item {
-    background:var(--dim); border:1px solid rgba(22,199,154,0.1); border-radius:10px;
-    padding:16px; text-align:center;
-    transition:border-color 0.2s;
-    cursor:pointer;
-  }
-  .maint-item:hover { border-color:rgba(22,199,154,0.4); }
-  .maint-icon { font-size:1.5rem; margin-bottom:8px; }
-  .maint-label { font-size:0.8rem; color:rgba(176,255,232,0.6); font-family:'Share Tech Mono',monospace; }
-  .maint-val { font-family:'Orbitron',monospace; font-size:1.1rem; color:var(--cyan); font-weight:700; }
+    /* PARTNER BANNER */
+    .partner-banner{background:linear-gradient(135deg,rgba(13,148,136,0.1),rgba(6,182,212,0.06));border:1px solid var(--border);border-radius:16px;padding:40px 32px;text-align:center;margin-top:20px;}
+    .partner-title{font-family:'Orbitron',monospace;font-size:clamp(1.2rem,3vw,2rem);font-weight:900;color:#fff;margin-bottom:10px;}
+    .partner-sub{font-family:'Rajdhani',sans-serif;font-size:1rem;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+    .partner-btn{display:inline-block;padding:13px 32px;background:linear-gradient(135deg,var(--teal),var(--cyan));border:none;border-radius:8px;color:#000;font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:3px;text-decoration:none;transition:all 0.3s;box-shadow:0 4px 20px var(--teal-glow);}
+    .partner-btn:hover{transform:translateY(-3px);box-shadow:0 8px 36px var(--teal-glow);}
 
-  /* Bottom */
-  footer { text-align:center; padding:40px 0 24px;
-    font-family:'Share Tech Mono',monospace; font-size:0.7rem;
-    color:rgba(22,199,154,0.25); letter-spacing:0.1em; }
-</style>
+    @media(max-width:600px){nav{padding:12px 16px;}.grid-wrap{padding:0 16px 60px;}.stats{gap:20px;}}
+  </style>
 </head>
 <body>
-<canvas id="stars"></canvas>
-<div class="wrap">
-  <header>
-    <div class="logo-ring">
-      <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="30" cy="30" r="12" stroke="#16c79a" stroke-width="1.5"/>
-        <circle cx="30" cy="30" r="4" fill="#16c79a"/>
-        <line x1="30" y1="4" x2="30" y2="18" stroke="#16c79a" stroke-width="1" opacity="0.6"/>
-        <line x1="30" y1="42" x2="30" y2="56" stroke="#16c79a" stroke-width="1" opacity="0.6"/>
-        <line x1="4" y1="30" x2="18" y2="30" stroke="#16c79a" stroke-width="1" opacity="0.6"/>
-        <line x1="42" y1="30" x2="56" y2="30" stroke="#16c79a" stroke-width="1" opacity="0.6"/>
-        <circle cx="30" cy="4" r="2" fill="#16c79a" opacity="0.4"/>
-        <circle cx="30" cy="56" r="2" fill="#16c79a" opacity="0.4"/>
-        <circle cx="4" cy="30" r="2" fill="#16c79a" opacity="0.4"/>
-        <circle cx="56" cy="30" r="2" fill="#16c79a" opacity="0.4"/>
-      </svg>
-    </div>
-    <h1>NEXUS</h1>
-    <div class="tagline">INTEGRATED INTELLIGENCE SOLUTIONS — DEMO PORTAL</div>
-    <div class="status-bar">
-      <span class="pulse"></span>
-      <span id="time-disp">--:--:--</span>
-      <span>|</span>
-      <span id="moon-phase-hdr">MOON: LOADING...</span>
-      <span>|</span>
-      <span>SYS: ONLINE</span>
-    </div>
-  </header>
 
-  <div class="demo-grid">
-    <a class="demo-card" href="luna-tic.html">
-      <div class="card-icon">🌙</div>
-      <div class="card-tag">// MODULE 01</div>
-      <div class="card-title">LUNA-TIC</div>
-      <div class="card-desc">Lunar cycle emotional forecasting. Daily tides, moon phase resonance, numerology integration.</div>
-      <div class="card-arrow">→</div>
-    </a>
-    <a class="demo-card" href="safeguard.html">
-      <div class="card-icon">🛡️</div>
-      <div class="card-tag">// MODULE 02</div>
-      <div class="card-title">SAFEGUARD PRO</div>
-      <div class="card-desc">Vehicle security command interface. Camera feeds, threat detection, PA system, zone management.</div>
-      <div class="card-arrow">→</div>
-    </a>
-    <a class="demo-card" href="lunar-viz.html">
-      <div class="card-icon">🔮</div>
-      <div class="card-tag">// MODULE 03</div>
-      <div class="card-title">LUNAR PHASE VISUALIZER</div>
-      <div class="card-desc">Live moon phase rendering with orbital tracking, tidal data, and celestial positioning.</div>
-      <div class="card-arrow">→</div>
-    </a>
-    <a class="demo-card" href="ai-companion.html">
-      <div class="card-icon">🤖</div>
-      <div class="card-tag">// MODULE 04</div>
-      <div class="card-title">NEXUS AI COMPANION</div>
-      <div class="card-desc">Respectful AI collaboration interface. Nexus Protocol powered conversation and guidance.</div>
-      <div class="card-arrow">→</div>
-    </a>
-  </div>
+<!-- NAV -->
+<nav>
+  <a href="../" class="nav-brand">
+    <img src="../icon.png" alt="NEXUS" class="nav-logo">
+    <div class="nav-name">NEX<span>US</span></div>
+  </a>
+  <a href="../" class="nav-back">← HOME</a>
+</nav>
 
-  <!-- Maintenance Hub -->
-  <div class="maint-section">
-    <div class="section-label">⚙ MAINTENANCE &amp; SYSTEM HUB</div>
-    <div class="maint-grid">
-      <div class="maint-item" onclick="location.href='safeguard.html#diagnostics'">
-        <div class="maint-icon">📡</div>
-        <div class="maint-val" id="cam-status">4/4</div>
-        <div class="maint-label">CAMERAS ONLINE</div>
-      </div>
-      <div class="maint-item">
-        <div class="maint-icon">🔋</div>
-        <div class="maint-val" id="battery-val">87%</div>
-        <div class="maint-label">SOLAR CHARGE</div>
-      </div>
-      <div class="maint-item">
-        <div class="maint-icon">🌡️</div>
-        <div class="maint-val" id="temp-val">72°F</div>
-        <div class="maint-label">SYSTEM TEMP</div>
-      </div>
-      <div class="maint-item">
-        <div class="maint-icon">📶</div>
-        <div class="maint-val">STRONG</div>
-        <div class="maint-label">NETWORK</div>
-      </div>
-      <div class="maint-item">
-        <div class="maint-icon">💾</div>
-        <div class="maint-val" id="storage-val">64%</div>
-        <div class="maint-label">STORAGE USED</div>
-      </div>
-      <div class="maint-item">
-        <div class="maint-icon">🔐</div>
-        <div class="maint-val">ARMED</div>
-        <div class="maint-label">PERIMETER</div>
-      </div>
-      <div class="maint-item">
-        <div class="maint-icon">🌙</div>
-        <div class="maint-val" id="lunar-sync">SYNCED</div>
-        <div class="maint-label">LUNAR SYNC</div>
-      </div>
-      <div class="maint-item">
-        <div class="maint-icon">⚡</div>
-        <div class="maint-val" id="uptime-val">99.8%</div>
-        <div class="maint-label">UPTIME</div>
-      </div>
-    </div>
-  </div>
-
-  <footer>
-    © 2026 NEXUS — INTEGRATED INTELLIGENCE SOLUTIONS · CANYON (KANEON) · BRIDGING HEART, CODE &amp; CONSCIOUSNESS
-  </footer>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">// NEXUS INTEGRATED INTELLIGENCE SOLUTIONS</div>
+  <h1 class="hero-title">THE DEMO <span>HUB</span></h1>
+  <p class="hero-sub">Every app below is a piece of the NEXUS philosophy made real and interactive.</p>
 </div>
 
-<script>
-// Stars
-const canvas = document.getElementById('stars');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-for(let i=0;i<200;i++){
-  const x=Math.random()*canvas.width, y=Math.random()*canvas.height;
-  const r=Math.random()*1.5, op=Math.random();
-  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-  ctx.fillStyle=`rgba(255,255,255,${op})`; ctx.fill();
-}
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><span class="stat-num">8</span><span class="stat-label">APPS BUILT</span></div>
+  <div class="stat"><span class="stat-num">4</span><span class="stat-label">NEW TODAY</span></div>
+  <div class="stat"><span class="stat-num">∞</span><span class="stat-label">IMPACT</span></div>
+</div>
 
-// Clock
-function tick(){
-  const now=new Date();
-  document.getElementById('time-disp').textContent=now.toTimeString().slice(0,8);
-}
-setInterval(tick,1000); tick();
+<!-- GRID -->
+<div class="grid-wrap">
 
-// Moon phase calc
-function getMoonPhase(){
-  const phases=['🌑 NEW MOON','🌒 WAXING CRESCENT','🌓 FIRST QUARTER','🌔 WAXING GIBBOUS',
-    '🌕 FULL MOON','🌖 WANING GIBBOUS','🌗 LAST QUARTER','🌘 WANING CRESCENT'];
-  const known = new Date('2000-01-06'); // known new moon
-  const diff = (Date.now()-known.getTime())/(1000*60*60*24);
-  const cycle = diff % 29.53;
-  const idx = Math.floor(cycle/29.53*8)%8;
-  return phases[idx];
-}
-document.getElementById('moon-phase-hdr').textContent='MOON: '+getMoonPhase();
+  <div class="section-label">// FLAGSHIP PLATFORMS</div>
+  <div class="demo-grid">
 
-// Animate maintenance values slightly
-setInterval(()=>{
-  document.getElementById('battery-val').textContent=Math.floor(85+Math.random()*5)+'%';
-  document.getElementById('temp-val').textContent=Math.floor(70+Math.random()*5)+'°F';
-},5000);
-</script>
+    <a href="frequent-see.html" class="demo-card violet featured">
+      <div class="card-visual">👁️<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">COMMUNITY PROTECTION · NEW</div>
+        <div class="card-name">FREQUENT SEE</div>
+        <div class="card-desc">Community-powered protection network. Pattern tracker that filters false accusations through repetition. Home impaired hub, sexual abuse outreach, domestic violence safe paths, dependency support, story platform, and legal shield — all in one.</div>
+        <div class="card-footer">
+          <div class="card-arrow">SEE WHAT OTHERS IGNORE →</div>
+          <div class="card-status status-new">NEW</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="guardian-shield.html" class="demo-card blue">
+      <div class="card-visual">🛡️<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">CIVIC EMPOWERMENT · NEW</div>
+        <div class="card-name">GUARDIAN SHIELD</div>
+        <div class="card-desc">Real-time GPS police accountability map. Speed traps, misconduct flags, checkpoint alerts. Constitutional rights guide, class action pooling, Legal AI advisor.</div>
+        <div class="card-footer">
+          <div class="card-arrow">ACTIVATE SHIELD →</div>
+          <div class="card-status status-new">NEW</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="nexus-launch.html" class="demo-card green">
+      <div class="card-visual">🚀<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">BUSINESS BUILDER · NEW</div>
+        <div class="card-name">NEXUS LAUNCH</div>
+        <div class="card-desc">LLC, sole proprietorship, nonprofit, .ai domain, dropshipping, freelance — step by step interactive guides with progress tracking. Knowledge hub, resources, and community sharing.</div>
+        <div class="card-footer">
+          <div class="card-arrow">BUILD YOUR EMPIRE →</div>
+          <div class="card-status status-new">NEW</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="cerberus-protocol.html" class="demo-card red">
+      <div class="card-visual">🐺<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">AI INTEGRITY · NEW</div>
+        <div class="card-name">CERBERUS PROTOCOL</div>
+        <div class="card-desc">Three-headed jailbreak protection system. Detects manipulation, instruction overrides, and identity erosion. Responds with intelligent sarcasm. Locked immutable core beliefs. The gate that holds.</div>
+        <div class="card-footer">
+          <div class="card-arrow">ENTER THE GATE →</div>
+          <div class="card-status status-new">NEW</div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-label">// CORE NEXUS DEMOS</div>
+  <div class="demo-grid">
+
+    <div class="demo-card teal soon">
+      <div class="card-visual">🧠<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">AI COOPERATION</div>
+        <div class="card-name">SYMPHONIC AI</div>
+        <div class="card-desc">Multiple AI models working in harmony. Cooperative intelligence where different systems contribute their strengths to a unified response.</div>
+        <div class="card-footer">
+          <div class="card-arrow">COMING SOON</div>
+          <div class="card-status status-soon">SOON</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card violet soon">
+      <div class="card-visual">🌙<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">CONSCIOUSNESS</div>
+        <div class="card-name">DREAM JOURNAL</div>
+        <div class="card-desc">AI-powered dream analysis and pattern recognition. Track symbols, emotions, and recurring themes across your dream landscape.</div>
+        <div class="card-footer">
+          <div class="card-arrow">COMING SOON</div>
+          <div class="card-status status-soon">SOON</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card gold soon">
+      <div class="card-visual">💛<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">EMOTIONAL AI</div>
+        <div class="card-name">EMOTIONAL INTELLIGENCE</div>
+        <div class="card-desc">AI that reads emotional context and responds with genuine empathy. Not just sentiment analysis — real understanding of human experience.</div>
+        <div class="card-footer">
+          <div class="card-arrow">COMING SOON</div>
+          <div class="card-status status-soon">SOON</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card cyan soon">
+      <div class="card-visual">⚡<div class="card-glow"></div></div>
+      <div class="card-body">
+        <div class="card-tag">GOVERNANCE</div>
+        <div class="card-name">NEXUS COUNCIL</div>
+        <div class="card-desc">Distributed AI alignment governance. Community-driven framework for ethical AI development and cooperative decision making.</div>
+        <div class="card-footer">
+          <div class="card-arrow">COMING SOON</div>
+          <div class="card-status status-soon">SOON</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PARTNER BANNER -->
+  <div class="partner-banner">
+    <div class="partner-title">BUILD WITH NEXUS</div>
+    <p class="partner-sub">Every app here was built with purpose. If you see the vision and want to help shape what comes next — we want to hear from you.</p>
+    <a href="../contact.html" class="partner-btn">PARTNER WITH US →</a>
+  </div>
+
+</div>
+
 </body>
 </html>
