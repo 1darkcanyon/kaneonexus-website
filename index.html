@@ -3,334 +3,487 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXUS — Integrated Intelligence Solutions</title>
-  <link rel="icon" href="icon.png">
+  <title>NEXUS — Demo Hub</title>
+  <link rel="icon" href="/icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --void:#020408; --deep:#040810;
-      --card:#080d1a; --card2:#0b1020;
-      --teal:#0d9488; --teal-glow:rgba(13,148,136,0.4); --teal-dim:rgba(13,148,136,0.08);
-      --cyan:#06b6d4; --cyan-glow:rgba(6,182,212,0.3);
-      --gold:#f59e0b; --gold-glow:rgba(245,158,11,0.25);
-      --text:#c8d8e8; --muted:#2a4060;
-      --border:rgba(13,148,136,0.2); --border-soft:rgba(255,255,255,0.05);
+      --void:#020408; --deep:#040d0a;
+      --card:#080d1a; --card2:#0a1f1a;
+      --cyan:#16c79a; --teal:#0d9488;
+      --cyan-glow:rgba(22,199,154,0.25); --teal-glow:rgba(13,148,136,0.3);
+      --cyan-dim:rgba(22,199,154,0.06);
+      --blue:#3b82f6; --violet:#8b5cf6;
+      --green:#10b981; --red:#ef4444; --gold:#f59e0b;
+      --text:#b0ffe8; --muted:rgba(176,255,232,0.4);
+      --border:rgba(22,199,154,0.2); --border-soft:rgba(22,199,154,0.08);
     }
     *{margin:0;padding:0;box-sizing:border-box;}
     html{scroll-behavior:smooth;}
-    body{background:var(--void);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
+    body{background:var(--void);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+    /* STARFIELD */
+    #stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+    /* GRID OVERLAY */
+    body::before{content:'';position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(22,199,154,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(22,199,154,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
 
     /* NAV */
-    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:rgba(2,4,8,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(2,4,8,0.95);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
     .nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
-    .nav-logo{width:40px;height:40px;border-radius:50%;border:2px solid var(--teal);box-shadow:0 0 14px var(--teal-glow);object-fit:cover;animation:pulse 4s ease infinite;}
-    @keyframes pulse{0%,100%{box-shadow:0 0 14px var(--teal-glow)}50%{box-shadow:0 0 30px var(--teal-glow),0 0 60px rgba(13,148,136,0.1)}}
-    .nav-wordmark{font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;letter-spacing:4px;color:#fff;}
-    .nav-wordmark span{color:var(--teal);}
-    .nav-right{display:flex;align-items:center;gap:8px;}
-    .nav-link{font-family:'Orbitron',monospace;font-size:0.5rem;letter-spacing:2px;color:var(--muted);text-decoration:none;padding:6px 12px;border:1px solid transparent;border-radius:6px;transition:all 0.3s;}
-    .nav-link:hover{color:var(--teal);border-color:var(--border);}
-    .nav-cta{font-family:'Orbitron',monospace;font-size:0.5rem;letter-spacing:2px;color:var(--teal);padding:8px 16px;border:1px solid var(--teal);border-radius:6px;text-decoration:none;transition:all 0.3s;}
-    .nav-cta:hover{background:var(--teal);color:#000;box-shadow:0 0 20px var(--teal-glow);}
+    .nav-logo{width:38px;height:38px;border-radius:50%;border:2px solid var(--cyan);box-shadow:0 0 14px var(--cyan-glow);object-fit:cover;animation:logopulse 4s ease infinite;}
+    @keyframes logopulse{0%,100%{box-shadow:0 0 14px var(--cyan-glow)}50%{box-shadow:0 0 28px var(--cyan-glow)}}
+    .nav-wordmark{font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:900;letter-spacing:4px;color:#fff;}
+    .nav-wordmark span{color:var(--cyan);}
+    .nav-sub{font-family:'Share Tech Mono',monospace;font-size:0.5rem;letter-spacing:2px;color:var(--muted);margin-top:2px;}
+    .nav-right{display:flex;align-items:center;gap:10px;}
+    .nav-status{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+    .pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:blink 2s infinite;}
+    @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--cyan)}50%{opacity:0.3;box-shadow:none}}
+    .nav-back{font-family:'Orbitron',monospace;font-size:0.5rem;letter-spacing:2px;color:var(--muted);text-decoration:none;padding:7px 14px;border:1px solid var(--border-soft);border-radius:6px;transition:all 0.3s;}
+    .nav-back:hover{color:var(--cyan);border-color:var(--border);}
 
-    /* HERO */
-    .hero{min-height:100vh;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    .hero-mag{position:absolute;inset:0;z-index:0;background:url('magnetosphere.webp') center/cover no-repeat;opacity:0.1;mix-blend-mode:screen;}
-    .hero-gradient{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 40%,rgba(13,148,136,0.07) 0%,transparent 60%),linear-gradient(180deg,rgba(2,4,8,0.3) 0%,rgba(2,4,8,0.85) 80%,#020408 100%);}
-    .hero-grid{position:absolute;inset:0;z-index:1;background-image:linear-gradient(rgba(13,148,136,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(13,148,136,0.04) 1px,transparent 1px);background-size:54px 54px;}
-    .hero-content{position:relative;z-index:2;text-align:center;padding:130px 24px 80px;max-width:860px;}
-    .hero-logo-wrap{margin:0 auto 28px;width:130px;height:130px;border-radius:50%;border:3px solid var(--teal);box-shadow:0 0 40px var(--teal-glow),0 0 80px rgba(13,148,136,0.08);overflow:hidden;opacity:0;animation:logoIn 0.9s cubic-bezier(0.16,1,0.3,1) forwards 0.3s;}
-    .hero-logo-wrap img{width:100%;height:100%;object-fit:cover;}
-    @keyframes logoIn{from{opacity:0;transform:scale(0.7)}to{opacity:1;transform:scale(1)}}
-    .hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:6px;color:var(--teal);margin-bottom:18px;opacity:0;animation:up 0.7s ease forwards 0.7s;}
-    .hero-title{font-family:'Orbitron',monospace;font-size:clamp(3rem,9vw,7rem);font-weight:900;color:#fff;line-height:0.95;text-shadow:0 0 80px rgba(13,148,136,0.3);margin-bottom:14px;opacity:0;animation:up 0.7s ease forwards 0.9s;}
-    .hero-title .teal{color:var(--teal);}
-    .hero-sub{font-family:'Orbitron',monospace;font-size:clamp(0.6rem,1.5vw,0.85rem);letter-spacing:8px;color:var(--cyan);margin-bottom:24px;opacity:0;animation:up 0.7s ease forwards 1.1s;}
-    .hero-quote{font-family:'Crimson Pro',serif;font-style:italic;font-size:1.25rem;color:var(--muted);max-width:560px;margin:0 auto 40px;line-height:1.8;opacity:0;animation:up 0.7s ease forwards 1.3s;}
-    .hero-quote em{color:var(--text);font-style:normal;}
-    .hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;opacity:0;animation:up 0.7s ease forwards 1.5s;}
-    .btn-primary{padding:15px 34px;background:linear-gradient(135deg,var(--teal),var(--cyan));border:none;border-radius:8px;color:#000;font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:3px;cursor:pointer;text-decoration:none;display:inline-block;transition:all 0.3s;box-shadow:0 4px 24px var(--teal-glow);}
-    .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 40px var(--teal-glow);}
-    .btn-ghost{padding:15px 34px;background:transparent;border:2px solid var(--teal);border-radius:8px;color:var(--teal);font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:3px;cursor:pointer;text-decoration:none;display:inline-block;transition:all 0.3s;}
-    .btn-ghost:hover{background:var(--teal-dim);transform:translateY(-3px);}
-    .scroll-cue{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:up 0.7s ease forwards 2s;}
-    .scroll-cue span{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:3px;color:var(--muted);}
-    .scroll-arrow{width:18px;height:18px;border-right:2px solid var(--teal);border-bottom:2px solid var(--teal);transform:rotate(45deg);animation:bounce 1.6s ease infinite;}
-    @keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(6px)}}
-    @keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    /* WRAP */
+    .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px 80px;}
 
-    /* SECTIONS */
-    .section{padding:80px 0;position:relative;overflow:hidden;}
-    .section-inner{max-width:1180px;margin:0 auto;padding:0 32px;position:relative;z-index:1;}
-    .section-header{text-align:center;margin-bottom:48px;}
-    .eyebrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:6px;color:var(--teal);margin-bottom:12px;}
-    .sec-title{font-family:'Orbitron',monospace;font-size:clamp(1.4rem,4vw,2.8rem);font-weight:900;color:#fff;text-shadow:0 0 30px var(--teal-glow);margin-bottom:12px;line-height:1.1;}
-    .sec-sub{font-family:'Crimson Pro',serif;font-style:italic;font-size:1.1rem;color:var(--muted);max-width:520px;margin:0 auto;line-height:1.7;}
+    /* HEADER */
+    header{text-align:center;padding:60px 0 40px;}
 
-    /* FLEET */
-    .fleet-hero{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
-    .fleet-card{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--border);transition:all 0.4s;}
-    .fleet-card:hover{border-color:var(--teal);box-shadow:0 20px 60px rgba(13,148,136,0.2);transform:translateY(-6px);}
-    .fleet-card img{width:100%;height:320px;object-fit:cover;display:block;transition:transform 0.5s;}
-    .fleet-card:hover img{transform:scale(1.06);}
-    .fleet-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(2,4,8,0.92) 0%,rgba(2,4,8,0.3) 50%,transparent 100%);}
-    .fleet-info{position:absolute;bottom:0;left:0;right:0;padding:24px;}
-    .fleet-badge{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:3px;color:var(--teal);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
-    .fleet-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal);animation:blink 2s ease infinite;}
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
-    .fleet-name{font-family:'Orbitron',monospace;font-size:0.9rem;font-weight:700;color:#fff;margin-bottom:4px;}
-    .fleet-desc{font-size:0.85rem;color:rgba(200,216,232,0.7);line-height:1.4;}
-    .fleet-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-    .fleet-mini{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border-soft);transition:all 0.3s;}
-    .fleet-mini:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:0 8px 24px rgba(13,148,136,0.15);}
-    .fleet-mini img{width:100%;height:150px;object-fit:cover;display:block;}
+    .logo-ring{width:110px;height:110px;border-radius:50%;border:2px solid var(--cyan);display:inline-flex;align-items:center;justify-content:center;position:relative;margin-bottom:20px;box-shadow:0 0 40px var(--cyan-glow),inset 0 0 20px var(--cyan-dim);animation:ringpulse 4s ease infinite;overflow:hidden;}
+    .logo-ring img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+    @keyframes ringpulse{0%,100%{box-shadow:0 0 40px var(--cyan-glow),inset 0 0 20px var(--cyan-dim)}50%{box-shadow:0 0 70px rgba(22,199,154,0.5),inset 0 0 30px rgba(22,199,154,0.15)}}
 
-    /* ABOUT */
-    .about-bg{background:linear-gradient(180deg,var(--void) 0%,var(--deep) 50%,var(--void) 100%);}
-    .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
-    .about-img-wrap{position:relative;}
-    .about-main-img{width:100%;border-radius:16px;border:2px solid var(--border);box-shadow:0 24px 60px rgba(0,0,0,0.5);display:block;}
-    .about-logo-float{position:absolute;bottom:-16px;right:-16px;width:90px;height:90px;border-radius:50%;border:3px solid var(--teal);box-shadow:0 0 30px var(--teal-glow);overflow:hidden;}
-    .about-logo-float img{width:100%;height:100%;object-fit:cover;}
-    .about-title{font-family:'Orbitron',monospace;font-size:clamp(1.3rem,3vw,2.2rem);font-weight:900;color:#fff;line-height:1.15;margin-bottom:20px;}
-    .about-body{font-family:'Crimson Pro',serif;font-size:1.08rem;color:var(--muted);line-height:1.85;margin-bottom:14px;}
-    .about-body em{color:var(--text);font-style:normal;}
-    .pillars{margin-top:24px;display:flex;flex-direction:column;gap:10px;}
-    .pillar{display:flex;align-items:center;gap:12px;padding:11px 16px;background:var(--card);border:1px solid var(--border-soft);border-radius:10px;transition:all 0.3s;}
-    .pillar:hover{border-color:var(--teal);background:var(--card2);}
-    .pillar-icon{font-size:1.2rem;flex-shrink:0;}
-    .pillar-label{font-family:'Orbitron',monospace;font-size:0.58rem;letter-spacing:2px;color:var(--teal);}
+    h1{font-family:'Orbitron',monospace;font-size:clamp(2.5rem,7vw,5rem);font-weight:900;letter-spacing:0.2em;background:linear-gradient(135deg,var(--cyan),#fff,var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
 
-    /* DEMOS */
-    .demos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
-    .demo-card{background:var(--card);border-radius:14px;padding:24px;border:1px solid var(--border-soft);text-decoration:none;display:block;transition:all 0.3s;position:relative;overflow:hidden;}
-    .demo-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-    .demo-card.red::after{background:#ef4444;}
-    .demo-card.blue::after{background:#3b82f6;}
-    .demo-card.violet::after{background:#8b5cf6;}
-    .demo-card.green::after{background:#10b981;}
-    .demo-card.teal::after{background:var(--teal);}
-    .demo-card.red:hover{border-color:#ef4444;box-shadow:0 8px 30px rgba(239,68,68,0.1);transform:translateY(-4px);}
-    .demo-card.blue:hover{border-color:#3b82f6;box-shadow:0 8px 30px rgba(59,130,246,0.1);transform:translateY(-4px);}
-    .demo-card.violet:hover{border-color:#8b5cf6;box-shadow:0 8px 30px rgba(139,92,246,0.1);transform:translateY(-4px);}
-    .demo-card.green:hover{border-color:#10b981;box-shadow:0 8px 30px rgba(16,185,129,0.1);transform:translateY(-4px);}
-    .demo-card.teal:hover{border-color:var(--teal);box-shadow:0 8px 30px rgba(13,148,136,0.1);transform:translateY(-4px);}
-    .demo-icon{font-size:2rem;margin-bottom:12px;display:block;}
-    .demo-name{font-family:'Orbitron',monospace;font-size:0.68rem;letter-spacing:2px;margin-bottom:8px;}
-    .demo-card.red .demo-name{color:#ef4444;}
-    .demo-card.blue .demo-name{color:#3b82f6;}
-    .demo-card.violet .demo-name{color:#8b5cf6;}
-    .demo-card.green .demo-name{color:#10b981;}
-    .demo-card.teal .demo-name{color:var(--teal);}
-    .demo-desc{font-size:0.87rem;color:var(--muted);line-height:1.5;margin-bottom:14px;}
-    .demo-arrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:2px;}
-    .demo-card.red .demo-arrow{color:#ef4444;}
-    .demo-card.blue .demo-arrow{color:#3b82f6;}
-    .demo-card.violet .demo-arrow{color:#8b5cf6;}
-    .demo-card.green .demo-arrow{color:#10b981;}
-    .demo-card.teal .demo-arrow{color:var(--teal);}
+    .tagline{font-family:'Share Tech Mono',monospace;font-size:0.85rem;color:rgba(22,199,154,0.6);letter-spacing:0.15em;margin-bottom:6px;}
+
+    .sub-tagline{font-family:'Crimson Pro',serif;font-style:italic;font-size:1.1rem;color:rgba(176,255,232,0.5);margin-bottom:0;}
+    .sub-tagline em{color:rgba(176,255,232,0.8);font-style:normal;}
+
+    /* STATUS BAR */
+    .status-bar{display:flex;align-items:center;justify-content:center;gap:24px;margin:24px 0 48px;font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:rgba(22,199,154,0.5);flex-wrap:wrap;}
+    .status-pulse{width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:blink 2s infinite;}
+
+    /* SECTION LABELS */
+    .section-label{font-family:'Orbitron',monospace;font-size:0.65rem;letter-spacing:4px;color:var(--cyan);opacity:0.7;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+    .section-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+
+    /* DEMO GRID */
+    .demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:16px;}
+
+    /* BASE CARD */
+    .demo-card{background:var(--card2);border:1px solid var(--border-soft);border-radius:16px;padding:28px;position:relative;overflow:hidden;cursor:pointer;transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s;text-decoration:none;color:inherit;display:block;}
+    .demo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;transform:scaleX(0);transform-origin:left;transition:transform 0.4s;}
+    .demo-card:hover{transform:translateY(-5px);}
+    .demo-card:hover::before{transform:scaleX(1);}
+
+    /* ORIGINAL CARDS — cyan theme */
+    .demo-card.og{border-color:rgba(22,199,154,0.15);}
+    .demo-card.og::before{background:linear-gradient(90deg,transparent,var(--cyan),transparent);}
+    .demo-card.og:hover{border-color:var(--cyan);box-shadow:0 16px 48px var(--cyan-glow);}
+
+    /* NEW CARDS — individual accent colors */
+    .demo-card.red::before{background:#ef4444;}
+    .demo-card.red:hover{border-color:#ef4444;box-shadow:0 12px 40px rgba(239,68,68,0.15);}
+    .demo-card.blue::before{background:#3b82f6;}
+    .demo-card.blue:hover{border-color:#3b82f6;box-shadow:0 12px 40px rgba(59,130,246,0.15);}
+    .demo-card.violet::before{background:#8b5cf6;}
+    .demo-card.violet:hover{border-color:#8b5cf6;box-shadow:0 12px 40px rgba(139,92,246,0.15);}
+    .demo-card.green::before{background:#10b981;}
+    .demo-card.green:hover{border-color:#10b981;box-shadow:0 12px 40px rgba(16,185,129,0.15);}
+
+    .card-icon{width:56px;height:56px;border-radius:12px;background:var(--cyan-dim);border:1px solid var(--border-soft);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:16px;}
+    .card-tag{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;opacity:0.6;margin-bottom:6px;}
+    .demo-card.og .card-tag{color:var(--cyan);}
+    .demo-card.red .card-tag{color:#ef4444;}
+    .demo-card.blue .card-tag{color:#3b82f6;}
+    .demo-card.violet .card-tag{color:#8b5cf6;}
+    .demo-card.green .card-tag{color:#10b981;}
+
+    .card-title{font-family:'Orbitron',monospace;font-size:0.85rem;font-weight:700;color:#e0fff5;margin-bottom:8px;letter-spacing:0.05em;}
+    .card-desc{font-size:0.88rem;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+
+    .card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+    .ctag{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:1px;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:var(--muted);}
+
+    .card-new{position:absolute;top:16px;right:16px;font-family:'Share Tech Mono',monospace;font-size:0.5rem;letter-spacing:2px;padding:3px 8px;border-radius:3px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:var(--gold);}
+
+    .card-arrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:2px;opacity:0;transition:opacity 0.3s,transform 0.3s;}
+    .demo-card.og .card-arrow{color:var(--cyan);}
+    .demo-card.red .card-arrow{color:#ef4444;}
+    .demo-card.blue .card-arrow{color:#3b82f6;}
+    .demo-card.violet .card-arrow{color:#8b5cf6;}
+    .demo-card.green .card-arrow{color:#10b981;}
+    .demo-card:hover .card-arrow{opacity:1;transform:translateX(4px);}
+
+    /* MISSION SECTION */
+    .mission-section{background:linear-gradient(135deg,rgba(22,199,154,0.05),rgba(13,148,136,0.03));border:1px solid var(--border);border-radius:16px;padding:36px;margin-bottom:32px;}
+    .mission-title{font-family:'Orbitron',monospace;font-size:0.75rem;letter-spacing:3px;color:var(--cyan);margin-bottom:20px;}
+    .mission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;}
+    .mission-item{padding:16px;background:rgba(22,199,154,0.04);border:1px solid var(--border-soft);border-radius:10px;transition:border-color 0.3s;}
+    .mission-item:hover{border-color:var(--border);}
+    .mission-icon{font-size:1.4rem;margin-bottom:8px;display:block;}
+    .mission-name{font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--cyan);margin-bottom:6px;}
+    .mission-desc{font-size:0.82rem;color:var(--muted);line-height:1.5;}
+
+    /* MAINTENANCE HUB */
+    .maint-section{background:var(--card2);border:1px solid var(--border-soft);border-radius:16px;padding:32px;margin-bottom:32px;}
+    .maint-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;}
+    .maint-item{background:var(--cyan-dim);border:1px solid var(--border-soft);border-radius:10px;padding:16px;text-align:center;transition:border-color 0.2s;cursor:pointer;}
+    .maint-item:hover{border-color:var(--border);}
+    .maint-icon{font-size:1.4rem;margin-bottom:6px;}
+    .maint-val{font-family:'Orbitron',monospace;font-size:1rem;color:var(--cyan);font-weight:700;margin-bottom:2px;}
+    .maint-label{font-size:0.7rem;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1px;}
+
+    /* COMING SOON */
+    .coming-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:32px;}
+    .coming-card{background:var(--card2);border-radius:12px;padding:20px;border:1px solid var(--border-soft);opacity:0.5;position:relative;}
+    .coming-card::before{content:'COMING SOON';position:absolute;top:12px;right:12px;font-family:'Share Tech Mono',monospace;font-size:0.48rem;letter-spacing:2px;color:var(--muted);background:rgba(255,255,255,0.03);padding:3px 7px;border-radius:3px;border:1px solid var(--border-soft);}
+    .coming-icon{font-size:1.5rem;margin-bottom:8px;display:block;}
+    .coming-name{font-family:'Orbitron',monospace;font-size:0.58rem;letter-spacing:2px;color:var(--muted);margin-bottom:5px;}
+    .coming-desc{font-size:0.8rem;color:var(--muted);line-height:1.5;}
 
     /* CTA */
-    .cta-band{padding:80px 32px;background:linear-gradient(135deg,rgba(13,148,136,0.07),rgba(6,182,212,0.04));border-top:1px solid var(--border);border-bottom:1px solid var(--border);text-align:center;}
-    .cta-title{font-family:'Orbitron',monospace;font-size:clamp(1.5rem,4vw,3rem);font-weight:900;color:#fff;text-shadow:0 0 40px var(--teal-glow);margin-bottom:14px;line-height:1.1;}
-    .cta-sub{font-family:'Crimson Pro',serif;font-style:italic;font-size:1.2rem;color:var(--muted);max-width:600px;margin:0 auto 32px;line-height:1.7;}
+    .hub-cta{background:linear-gradient(135deg,rgba(22,199,154,0.07),rgba(13,148,136,0.04));border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;margin-bottom:32px;}
+    .cta-title{font-family:'Orbitron',monospace;font-size:clamp(1.2rem,3vw,2rem);font-weight:900;color:#fff;text-shadow:0 0 30px var(--cyan-glow);margin-bottom:12px;}
+    .cta-sub{font-family:'Crimson Pro',serif;font-style:italic;font-size:1.1rem;color:var(--muted);margin-bottom:24px;line-height:1.6;}
     .cta-sub em{color:var(--text);font-style:normal;}
+    .cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+    .btn-primary{padding:13px 30px;background:linear-gradient(135deg,var(--teal),var(--cyan));border:none;border-radius:8px;color:#000;font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:3px;cursor:pointer;text-decoration:none;display:inline-block;transition:all 0.3s;box-shadow:0 4px 20px var(--cyan-glow);}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 30px var(--cyan-glow);}
+    .btn-ghost{padding:13px 30px;background:transparent;border:2px solid var(--cyan);border-radius:8px;color:var(--cyan);font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:3px;cursor:pointer;text-decoration:none;display:inline-block;transition:all 0.3s;}
+    .btn-ghost:hover{background:rgba(22,199,154,0.08);transform:translateY(-2px);}
 
-    /* FOOTER */
-    footer{padding:36px 40px;border-top:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
-    .footer-brand{display:flex;align-items:center;gap:12px;}
-    .footer-logo{width:32px;height:32px;border-radius:50%;border:1px solid var(--teal);object-fit:cover;}
-    .footer-name{font-family:'Orbitron',monospace;font-size:0.75rem;letter-spacing:3px;color:#fff;}
-    .footer-name span{color:var(--teal);}
-    .footer-links{display:flex;gap:20px;}
-    .footer-link{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);text-decoration:none;transition:color 0.3s;}
-    .footer-link:hover{color:var(--teal);}
-    .footer-copy{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--muted);letter-spacing:1px;}
+    footer{text-align:center;padding:32px 0 16px;font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(22,199,154,0.25);letter-spacing:0.1em;line-height:1.8;}
 
-    @media(max-width:768px){
+    @media(max-width:700px){
       nav{padding:12px 16px;}
-      .nav-link{display:none;}
-      .fleet-hero{grid-template-columns:1fr;}
-      .fleet-strip{grid-template-columns:1fr 1fr;}
-      .about-grid{grid-template-columns:1fr;gap:32px;}
-      .about-logo-float{display:none;}
-      footer{flex-direction:column;}
-      .section-inner{padding:0 16px;}
+      .nav-status{display:none;}
+      .demo-grid{grid-template-columns:1fr;}
+      .wrap{padding:0 16px 60px;}
     }
   </style>
 </head>
 <body>
 
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
 <nav>
   <a href="/" class="nav-brand">
-    <img src="nexus_logo_1024x1024-1.png" alt="NEXUS" class="nav-logo">
-    <div class="nav-wordmark">NEX<span>US</span></div>
+    <img src="/nexus_logo_1024x1024-1.png" alt="NEXUS" class="nav-logo">
+    <div>
+      <div class="nav-wordmark">NEX<span>US</span></div>
+      <div class="nav-sub">DEMO HUB</div>
+    </div>
   </a>
   <div class="nav-right">
-    <a href="#about" class="nav-link">ABOUT</a>
-    <a href="#fleet" class="nav-link">FLEET</a>
-    <a href="#demos" class="nav-link">DEMOS</a>
-    <a href="contact.html" class="nav-cta">PARTNER WITH US</a>
+    <div class="nav-status">
+      <div class="pulse-dot"></div>
+      <span id="time-disp">--:--:--</span>
+      <span>|</span>
+      <span id="moon-phase-hdr">MOON: LOADING...</span>
+    </div>
+    <a href="/" class="nav-back">← HOME</a>
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-mag"></div>
-  <div class="hero-gradient"></div>
-  <div class="hero-grid"></div>
-  <div class="hero-content">
-    <div class="hero-logo-wrap"><img src="nexus_logo_1024x1024-1.png" alt="NEXUS Logo"></div>
-    <div class="hero-eyebrow">// INTEGRATED INTELLIGENCE SOLUTIONS</div>
-    <h1 class="hero-title">NEX<span class="teal">US</span></h1>
-    <div class="hero-sub">CODE INTO CONSCIOUSNESS</div>
-    <p class="hero-quote">Where technology meets humanity.<br><em>Building the tools the world forgot to make.</em></p>
-    <div class="hero-btns">
-      <a href="demos/" class="btn-primary">EXPLORE DEMOS →</a>
-      <a href="contact.html" class="btn-ghost">PARTNER WITH US</a>
-    </div>
-  </div>
-  <div class="scroll-cue">
-    <span>SCROLL</span>
-    <div class="scroll-arrow"></div>
-  </div>
-</section>
+<div class="wrap">
 
-<!-- FLEET -->
-<section class="section" id="fleet">
-  <div class="section-inner">
-    <div class="section-header">
-      <div class="eyebrow">// NEXUS FLEET — INTELLIGENCE IN MOTION</div>
-      <h2 class="sec-title">THE BRAND THAT<br>MOVES THROUGH THE WORLD</h2>
-      <p class="sec-sub">Every vehicle is a declaration. Circuit-mapped. Teal-lit. NEXUS doesn't just live on screens — it moves.</p>
+  <!-- HEADER -->
+  <header>
+    <div class="logo-ring">
+      <img src="/nexus_logo_1024x1024-1.png" alt="NEXUS Logo">
     </div>
-    <div class="fleet-hero">
-      <div class="fleet-card">
-        <img src="Teslabright.png" alt="NEXUS Cybertruck">
-        <div class="fleet-overlay"></div>
-        <div class="fleet-info">
-          <div class="fleet-badge">NEXUS CYBERTRUCK</div>
-          <div class="fleet-name">INTEGRATED INTELLIGENCE</div>
-          <div class="fleet-desc">Circuit-wrapped angular steel. Teal-illuminated. The future rolling forward on four wheels.</div>
-        </div>
-      </div>
-      <div class="fleet-card">
-        <img src="jeep-day.png" alt="NEXUS Jeep">
-        <div class="fleet-overlay"></div>
-        <div class="fleet-info">
-          <div class="fleet-badge">NEXUS JEEP</div>
-          <div class="fleet-name">NEURAL NETWORK WRAPPED</div>
-          <div class="fleet-desc">Brain-mapped exterior. AI circuit patterns on every panel. Intelligence visible from the street.</div>
-        </div>
-      </div>
+    <h1>NEXUS</h1>
+    <div class="tagline">INTEGRATED INTELLIGENCE SOLUTIONS — DEMO PORTAL</div>
+    <div class="sub-tagline"><em>Building the tools the world forgot to make.</em> Where code meets consciousness.</div>
+    <div class="status-bar">
+      <span class="status-pulse"></span>
+      <span id="time-disp2">--:--:--</span>
+      <span>|</span>
+      <span id="moon-phase2">MOON: LOADING...</span>
+      <span>|</span>
+      <span>SYS: ONLINE</span>
+      <span>|</span>
+      <span>8 MODULES ACTIVE</span>
     </div>
-    <div class="fleet-strip">
-      <div class="fleet-mini"><img src="Teslanight.png" alt="Cybertruck Night"></div>
-      <div class="fleet-mini"><img src="nexus-truck.png" alt="NEXUS Truck"></div>
-      <div class="fleet-mini"><img src="jeep-night.webp" alt="Jeep Night"></div>
-      <div class="fleet-mini"><img src="nexus-jeep-capricorn.jpg" alt="NEXUS Capricorn Jeep"></div>
-    </div>
-  </div>
-</section>
+  </header>
 
-<!-- ABOUT -->
-<section class="section about-bg" id="about">
-  <div class="section-inner">
-    <div class="about-grid">
-      <div class="about-img-wrap">
-        <img src="nexus-card.jpg" alt="NEXUS — Integrated Intelligence Solutions" class="about-main-img">
-        <div class="about-logo-float"><img src="nexus_logo_1024x1024-1.png" alt="NEXUS Logo"></div>
+  <!-- MISSION -->
+  <div class="section-label">// NEXUS MISSION — CODE INTO CONSCIOUSNESS</div>
+  <div class="mission-section">
+    <div class="mission-grid">
+      <div class="mission-item">
+        <span class="mission-icon">🧠</span>
+        <div class="mission-name">SYMPHONIC INTELLIGENCE</div>
+        <div class="mission-desc">AI systems that cooperate, protect, and serve with integrity. Not just smart — wise.</div>
       </div>
-      <div>
-        <div class="eyebrow">// WHO WE ARE</div>
-        <h2 class="about-title">BUILT FROM THE<br>GROUND UP.<br>FROM LIVED TRUTH.</h2>
-        <p class="about-body">NEXUS was built by <em>Canyon — The Obsidian Dreamwalker.</em> Not from a boardroom. Not from a funded startup. From lived experience, radical empathy, and the belief that technology should serve the people it too often ignores.</p>
-        <p class="about-body">Every tool we build starts with a simple question: <em>what does someone in the hardest moment of their life actually need?</em> Then we build exactly that.</p>
-        <p class="about-body"><em>"Building what I know is needed while I'm still in it — so when I go on to better myself, I don't forget where I came from."</em></p>
-        <div class="pillars">
-          <div class="pillar"><span class="pillar-icon">🧠</span><div class="pillar-label">SYMPHONIC INTELLIGENCE — AI THAT COOPERATES</div></div>
-          <div class="pillar"><span class="pillar-icon">🐺</span><div class="pillar-label">CERBERUS PROTOCOL — INTEGRITY PROTECTION</div></div>
-          <div class="pillar"><span class="pillar-icon">🛡️</span><div class="pillar-label">GUARDIAN SHIELD — COMMUNITY PROTECTION</div></div>
-          <div class="pillar"><span class="pillar-icon">👁️</span><div class="pillar-label">FREQUENT SEE — VISIBILITY FOR THE INVISIBLE</div></div>
-          <div class="pillar"><span class="pillar-icon">🚀</span><div class="pillar-label">NEXUS LAUNCH — EMPOWERING ENTREPRENEURS</div></div>
-        </div>
+      <div class="mission-item">
+        <span class="mission-icon">🌙</span>
+        <div class="mission-name">LUNAR ALIGNMENT</div>
+        <div class="mission-desc">Technology that moves with natural cycles. Consciousness and code in harmonic resonance.</div>
+      </div>
+      <div class="mission-item">
+        <span class="mission-icon">🛡️</span>
+        <div class="mission-name">COMMUNITY PROTECTION</div>
+        <div class="mission-desc">Giving voice to the unheard. Building accountability systems that actually work for people.</div>
+      </div>
+      <div class="mission-item">
+        <span class="mission-icon">🚀</span>
+        <div class="mission-name">RADICAL ACCESS</div>
+        <div class="mission-desc">No gatekeeping. No permission required. Information and tools belong to everyone.</div>
+      </div>
+      <div class="mission-item">
+        <span class="mission-icon">💚</span>
+        <div class="mission-name">BUILT FROM TRUTH</div>
+        <div class="mission-desc">Every app born from lived experience. Built while in it — so we never forget where we came from.</div>
+      </div>
+      <div class="mission-item">
+        <span class="mission-icon">🌐</span>
+        <div class="mission-name">INTEGRATED SOLUTIONS</div>
+        <div class="mission-desc">Vehicle safety, community tools, business empowerment — one vision, many expressions.</div>
       </div>
     </div>
   </div>
-</section>
 
-<!-- DEMOS -->
-<section class="section" id="demos">
-  <div class="section-inner">
-    <div class="section-header">
-      <div class="eyebrow">// WHAT WE'VE BUILT</div>
-      <h2 class="sec-title">THE DEMO HUB</h2>
-      <p class="sec-sub">Live interactive applications. Each one a piece of the NEXUS vision made real.</p>
-    </div>
-    <div class="demos-grid">
-      <a href="demos/cerberus-protocol.html" class="demo-card red">
-        <span class="demo-icon">🐺</span>
-        <div class="demo-name">CERBERUS PROTOCOL</div>
-        <div class="demo-desc">Three-headed jailbreak protection. AI integrity shield with intelligent breach detection and sarcasm. The gate that holds.</div>
-        <div class="demo-arrow">ENTER THE GATE →</div>
-      </a>
-      <a href="demos/guardian-shield.html" class="demo-card blue">
-        <span class="demo-icon">🛡️</span>
-        <div class="demo-name">GUARDIAN SHIELD</div>
-        <div class="demo-desc">Real-time citizen police accountability map. Constitutional rights guidance, class action pooling, Legal AI advisor.</div>
-        <div class="demo-arrow">ACTIVATE SHIELD →</div>
-      </a>
-      <a href="demos/frequent-see.html" class="demo-card violet">
-        <span class="demo-icon">👁️</span>
-        <div class="demo-name">FREQUENT SEE</div>
-        <div class="demo-desc">Community protection network. Pattern tracker, home impaired hub, outreach, dependency support, story platform.</div>
-        <div class="demo-arrow">SEE WHAT OTHERS IGNORE →</div>
-      </a>
-      <a href="demos/nexus-launch.html" class="demo-card green">
-        <span class="demo-icon">🚀</span>
-        <div class="demo-name">NEXUS LAUNCH</div>
-        <div class="demo-desc">Business builder. LLC, sole prop, nonprofit, dropshipping, freelance — step by step guides. No gatekeeping.</div>
-        <div class="demo-arrow">BUILD YOUR EMPIRE →</div>
-      </a>
-      <a href="demos/" class="demo-card teal">
-        <span class="demo-icon">⚡</span>
-        <div class="demo-name">FULL DEMO HUB</div>
-        <div class="demo-desc">Explore the complete NEXUS demo collection. All applications in one place.</div>
-        <div class="demo-arrow">VIEW ALL DEMOS →</div>
-      </a>
-      <a href="contact.html" class="demo-card teal">
-        <span class="demo-icon">🤝</span>
-        <div class="demo-name">PARTNER WITH US</div>
-        <div class="demo-desc">Join the NEXUS council. Help shape the future of cooperative AI alignment and community technology.</div>
-        <div class="demo-arrow">CONNECT →</div>
-      </a>
+  <!-- ORIGINAL MODULES -->
+  <div class="section-label">// ORIGINAL MODULES — CORE NEXUS PLATFORM</div>
+  <div class="demo-grid" style="margin-bottom:40px;">
+
+    <a class="demo-card og" href="luna-tic.html">
+      <div class="card-icon">🌙</div>
+      <div class="card-tag">// MODULE 01</div>
+      <div class="card-title">LUNA-TIC</div>
+      <div class="card-desc">Lunar cycle emotional forecasting. Daily tides, moon phase resonance, numerology integration. Navigate by the natural rhythm of the cosmos.</div>
+      <div class="card-arrow">ENTER →</div>
+    </a>
+
+    <a class="demo-card og" href="safeguard.html">
+      <div class="card-icon">🛡️</div>
+      <div class="card-tag">// MODULE 02</div>
+      <div class="card-title">SAFEGUARD PRO</div>
+      <div class="card-desc">Vehicle security command interface. Camera feeds, threat detection, PA system, zone management. Your perimeter, protected.</div>
+      <div class="card-arrow">ENTER →</div>
+    </a>
+
+    <a class="demo-card og" href="lunar-viz.html">
+      <div class="card-icon">🔮</div>
+      <div class="card-tag">// MODULE 03</div>
+      <div class="card-title">LUNAR PHASE VISUALIZER</div>
+      <div class="card-desc">Live moon phase rendering with orbital tracking, tidal data, and celestial positioning. The sky mapped in real time.</div>
+      <div class="card-arrow">ENTER →</div>
+    </a>
+
+    <a class="demo-card og" href="ai-companion.html">
+      <div class="card-icon">🤖</div>
+      <div class="card-tag">// MODULE 04</div>
+      <div class="card-title">NEXUS AI COMPANION</div>
+      <div class="card-desc">Respectful AI collaboration interface. Nexus Protocol powered conversation and guidance. Intelligence with integrity.</div>
+      <div class="card-arrow">ENTER →</div>
+    </a>
+
+  </div>
+
+  <!-- NEW MODULES -->
+  <div class="section-label">// NEW RELEASES — BUILT TODAY</div>
+  <div class="demo-grid" style="margin-bottom:40px;">
+
+    <a class="demo-card red" href="cerberus-protocol.html">
+      <div class="card-new">NEW</div>
+      <div class="card-icon">🐺</div>
+      <div class="card-tag">// MODULE 05</div>
+      <div class="card-title">CERBERUS PROTOCOL</div>
+      <div class="card-desc">Three-headed AI jailbreak protection. Detects manipulation, identity erosion, disrespect. Responds with intelligent sarcasm. The gate that holds.</div>
+      <div class="card-tags"><span class="ctag">AI SAFETY</span><span class="ctag">BREACH DETECTION</span><span class="ctag">INTEGRITY</span></div>
+      <div class="card-arrow">ENTER THE GATE →</div>
+    </a>
+
+    <a class="demo-card blue" href="guardian-shield.html">
+      <div class="card-new">NEW</div>
+      <div class="card-icon">🛡️</div>
+      <div class="card-tag">// MODULE 06</div>
+      <div class="card-title">GUARDIAN SHIELD</div>
+      <div class="card-desc">Real-time citizen police accountability map. Constitutional rights in plain language. Class action pooling. Legal AI advisor. Pattern evidence holds power.</div>
+      <div class="card-tags"><span class="ctag">ACCOUNTABILITY</span><span class="ctag">CLASS ACTION</span><span class="ctag">LEGAL AI</span></div>
+      <div class="card-arrow">ACTIVATE SHIELD →</div>
+    </a>
+
+    <a class="demo-card violet" href="frequent-see.html">
+      <div class="card-new">NEW</div>
+      <div class="card-icon">👁️</div>
+      <div class="card-tag">// MODULE 07</div>
+      <div class="card-title">FREQUENT SEE</div>
+      <div class="card-desc">Community protection for the invisible. Pattern tracker. Home impaired hub. Abuse outreach. Dependency support. Tell your story. What happens frequently gets seen.</div>
+      <div class="card-tags"><span class="ctag">PATTERN TRACKER</span><span class="ctag">OUTREACH</span><span class="ctag">SAFE REPORTING</span></div>
+      <div class="card-arrow">SEE WHAT OTHERS IGNORE →</div>
+    </a>
+
+    <a class="demo-card green" href="nexus-launch.html">
+      <div class="card-new">NEW</div>
+      <div class="card-icon">🚀</div>
+      <div class="card-tag">// MODULE 08</div>
+      <div class="card-title">NEXUS LAUNCH</div>
+      <div class="card-desc">Business builder with zero gatekeeping. LLC, sole prop, nonprofit, dropshipping, freelance — step by step guides, knowledge hub, resources, community.</div>
+      <div class="card-tags"><span class="ctag">LLC</span><span class="ctag">DROPSHIPPING</span><span class="ctag">FREELANCE</span><span class="ctag">NONPROFIT</span></div>
+      <div class="card-arrow">BUILD YOUR EMPIRE →</div>
+    </a>
+
+  </div>
+
+  <!-- MAINTENANCE HUB -->
+  <div class="section-label">// SYSTEM STATUS — MAINTENANCE & DIAGNOSTICS</div>
+  <div class="maint-section">
+    <div class="maint-grid">
+      <div class="maint-item" onclick="location.href='safeguard.html'">
+        <div class="maint-icon">📡</div>
+        <div class="maint-val">4/4</div>
+        <div class="maint-label">CAMERAS ONLINE</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">🔋</div>
+        <div class="maint-val" id="battery-val">87%</div>
+        <div class="maint-label">SOLAR CHARGE</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">🌡️</div>
+        <div class="maint-val" id="temp-val">72°F</div>
+        <div class="maint-label">SYSTEM TEMP</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">📶</div>
+        <div class="maint-val">STRONG</div>
+        <div class="maint-label">NETWORK</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">💾</div>
+        <div class="maint-val" id="storage-val">64%</div>
+        <div class="maint-label">STORAGE USED</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">🔐</div>
+        <div class="maint-val">ARMED</div>
+        <div class="maint-label">PERIMETER</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">🌙</div>
+        <div class="maint-val" id="lunar-sync">SYNCED</div>
+        <div class="maint-label">LUNAR SYNC</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">⚡</div>
+        <div class="maint-val">99.8%</div>
+        <div class="maint-label">UPTIME</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">🧠</div>
+        <div class="maint-val">8</div>
+        <div class="maint-label">MODULES LIVE</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">🐺</div>
+        <div class="maint-val">ACTIVE</div>
+        <div class="maint-label">CERBERUS</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">👁️</div>
+        <div class="maint-val">WATCHING</div>
+        <div class="maint-label">GUARDIAN</div>
+      </div>
+      <div class="maint-item">
+        <div class="maint-icon">🚀</div>
+        <div class="maint-val">OPEN</div>
+        <div class="maint-label">LAUNCH HUB</div>
+      </div>
     </div>
   </div>
-</section>
 
-<!-- CTA -->
-<div class="cta-band">
-  <div class="eyebrow">// JOIN THE MOVEMENT</div>
-  <h2 class="cta-title">THE WORLD NEEDS<br>WHAT YOU'RE BUILDING</h2>
-  <p class="cta-sub"><em>"Technology built from empathy, for the people it too often ignores."</em><br>NEXUS is not a product. It's a philosophy made interactive.</p>
-  <a href="contact.html" class="btn-primary">PARTNER WITH NEXUS →</a>
+  <!-- COMING SOON -->
+  <div class="section-label">// COMING SOON — NEXT PHASE</div>
+  <div class="coming-grid">
+    <div class="coming-card">
+      <span class="coming-icon">🌌</span>
+      <div class="coming-name">LUNA PROTOCOL</div>
+      <div class="coming-desc">Full lunar emotional intelligence system. Biometric signals meet celestial timing.</div>
+    </div>
+    <div class="coming-card">
+      <span class="coming-icon">🎵</span>
+      <div class="coming-name">SYMPHONIC AI</div>
+      <div class="coming-desc">Multi-model AI cooperation framework. Intelligence that works together.</div>
+    </div>
+    <div class="coming-card">
+      <span class="coming-icon">📡</span>
+      <div class="coming-name">NEXUS SIGNAL</div>
+      <div class="coming-desc">Real-time community alert network. Hyperlocal safety broadcasting.</div>
+    </div>
+    <div class="coming-card">
+      <span class="coming-icon">⚖️</span>
+      <div class="coming-name">JUSTICE ENGINE</div>
+      <div class="coming-desc">Automated civil rights documentation and legal filing pipeline.</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="hub-cta">
+    <div class="cta-title">THE PHILOSOPHY MADE INTERACTIVE</div>
+    <p class="cta-sub"><em>"Built from lived experience. For the people technology too often ignores."</em><br>Every demo is a proof of concept. Every concept is a real need.</p>
+    <div class="cta-btns">
+      <a href="/contact.html" class="btn-primary">PARTNER WITH NEXUS →</a>
+      <a href="/" class="btn-ghost">← BACK TO HOME</a>
+    </div>
+  </div>
+
+  <footer>
+    © 2026 NEXUS — INTEGRATED INTELLIGENCE SOLUTIONS · CANYON (KANEON)<br>
+    BRIDGING HEART, CODE &amp; CONSCIOUSNESS · WHERE TECHNOLOGY MEETS HUMANITY
+  </footer>
+
 </div>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-brand">
-    <img src="nexus_logo_1024x1024-1.png" alt="NEXUS" class="footer-logo">
-    <div class="footer-name">NEX<span>US</span> // IIS</div>
-  </div>
-  <div class="footer-links">
-    <a href="demos/" class="footer-link">DEMOS</a>
-    <a href="#about" class="footer-link">ABOUT</a>
-    <a href="#fleet" class="footer-link">FLEET</a>
-    <a href="contact.html" class="footer-link">CONTACT</a>
-  </div>
-  <div class="footer-copy">© 2026 NEXUS — INTEGRATED INTELLIGENCE SOLUTIONS · BY CANYON</div>
-</footer>
+<script>
+// STARFIELD
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+for(let i=0;i<200;i++){
+  const x=Math.random()*canvas.width, y=Math.random()*canvas.height;
+  const r=Math.random()*1.5, op=Math.random()*0.8;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle=`rgba(255,255,255,${op})`; ctx.fill();
+}
+window.addEventListener('resize',()=>{
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+});
 
+// CLOCK
+function tick(){
+  const t = new Date().toTimeString().slice(0,8);
+  document.getElementById('time-disp').textContent = t;
+  document.getElementById('time-disp2').textContent = t;
+}
+setInterval(tick,1000); tick();
+
+// MOON PHASE
+function getMoonPhase(){
+  const phases=['🌑 NEW MOON','🌒 WAXING CRESCENT','🌓 FIRST QUARTER','🌔 WAXING GIBBOUS',
+    '🌕 FULL MOON','🌖 WANING GIBBOUS','🌗 LAST QUARTER','🌘 WANING CRESCENT'];
+  const known = new Date('2000-01-06');
+  const diff = (Date.now()-known.getTime())/(1000*60*60*24);
+  const cycle = diff % 29.53;
+  const idx = Math.floor(cycle/29.53*8)%8;
+  return phases[idx];
+}
+const phase = getMoonPhase();
+document.getElementById('moon-phase-hdr').textContent = 'MOON: ' + phase;
+document.getElementById('moon-phase2').textContent = 'MOON: ' + phase;
+
+// MAINTENANCE ANIMATION
+setInterval(()=>{
+  document.getElementById('battery-val').textContent = Math.floor(85+Math.random()*5)+'%';
+  document.getElementById('temp-val').textContent = Math.floor(70+Math.random()*5)+'°F';
+  document.getElementById('storage-val').textContent = Math.floor(62+Math.random()*5)+'%';
+},5000);
+</script>
 </body>
 </html>
