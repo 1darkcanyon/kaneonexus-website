@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS Integrated Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --magenta: #cc00ff;
+      --cyan: #00e5ff;
+      --deep: #0a0010;
+      --gold: #ffaa00;
+    }
+
+    html, body {
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      cursor: none;
+    }
+
+    /* ── CUSTOM CURSOR ── */
+    .cursor {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--cyan);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease, background 0.3s ease;
+      box-shadow: 0 0 12px var(--cyan), 0 0 24px var(--cyan);
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,229,255,0.4);
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.18s ease, width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* ── VIDEO BACKGROUND ── */
+    .hero {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .video-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+    .video-bg.loaded { opacity: 1; }
+
+    /* Vignette overlay */
+    .vignette {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.55) 80%, rgba(0,0,0,0.85) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Scanline texture */
+    .scanlines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* ── CONTENT ── */
+    .content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* Eyebrow line */
+    .eyebrow {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 300;
+      font-size: clamp(0.65rem, 1.5vw, 0.85rem);
+      letter-spacing: 0.45em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 1.2s ease 0.8s forwards;
+      margin-bottom: 1.2rem;
+    }
+
+    /* Main wordmark */
+    .wordmark {
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      font-size: clamp(4rem, 14vw, 11rem);
+      line-height: 0.9;
+      letter-spacing: 0.12em;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,0.15);
+      background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        var(--cyan) 30%,
+        var(--magenta) 60%,
+        #ffffff 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      opacity: 0;
+      transform: translateY(20px) scale(0.96);
+      animation: fadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      text-shadow: none;
+      position: relative;
+    }
+
+    /* Wordmark glow layer */
+    .wordmark::after {
+      content: 'NEXUS';
+      position: absolute;
+      inset: 0;
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      font-size: inherit;
+      letter-spacing: inherit;
+      line-height: inherit;
+      color: transparent;
+      -webkit-text-stroke: 0px;
+      filter: blur(28px);
+      background: linear-gradient(135deg, var(--cyan), var(--magenta));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* Subtitle */
+    .subtitle {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 300;
+      font-size: clamp(0.7rem, 1.8vw, 1rem);
+      letter-spacing: 0.35em;
+      color: rgba(255,255,255,0.45);
+      text-transform: uppercase;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeUp 1.2s ease 1.2s forwards;
+      margin-top: 1rem;
+      margin-bottom: 3.5rem;
+    }
+
+    /* ── ENTER BUTTON ── */
+    .enter-btn {
+      position: relative;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: clamp(0.75rem, 1.6vw, 0.9rem);
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      text-decoration: none;
+      padding: 1rem 3rem;
+      border: 1px solid rgba(0,229,255,0.35);
+      background: rgba(0,229,255,0.04);
+      cursor: none;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeUp 1.2s ease 1.6s forwards;
+      transition: color 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+    }
+
+    /* Corner accents */
+    .enter-btn::before,
+    .enter-btn::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-color: var(--magenta);
+      border-style: solid;
+      transition: width 0.4s ease, height 0.4s ease, opacity 0.4s ease;
+      opacity: 0.7;
+    }
+    .enter-btn::before {
+      top: -1px; left: -1px;
+      border-width: 1px 0 0 1px;
+    }
+    .enter-btn::after {
+      bottom: -1px; right: -1px;
+      border-width: 0 1px 1px 0;
+    }
+
+    /* Hover fill sweep */
+    .enter-btn .fill {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(204,0,255,0.08));
+      transform: translateX(-101%);
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .enter-btn:hover {
+      color: #fff;
+      border-color: rgba(204,0,255,0.6);
+      background: transparent;
+    }
+    .enter-btn:hover .fill { transform: translateX(0); }
+    .enter-btn:hover::before,
+    .enter-btn:hover::after {
+      width: 14px;
+      height: 14px;
+      opacity: 1;
+    }
+
+    .enter-btn span { position: relative; z-index: 1; }
+
+    /* ── BOTTOM SIGIL LINE ── */
+    .sigil-line {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      opacity: 0;
+      animation: fadeUp 1s ease 2.2s forwards;
+      z-index: 10;
+    }
+    .sigil-line::before,
+    .sigil-line::after {
+      content: '';
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(0,229,255,0.4));
+    }
+    .sigil-line::after {
+      background: linear-gradient(to left, transparent, rgba(0,229,255,0.4));
+    }
+    .sigil-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
+      color: rgba(0,229,255,0.35);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ── PULSE RING (behind wordmark) ── */
+    .pulse-ring {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      border: 1px solid rgba(204,0,255,0.12);
+      animation: pulseRing 4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .pulse-ring:nth-child(2) { animation-delay: 1.3s; width: 480px; height: 480px; border-color: rgba(0,229,255,0.07); }
+    .pulse-ring:nth-child(3) { animation-delay: 2.6s; width: 640px; height: 640px; border-color: rgba(204,0,255,0.05); }
+
+    /* ── KEYFRAMES ── */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes pulseRing {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.06); opacity: 0.2; }
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 600px) {
+      .pulse-ring { display: none; }
+      .subtitle { letter-spacing: 0.2em; }
+      .enter-btn { padding: 0.9rem 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <section class="hero">
+
+    <!-- ╔══ SWAP src WITH YOUR VIDEO FILE PATH ══╗ -->
+    <video class="video-bg" id="heroBg"
+      src="Nexusstart.mp4"
+      autoplay muted loop playsinline
+      preload="auto">
+    </video>
+    <!-- ╚════════════════════════════════════════╝ -->
+
+    <div class="vignette"></div>
+    <div class="scanlines"></div>
+
+    <!-- Pulse rings -->
+    <div class="pulse-ring"></div>
+    <div class="pulse-ring"></div>
+    <div class="pulse-ring"></div>
+
+    <div class="content">
+      <p class="eyebrow">Integrated Intelligence Solutions</p>
+      <h1 class="wordmark">NEXUS</h1>
+      <p class="subtitle">Perception &nbsp;·&nbsp; Protection &nbsp;·&nbsp; Presence</p>
+      <a href="/platform" class="enter-btn">
+        <div class="fill"></div>
+        <span>Enter</span>
+      </a>
+    </div>
+
+    <div class="sigil-line">
+      <span class="sigil-text">kaneonexus.com</span>
+    </div>
+
+  </section>
+
+  <script>
+    // ── VIDEO FADE IN ──
+    const vid = document.getElementById('heroBg');
+    vid.addEventListener('canplay', () => vid.classList.add('loaded'));
+    // fallback if already cached
+    if (vid.readyState >= 3) vid.classList.add('loaded');
+
+    // ── CUSTOM CURSOR ──
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px';
+      cursor.style.top  = my + 'px';
+    });
+
+    // Ring follows with lag
+    function animRing() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px';
+      ring.style.top  = ry + 'px';
+      requestAnimationFrame(animRing);
+    }
+    animRing();
+
+    // Cursor expand on hover
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        ring.style.width = '56px';
+        ring.style.height = '56px';
+        ring.style.borderColor = 'rgba(204,0,255,0.6)';
+        cursor.style.background = 'var(--magenta)';
+      });
+      el.addEventListener('mouseleave', () => {
+        ring.style.width = '36px';
+        ring.style.height = '36px';
+        ring.style.borderColor = 'rgba(0,229,255,0.4)';
+        cursor.style.background = 'var(--cyan)';
+      });
+    });
+  </script>
+
+</body>
+</html>
