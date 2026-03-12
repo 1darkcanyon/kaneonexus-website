@@ -319,7 +319,7 @@
 
     <!-- ╔══ SWAP src WITH YOUR VIDEO FILE PATH ══╗ -->
     <video class="video-bg" id="heroBg"
-      src="Nexusstart.mp4"
+      src="nexus-hero/Nexusstart.mp4"
       autoplay muted loop playsinline
       preload="auto">
     </video>
@@ -396,5 +396,6 @@
 
 </body>
 </html>
+
 
 
