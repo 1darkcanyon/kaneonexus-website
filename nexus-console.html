@@ -596,16 +596,113 @@ body::before {
   letter-spacing: 1px;
 }
 
+/* ── MODE DRAWER (mobile) ── */
+.mode-drawer-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(3px);
+}
+.mode-drawer-overlay.open { display: block; }
+.mode-drawer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--obsidian);
+  border-top: 1px solid var(--border-c);
+  border-radius: 12px 12px 0 0;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.mode-drawer-title {
+  grid-column: 1 / -1;
+  font-family: var(--font-mn);
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 4px;
+}
+.drawer-mode-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 10px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: var(--font-mn);
+  font-size: 10px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.drawer-mode-btn.active,
+.drawer-mode-btn:active {
+  background: rgba(0,229,255,0.08);
+  border-color: var(--border-c);
+  color: var(--cyan);
+}
+
 /* ── MOBILE ── */
 @media (max-width: 768px) {
+  html { height: 100%; }
+  body { height: 100%; overflow: hidden; cursor: auto; }
+
   .console {
     grid-template-columns: 1fr;
-    grid-template-rows: 56px 1fr auto 56px;
+    grid-template-rows: 52px 1fr auto;
+    height: 100dvh;
+    height: 100vh; /* fallback */
   }
+
   .panel-left, .panel-right { display: none; }
-  .chat-main { grid-column: 1; }
-  .input-bar { grid-column: 1; }
-  .footer { grid-column: 1; }
+
+  .chat-main {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+  }
+
+  .input-bar {
+    grid-column: 1;
+    grid-row: 3;
+    padding: 8px 10px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+
+  .footer { display: none; }
+
+  /* Prevent iOS auto-zoom on focus */
+  .chat-input { font-size: 16px; }
+  .key-modal-input { font-size: 16px; }
+
+  /* Compact header on mobile */
+  .hdr { padding: 0 12px; gap: 10px; }
+  .hdr-sub { display: none; }
+  .hdr-sep:not(:last-of-type) { display: none; }
+  .hdr-code:last-child { display: none; }
+
+  /* Mode button in input bar */
+  .mobile-mode-btn {
+    display: flex !important;
+  }
+}
+
+/* Hidden on desktop */
+.mobile-mode-btn {
+  display: none;
+  width: 40px; height: 40px;
+  border-radius: 3px;
+  border: 1px solid var(--border-c);
+  background: rgba(0,229,255,0.06);
+  color: var(--cyan);
+  font-size: 16px;
+  cursor: pointer;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
 }
 
 </style>
@@ -790,8 +887,22 @@ body::before {
 
   </aside>
 
+  <!-- MODE DRAWER (mobile) -->
+  <div class="mode-drawer-overlay" id="mode-drawer-overlay" onclick="closeModeDrawer()">
+    <div class="mode-drawer" onclick="event.stopPropagation()">
+      <div class="mode-drawer-title">SELECT MODE</div>
+      <button class="drawer-mode-btn active" id="dm-ei"       onclick="setMode('ei','⚡','EI CORE');closeModeDrawer()">      ⚡ EI CORE</button>
+      <button class="drawer-mode-btn"        id="dm-luna"     onclick="setMode('luna','🌙','LUNA-TIC');closeModeDrawer()">    🌙 LUNA-TIC</button>
+      <button class="drawer-mode-btn"        id="dm-oracle"   onclick="setMode('oracle','ᚷ','ORACLE');closeModeDrawer()">    ᚷ ORACLE</button>
+      <button class="drawer-mode-btn"        id="dm-guardian" onclick="setMode('guardian','🛡️','GUARDIAN');closeModeDrawer()">🛡️ GUARDIAN</button>
+      <button class="drawer-mode-btn"        id="dm-builder"  onclick="setMode('builder','🔧','BUILDER');closeModeDrawer()">  🔧 BUILDER</button>
+      <button class="drawer-mode-btn"        id="dm-tesla"    onclick="setMode('tesla','🌐','TESLA GRID');closeModeDrawer()"> 🌐 TESLA GRID</button>
+    </div>
+  </div>
+
   <!-- INPUT BAR -->
   <div class="input-bar">
+    <button class="mobile-mode-btn" id="mobile-mode-btn" onclick="openModeDrawer()" title="Switch Mode">☰</button>
     <textarea
       class="chat-input"
       id="chat-input"
@@ -1036,11 +1147,32 @@ function generateDraws() {
   });
 }
 
+// ── MODE DRAWER (mobile) ─────────────────────────────────────
+function openModeDrawer() {
+  document.getElementById('mode-drawer-overlay').classList.add('open');
+}
+function closeModeDrawer() {
+  document.getElementById('mode-drawer-overlay').classList.remove('open');
+}
+
 // ── MODE SWITCHING ──────────────────────────────────────────
 function setMode(mode, icon, label) {
   currentMode = mode;
+
+  // Sync desktop sidebar
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('mode-' + mode).classList.add('active');
+  const sideBtn = document.getElementById('mode-' + mode);
+  if (sideBtn) sideBtn.classList.add('active');
+
+  // Sync mobile drawer
+  document.querySelectorAll('.drawer-mode-btn').forEach(b => b.classList.remove('active'));
+  const drawerBtn = document.getElementById('dm-' + mode);
+  if (drawerBtn) drawerBtn.classList.add('active');
+
+  // Update mobile mode button label
+  const mobileBtn = document.getElementById('mobile-mode-btn');
+  if (mobileBtn) mobileBtn.textContent = icon || '☰';
+
   document.getElementById('stat-mode').textContent = label;
 
   const color = MODES[mode]?.color || '#00e5ff';
