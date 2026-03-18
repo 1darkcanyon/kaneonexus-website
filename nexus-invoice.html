@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NEXUS Invoice — Professional Billing v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#000;--deep:#020408;--obs:#050810;
+  --cyan:#00e5ff;--mag:#e040fb;--teal:#16c79a;--gold:#f59e0b;
+  --white:rgba(255,255,255,.92);--muted:rgba(255,255,255,.45);--dim:rgba(255,255,255,.15);
+  --bc:rgba(0,229,255,.12);--bg:rgba(245,158,11,.12);
+  --fhd:'Orbitron',monospace;--fbd:'Rajdhani',sans-serif;--fmn:'Share Tech Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--void);color:var(--white);font-family:var(--fbd);overflow-x:hidden;cursor:crosshair;min-height:100vh}
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(245,158,11,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.012) 1px,transparent 1px);
+  background-size:60px 60px;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;padding:0 32px;gap:20px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--bg);}
+.nav-logo{font-family:var(--fhd);font-size:14px;font-weight:900;letter-spacing:4px;color:var(--gold);text-decoration:none;text-shadow:0 0 20px rgba(245,158,11,.4)}
+.nav-sep{width:1px;height:18px;background:var(--bg)}
+.nav-title{font-family:var(--fmn);font-size:9px;letter-spacing:4px;color:var(--dim)}
+.nav-back{margin-left:auto;font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--gold)}
+.nav-badge{font-family:var(--fmn);font-size:8px;letter-spacing:2px;padding:4px 10px;
+  background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:2px;color:var(--gold)}
+
+/* LAYOUT */
+.main{position:relative;z-index:2;padding:80px 24px 40px;max-width:1200px;margin:0 auto}
+.app-grid{display:grid;grid-template-columns:1fr 380px;gap:24px}
+@media(max-width:960px){.app-grid{grid-template-columns:1fr}}
+
+/* INVOICE BUILDER */
+.builder{background:rgba(5,8,16,.85);border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:28px}
+.section-label{font-family:var(--fmn);font-size:8px;letter-spacing:5px;color:var(--dim);text-transform:uppercase;margin-bottom:14px}
+
+/* FORM ELEMENTS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:600px){.form-row,.form-row.three{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-family:var(--fmn);font-size:7px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
+.form-input,.form-textarea,.form-select{
+  width:100%;padding:9px 12px;
+  background:rgba(2,4,8,.8);border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--white);font-family:var(--fbd);font-size:14px;outline:none;transition:border-color .2s;
+}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--gold)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--dim)}
+.form-textarea{resize:vertical;min-height:72px}
+.form-select option{background:#050810}
+.divider{height:1px;background:rgba(255,255,255,.05);margin:20px 0}
+
+/* LINE ITEMS */
+.items-header{display:grid;grid-template-columns:1fr 80px 90px 90px 36px;gap:8px;
+  font-family:var(--fmn);font-size:7px;letter-spacing:2px;color:var(--dim);padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.item-row{display:grid;grid-template-columns:1fr 80px 90px 90px 36px;gap:8px;align-items:center;margin-bottom:8px}
+.item-row input{padding:8px 10px;font-size:13px}
+.item-total{font-family:var(--fmn);font-size:11px;color:var(--gold);text-align:right}
+.item-del{background:transparent;border:1px solid rgba(239,68,68,.2);border-radius:2px;
+  color:rgba(239,68,68,.6);cursor:pointer;padding:6px;width:36px;height:36px;transition:all .2s;font-size:14px}
+.item-del:hover{border-color:rgba(239,68,68,.5);color:#ef4444}
+.add-item-btn{font-family:var(--fmn);font-size:9px;letter-spacing:3px;padding:9px 18px;
+  background:transparent;border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--muted);cursor:pointer;transition:all .2s;margin-top:8px}
+.add-item-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.04)}
+
+/* TOTALS */
+.totals-section{margin-top:16px}
+.total-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.total-label{font-family:var(--fmn);font-size:9px;color:var(--dim);letter-spacing:2px}
+.total-val{font-family:var(--fmn);font-size:10px;color:var(--muted)}
+.total-row.grand .total-label{color:var(--gold);font-size:11px}
+.total-row.grand .total-val{color:var(--gold);font-size:14px;font-weight:700}
+.tax-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.tax-label{font-family:var(--fmn);font-size:9px;color:var(--dim);letter-spacing:2px;flex:1}
+.tax-input{width:70px;padding:4px 8px;background:rgba(2,4,8,.8);border:1px solid rgba(255,255,255,.07);
+  border-radius:2px;color:var(--white);font-family:var(--fmn);font-size:10px;outline:none;text-align:right}
+.tax-input:focus{border-color:var(--gold)}
+.tax-val{font-family:var(--fmn);font-size:10px;color:var(--muted);min-width:80px;text-align:right}
+
+/* ACTION BUTTONS */
+.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.btn-primary{font-family:var(--fmn);font-size:10px;letter-spacing:3px;padding:11px 24px;
+  background:var(--gold);color:var(--void);border:none;border-radius:2px;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:var(--cyan);box-shadow:0 0 20px rgba(0,229,255,.3)}
+.btn-outline{font-family:var(--fmn);font-size:10px;letter-spacing:3px;padding:11px 20px;
+  background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,.08);border-radius:2px;cursor:pointer;transition:all .2s}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+
+/* PREVIEW PANEL */
+.preview-panel{position:sticky;top:80px}
+.preview-card{background:rgba(5,8,16,.9);border:1px solid var(--bg);border-radius:4px;overflow:hidden}
+.preview-header{background:rgba(245,158,11,.06);border-bottom:1px solid var(--bg);padding:16px 20px;
+  display:flex;justify-content:space-between;align-items:center}
+.preview-title{font-family:var(--fhd);font-size:13px;letter-spacing:3px;color:var(--gold)}
+.preview-badge{font-family:var(--fmn);font-size:7px;letter-spacing:2px;padding:3px 8px;
+  background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:1px;color:var(--gold)}
+.preview-body{padding:20px}
+.inv-logo{font-family:var(--fhd);font-size:18px;font-weight:900;letter-spacing:4px;
+  background:linear-gradient(135deg,var(--gold),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:4px}
+.inv-company{font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:16px}
+.inv-divider{height:1px;background:rgba(245,158,11,.15);margin:12px 0}
+.inv-row{display:flex;justify-content:space-between;margin-bottom:6px}
+.inv-key{font-family:var(--fmn);font-size:8px;color:var(--dim);letter-spacing:2px}
+.inv-val{font-family:var(--fmn);font-size:9px;color:var(--white)}
+.inv-bill-to{margin:12px 0}
+.inv-bill-label{font-family:var(--fmn);font-size:7px;letter-spacing:3px;color:var(--gold);margin-bottom:6px}
+.inv-bill-name{font-family:var(--fhd);font-size:12px;letter-spacing:2px;margin-bottom:3px}
+.inv-bill-detail{font-family:var(--fmn);font-size:8px;color:var(--muted);margin-bottom:2px}
+.inv-items-mini{margin:12px 0}
+.inv-item-mini{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px}
+.inv-item-mini-name{color:var(--muted);flex:1}
+.inv-item-mini-amt{font-family:var(--fmn);font-size:9px;color:var(--gold)}
+.inv-total-mini{display:flex;justify-content:space-between;padding:10px 0 0;font-family:var(--fhd)}
+.inv-total-label{font-size:11px;letter-spacing:2px;color:var(--gold)}
+.inv-total-val{font-size:16px;color:var(--gold)}
+.inv-status-bar{margin-top:14px;padding:10px;background:rgba(22,199,154,.06);border:1px solid rgba(22,199,154,.15);border-radius:2px;
+  display:flex;align-items:center;gap:8px;font-family:var(--fmn);font-size:8px;letter-spacing:2px;color:var(--teal)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* HISTORY */
+.history-section{margin-top:24px}
+.history-card{background:rgba(5,8,16,.7);border:1px solid rgba(255,255,255,.04);border-radius:3px;
+  padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.hist-num{font-family:var(--fmn);font-size:9px;color:var(--gold)}
+.hist-client{font-size:14px;color:var(--white)}
+.hist-amt{font-family:var(--fhd);font-size:13px;color:var(--teal)}
+.hist-badge{font-family:var(--fmn);font-size:7px;letter-spacing:2px;padding:3px 8px;border-radius:1px}
+.hb-paid{background:rgba(22,199,154,.1);color:var(--teal);border:1px solid rgba(22,199,154,.2)}
+.hb-pending{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.2)}
+
+footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--bg);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px}
+.f-logo{font-family:var(--fhd);font-size:11px;letter-spacing:4px;color:var(--gold)}
+.f-links{display:flex;gap:16px}
+.f-link{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--dim);text-decoration:none;transition:color .2s}
+.f-link:hover{color:var(--gold)}
+.f-runes{font-size:13px;letter-spacing:8px;color:var(--gold);opacity:.35}
+</style>
+</head>
+<body>
+<canvas id="cosmos"></canvas>
+<nav>
+  <a href="/" class="nav-logo">NEXUS</a>
+  <div class="nav-sep"></div>
+  <div class="nav-title">INVOICE v2.0</div>
+  <div class="nav-badge">v2.0</div>
+  <a href="/" class="nav-back">← HOME</a>
+</nav>
+
+<div class="main">
+  <div class="app-grid">
+    <div class="builder">
+      <div class="section-label">Business Information</div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Business / Your Name</div>
+          <input type="text" class="form-input" id="bizName" placeholder="NEXUS Intelligence Solutions" oninput="updatePreview()"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Email</div>
+          <input type="email" class="form-input" id="bizEmail" placeholder="your@email.com" oninput="updatePreview()"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Phone</div>
+          <input type="text" class="form-input" id="bizPhone" placeholder="(555) 000-0000" oninput="updatePreview()"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Website</div>
+          <input type="text" class="form-input" id="bizWeb" placeholder="kaneonexus.com" oninput="updatePreview()"/>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">Invoice Details</div>
+      <div class="form-row three">
+        <div class="form-group">
+          <div class="form-label">Invoice #</div>
+          <input type="text" class="form-input" id="invNum" placeholder="INV-0001" oninput="updatePreview()"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Issue Date</div>
+          <input type="date" class="form-input" id="invDate" oninput="updatePreview()"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Due Date</div>
+          <input type="date" class="form-input" id="dueDate" oninput="updatePreview()"/>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">Bill To</div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Client Name</div>
+          <input type="text" class="form-input" id="clientName" placeholder="Client or Company Name" oninput="updatePreview()"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Client Email</div>
+          <input type="email" class="form-input" id="clientEmail" placeholder="client@email.com" oninput="updatePreview()"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <div class="form-label">Client Address</div>
+          <input type="text" class="form-input" id="clientAddr" placeholder="Street, City, State, ZIP" oninput="updatePreview()"/>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">Line Items</div>
+      <div class="items-header">
+        <div>DESCRIPTION</div><div>QTY</div><div>RATE</div><div>AMOUNT</div><div></div>
+      </div>
+      <div id="itemsList"></div>
+      <button class="add-item-btn" onclick="addItem()">+ ADD LINE ITEM</button>
+
+      <div class="divider"></div>
+      <div class="section-label">Totals</div>
+      <div class="totals-section">
+        <div class="total-row">
+          <div class="total-label">SUBTOTAL</div>
+          <div class="total-val" id="subtotalVal">$0.00</div>
+        </div>
+        <div class="tax-row">
+          <div class="tax-label">TAX RATE (%)</div>
+          <input type="number" class="tax-input" id="taxRate" value="0" min="0" max="100" step="0.1" oninput="calcTotals()"/>
+          <div class="tax-val" id="taxVal">$0.00</div>
+        </div>
+        <div class="total-row grand">
+          <div class="total-label">TOTAL DUE</div>
+          <div class="total-val" id="grandTotal">$0.00</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="form-group">
+        <div class="form-label">Notes / Payment Instructions</div>
+        <textarea class="form-textarea" id="notes" placeholder="Payment due within 30 days. Accepted: PayPal, Venmo, Zelle, Bank Transfer." oninput="updatePreview()"></textarea>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-primary" onclick="generatePDF()">⬇ DOWNLOAD PDF</button>
+        <button class="btn-outline" onclick="copyInvoice()">📋 COPY TEXT</button>
+        <button class="btn-outline" onclick="saveInvoice()">💾 SAVE</button>
+        <button class="btn-outline" onclick="clearAll()">CLEAR</button>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="preview-panel">
+      <div class="preview-card">
+        <div class="preview-header">
+          <div class="preview-title">LIVE PREVIEW</div>
+          <div class="preview-badge">NEXUS INVOICE v2.0</div>
+        </div>
+        <div class="preview-body">
+          <div class="inv-logo" id="pvBizName">NEXUS</div>
+          <div class="inv-company" id="pvBizSub">INTELLIGENCE WITHOUT THE ARTIFICIAL</div>
+          <div class="inv-divider"></div>
+          <div class="inv-row"><div class="inv-key">INVOICE</div><div class="inv-val" id="pvNum">INV-0001</div></div>
+          <div class="inv-row"><div class="inv-key">DATE</div><div class="inv-val" id="pvDate">—</div></div>
+          <div class="inv-row"><div class="inv-key">DUE</div><div class="inv-val" id="pvDue">—</div></div>
+          <div class="inv-divider"></div>
+          <div class="inv-bill-to">
+            <div class="inv-bill-label">BILL TO</div>
+            <div class="inv-bill-name" id="pvClient">—</div>
+            <div class="inv-bill-detail" id="pvClientEmail">—</div>
+            <div class="inv-bill-detail" id="pvClientAddr">—</div>
+          </div>
+          <div class="inv-divider"></div>
+          <div class="inv-items-mini" id="pvItems">
+            <div class="inv-item-mini"><div class="inv-item-mini-name">No items yet</div><div class="inv-item-mini-amt">$0.00</div></div>
+          </div>
+          <div class="inv-divider"></div>
+          <div class="inv-total-mini">
+            <div class="inv-total-label">TOTAL DUE</div>
+            <div class="inv-total-val" id="pvTotal">$0.00</div>
+          </div>
+          <div class="inv-status-bar"><div class="status-dot"></div>AWAITING PAYMENT</div>
+        </div>
+      </div>
+
+      <div class="history-section">
+        <div class="section-label">Recent Invoices</div>
+        <div id="historyList">
+          <div style="font-family:var(--fmn);font-size:9px;color:var(--dim);letter-spacing:2px;padding:12px 0">NO SAVED INVOICES</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-logo">NEXUS</div>
+  <div class="f-links">
+    <a href="/" class="f-link">HOME</a>
+    <a href="demos/" class="f-link">ALL MODULES</a>
+    <a href="nexus-console.html" class="f-link">CONSOLE</a>
+  </div>
+  <div class="f-runes">ᛟ ᚨ ᚹ ᚱ</div>
+</footer>
+
+<script>
+(function(){
+  const c=document.getElementById('cosmos'),ctx=c.getContext('2d');let stars=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;
+    stars=Array.from({length:130},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
+      r:Math.random()*1.1+.1,a:Math.random()*Math.PI*2,s:Math.random()*.003+.001,
+      col:Math.random()>.85?'rgba(245,158,11,':Math.random()>.6?'rgba(0,229,255,':'rgba(22,199,154,'}));}
+  function draw(){ctx.clearRect(0,0,c.width,c.height);stars.forEach(s=>{s.a+=s.s;const a=.04+Math.sin(s.a)*.14;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=s.col+Math.max(0,a)+')';ctx.fill();});requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+let items=[];
+let invCounter=parseInt(localStorage.getItem('nx_inv_counter')||'1');
+
+// Set today's date defaults
+const today=new Date();
+const todayStr=today.toISOString().split('T')[0];
+const dueDate=new Date(today);dueDate.setDate(dueDate.getDate()+30);
+document.getElementById('invDate').value=todayStr;
+document.getElementById('dueDate').value=dueDate.toISOString().split('T')[0];
+document.getElementById('invNum').value=`INV-${String(invCounter).padStart(4,'0')}`;
+
+// Add initial item
+addItem();
+loadHistory();
+
+function addItem(){
+  const id=Date.now();
+  items.push({id,desc:'',qty:1,rate:0});
+  renderItems();
+  updatePreview();
+}
+
+function renderItems(){
+  const list=document.getElementById('itemsList');
+  list.innerHTML='';
+  items.forEach(item=>{
+    const row=document.createElement('div');row.className='item-row';
+    row.innerHTML=`
+      <input type="text" class="form-input" placeholder="Service or item description" value="${item.desc}"
+        oninput="items.find(i=>i.id===${item.id}).desc=this.value;calcTotals();updatePreview()"/>
+      <input type="number" class="form-input" placeholder="1" value="${item.qty}" min="0" step="any"
+        oninput="items.find(i=>i.id===${item.id}).qty=parseFloat(this.value)||0;calcTotals();updatePreview()"/>
+      <input type="number" class="form-input" placeholder="0.00" value="${item.rate||''}" min="0" step="0.01"
+        oninput="items.find(i=>i.id===${item.id}).rate=parseFloat(this.value)||0;calcTotals();updatePreview()"/>
+      <div class="item-total">$${((item.qty||0)*(item.rate||0)).toFixed(2)}</div>
+      <button class="item-del" onclick="removeItem(${item.id})">×</button>`;
+    list.appendChild(row);
+  });
+  calcTotals();
+}
+
+function removeItem(id){
+  items=items.filter(i=>i.id!==id);
+  renderItems();updatePreview();
+}
+
+function calcTotals(){
+  const sub=items.reduce((sum,i)=>sum+(i.qty||0)*(i.rate||0),0);
+  const tax=sub*(parseFloat(document.getElementById('taxRate').value)||0)/100;
+  const grand=sub+tax;
+  document.getElementById('subtotalVal').textContent='$'+sub.toFixed(2);
+  document.getElementById('taxVal').textContent='$'+tax.toFixed(2);
+  document.getElementById('grandTotal').textContent='$'+grand.toFixed(2);
+  document.getElementById('pvTotal').textContent='$'+grand.toFixed(2);
+  // update item totals display
+  document.querySelectorAll('.item-total').forEach((el,i)=>{
+    if(items[i])el.textContent='$'+((items[i].qty||0)*(items[i].rate||0)).toFixed(2);
+  });
+  updatePvItems(grand);
+}
+
+function updatePvItems(grand){
+  const pvItems=document.getElementById('pvItems');
+  if(!items.length){pvItems.innerHTML='<div class="inv-item-mini"><div class="inv-item-mini-name">No items</div><div class="inv-item-mini-amt">$0.00</div></div>';return;}
+  pvItems.innerHTML=items.map(i=>`
+    <div class="inv-item-mini">
+      <div class="inv-item-mini-name">${i.desc||'—'} ×${i.qty||1}</div>
+      <div class="inv-item-mini-amt">$${((i.qty||0)*(i.rate||0)).toFixed(2)}</div>
+    </div>`).join('');
+}
+
+function updatePreview(){
+  const biz=document.getElementById('bizName').value||'NEXUS';
+  const bizEmail=document.getElementById('bizEmail').value;
+  const bizWeb=document.getElementById('bizWeb').value;
+  document.getElementById('pvBizName').textContent=biz;
+  document.getElementById('pvBizSub').textContent=[bizEmail,bizWeb].filter(Boolean).join(' · ')||'INTELLIGENCE WITHOUT THE ARTIFICIAL';
+  document.getElementById('pvNum').textContent=document.getElementById('invNum').value||'INV-0001';
+  document.getElementById('pvDate').textContent=document.getElementById('invDate').value||'—';
+  document.getElementById('pvDue').textContent=document.getElementById('dueDate').value||'—';
+  document.getElementById('pvClient').textContent=document.getElementById('clientName').value||'—';
+  document.getElementById('pvClientEmail').textContent=document.getElementById('clientEmail').value||'';
+  document.getElementById('pvClientAddr').textContent=document.getElementById('clientAddr').value||'';
+}
+
+function generatePDF(){
+  const biz=document.getElementById('bizName').value||'NEXUS';
+  const client=document.getElementById('clientName').value||'Client';
+  const num=document.getElementById('invNum').value||'INV-0001';
+  const sub=items.reduce((s,i)=>s+(i.qty||0)*(i.rate||0),0);
+  const tax=sub*(parseFloat(document.getElementById('taxRate').value)||0)/100;
+  const grand=sub+tax;
+  const lines=items.map(i=>`  ${i.desc||'Service'} x${i.qty} @ $${(i.rate||0).toFixed(2)} = $${((i.qty||0)*(i.rate||0)).toFixed(2)}`).join('\n');
+  const text=`NEXUS INVOICE\n${'='.repeat(40)}\nFrom: ${biz}\nTo: ${client}\nInvoice #: ${num}\nDate: ${document.getElementById('invDate').value}\nDue: ${document.getElementById('dueDate').value}\n\nLINE ITEMS:\n${lines}\n\nSubtotal: $${sub.toFixed(2)}\nTax: $${tax.toFixed(2)}\nTOTAL DUE: $${grand.toFixed(2)}\n\nNotes: ${document.getElementById('notes').value}\n\n${biz} · NEXUS Intelligence Solutions · kaneonexus.com`;
+  const blob=new Blob([text],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`${num}-${client.replace(/\s+/g,'-')}.txt`;a.click();
+}
+
+function copyInvoice(){
+  const biz=document.getElementById('bizName').value||'NEXUS';
+  const client=document.getElementById('clientName').value||'Client';
+  const num=document.getElementById('invNum').value||'INV-0001';
+  const sub=items.reduce((s,i)=>s+(i.qty||0)*(i.rate||0),0);
+  const tax=sub*(parseFloat(document.getElementById('taxRate').value)||0)/100;
+  const grand=sub+tax;
+  const text=`Invoice ${num} | ${biz} → ${client} | Total: $${grand.toFixed(2)} | Due: ${document.getElementById('dueDate').value}`;
+  navigator.clipboard.writeText(text).then(()=>alert('Invoice summary copied to clipboard!')).catch(()=>alert('Copy failed — please select and copy manually.'));
+}
+
+function saveInvoice(){
+  const biz=document.getElementById('bizName').value||'NEXUS';
+  const client=document.getElementById('clientName').value||'Client';
+  const num=document.getElementById('invNum').value||'INV-0001';
+  const sub=items.reduce((s,i)=>s+(i.qty||0)*(i.rate||0),0);
+  const tax=sub*(parseFloat(document.getElementById('taxRate').value)||0)/100;
+  const grand=sub+tax;
+  const saved=JSON.parse(localStorage.getItem('nx_invoices')||'[]');
+  saved.unshift({num,biz,client,grand:grand.toFixed(2),date:new Date().toLocaleDateString(),paid:false});
+  if(saved.length>10)saved.pop();
+  localStorage.setItem('nx_invoices',JSON.stringify(saved));
+  invCounter++;localStorage.setItem('nx_inv_counter',invCounter);
+  loadHistory();
+  alert(`Invoice ${num} saved!`);
+}
+
+function loadHistory(){
+  const saved=JSON.parse(localStorage.getItem('nx_invoices')||'[]');
+  const hist=document.getElementById('historyList');
+  if(!saved.length){hist.innerHTML='<div style="font-family:var(--fmn);font-size:9px;color:var(--dim);letter-spacing:2px;padding:12px 0">NO SAVED INVOICES</div>';return;}
+  hist.innerHTML=saved.map(inv=>`
+    <div class="history-card">
+      <div><div class="hist-num">${inv.num}</div><div class="hist-client">${inv.client}</div></div>
+      <div class="hist-amt">$${inv.grand}</div>
+      <div class="hist-badge ${inv.paid?'hb-paid':'hb-pending'}">${inv.paid?'PAID':'PENDING'}</div>
+    </div>`).join('');
+}
+
+function clearAll(){
+  if(!confirm('Clear all fields?'))return;
+  ['bizName','bizEmail','bizPhone','bizWeb','invNum','invDate','dueDate','clientName','clientEmail','clientAddr','notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('invNum').value=`INV-${String(invCounter).padStart(4,'0')}`;
+  document.getElementById('invDate').value=todayStr;
+  document.getElementById('taxRate').value='0';
+  items=[];addItem();updatePreview();
+}
+
+updatePreview();
+</script>
+</body>
+</html>

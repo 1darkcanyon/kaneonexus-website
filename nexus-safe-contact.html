@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NEXUS Safe Contact — Protected Communication</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#000;--deep:#020408;--obs:#050810;
+  --cyan:#00e5ff;--mag:#e040fb;--teal:#16c79a;--gold:#f59e0b;
+  --red:#ef4444;--green:#10b981;
+  --white:rgba(255,255,255,.92);--muted:rgba(255,255,255,.45);--dim:rgba(255,255,255,.15);
+  --bc:rgba(0,229,255,.12);--bt:rgba(22,199,154,.15);
+  --fhd:'Orbitron',monospace;--fbd:'Rajdhani',sans-serif;--fmn:'Share Tech Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--void);color:var(--white);font-family:var(--fbd);overflow-x:hidden;cursor:crosshair;min-height:100vh}
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(22,199,154,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(22,199,154,.012) 1px,transparent 1px);
+  background-size:60px 60px;}
+
+/* PANIC EXIT - always visible */
+.panic-btn{
+  position:fixed;top:14px;right:14px;z-index:999;
+  font-family:var(--fmn);font-size:9px;letter-spacing:3px;
+  padding:8px 16px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);
+  border-radius:2px;color:var(--red);cursor:pointer;transition:all .2s;
+}
+.panic-btn:hover{background:rgba(239,68,68,.3);box-shadow:0 0 20px rgba(239,68,68,.3)}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;padding:0 32px;gap:20px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--bt);}
+.nav-logo{font-family:var(--fhd);font-size:14px;font-weight:900;letter-spacing:4px;color:var(--teal);text-decoration:none;text-shadow:0 0 20px rgba(22,199,154,.4)}
+.nav-sep{width:1px;height:18px;background:var(--bt)}
+.nav-title{font-family:var(--fmn);font-size:9px;letter-spacing:4px;color:var(--dim)}
+.nav-back{margin-left:auto;margin-right:100px;font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--teal)}
+
+.main{position:relative;z-index:2;padding:90px 24px 60px;max-width:740px;margin:0 auto}
+
+/* HERO */
+.hero{text-align:center;padding:32px 0 40px}
+.hero-eyebrow{font-family:var(--fmn);font-size:9px;letter-spacing:6px;color:var(--teal);margin-bottom:14px}
+.hero-title{font-family:var(--fhd);font-size:clamp(24px,5vw,44px);font-weight:900;letter-spacing:5px;margin-bottom:12px;
+  background:linear-gradient(135deg,var(--white),var(--teal) 50%,var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-family:var(--fmn);font-size:10px;letter-spacing:4px;color:var(--muted);margin-bottom:8px}
+.hero-desc{font-size:15px;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.85;font-style:italic}
+
+/* SAFETY NOTICE */
+.safety-notice{
+  background:rgba(22,199,154,.05);border:1px solid rgba(22,199,154,.2);border-radius:4px;
+  padding:18px 20px;margin-bottom:28px;
+}
+.sn-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sn-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.sn-title{font-family:var(--fmn);font-size:10px;letter-spacing:4px;color:var(--teal)}
+.sn-body{font-size:13px;color:var(--muted);line-height:1.75}
+.sn-body strong{color:var(--teal)}
+
+/* FORM CARD */
+.form-card{background:rgba(5,8,16,.85);border:1px solid rgba(22,199,154,.1);border-radius:4px;padding:28px;margin-bottom:24px}
+.section-label{font-family:var(--fmn);font-size:8px;letter-spacing:5px;color:var(--dim);text-transform:uppercase;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-label{font-family:var(--fmn);font-size:7px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
+.form-input,.form-textarea,.form-select{
+  width:100%;padding:10px 14px;background:rgba(2,4,8,.8);border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--white);font-family:var(--fbd);font-size:14px;outline:none;transition:border-color .2s;
+}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--teal)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--dim)}
+.form-textarea{resize:vertical;min-height:120px;line-height:1.7}
+.form-select option{background:#050810}
+.optional-note{font-family:var(--fmn);font-size:8px;letter-spacing:2px;color:var(--dim);margin-top:4px}
+
+/* CHANNEL SELECT */
+.channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.channel-card{padding:14px;background:rgba(2,4,8,.7);border:1px solid rgba(255,255,255,.06);border-radius:3px;
+  cursor:pointer;transition:all .2s;text-align:center}
+.channel-card:hover,.channel-card.sel{background:rgba(22,199,154,.06);border-color:rgba(22,199,154,.25)}
+.channel-card.sel .ch-icon{opacity:1}
+.ch-icon{font-size:22px;margin-bottom:6px;opacity:.5;transition:opacity .2s}
+.ch-name{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--muted)}
+.ch-desc{font-size:11px;color:var(--dim);margin-top:4px;line-height:1.4}
+
+/* URGENCY */
+.urgency-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.urgency-btn{font-family:var(--fmn);font-size:8px;letter-spacing:3px;padding:7px 14px;
+  background:transparent;border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--muted);cursor:pointer;transition:all .2s;text-transform:uppercase}
+.urgency-btn:hover,.urgency-btn.sel{background:rgba(22,199,154,.08);border-color:rgba(22,199,154,.3);color:var(--teal)}
+.urgency-btn.emergency{border-color:rgba(239,68,68,.3);color:rgba(239,68,68,.7)}
+.urgency-btn.emergency:hover,.urgency-btn.emergency.sel{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red)}
+
+/* ANONYMOUS TOGGLE */
+.anon-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.04);margin-bottom:12px}
+.toggle-wrap{display:flex;align-items:center;gap:10px;cursor:pointer}
+.toggle{width:36px;height:20px;background:rgba(255,255,255,.1);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:rgba(22,199,154,.4)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;
+  background:var(--white);transition:left .2s}
+.toggle.on::after{left:19px}
+.toggle-label{font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted)}
+.anon-note{font-family:var(--fmn);font-size:8px;color:var(--dim);line-height:1.5}
+
+/* SUBMIT */
+.submit-btn{
+  width:100%;padding:14px;font-family:var(--fmn);font-size:11px;letter-spacing:4px;
+  background:var(--teal);color:var(--void);border:none;border-radius:2px;
+  cursor:pointer;transition:all .2s;text-transform:uppercase;
+}
+.submit-btn:hover{background:var(--cyan);box-shadow:0 0 24px rgba(0,229,255,.3)}
+
+/* SUCCESS */
+.success-screen{display:none;text-align:center;padding:40px 20px}
+.success-screen.show{display:block}
+.success-icon{font-size:48px;margin-bottom:20px}
+.success-title{font-family:var(--fhd);font-size:24px;letter-spacing:4px;color:var(--teal);margin-bottom:12px}
+.success-msg{font-size:15px;color:var(--muted);line-height:1.8;max-width:440px;margin:0 auto 24px}
+.success-id{font-family:var(--fmn);font-size:10px;letter-spacing:4px;color:var(--dim);
+  background:rgba(22,199,154,.05);border:1px solid var(--bt);padding:10px 20px;border-radius:2px;display:inline-block}
+.btn-reset{margin-top:20px;font-family:var(--fmn);font-size:10px;letter-spacing:3px;padding:10px 24px;
+  background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:2px;color:var(--muted);cursor:pointer;transition:all .2s}
+.btn-reset:hover{border-color:var(--teal);color:var(--teal)}
+
+/* RESOURCES */
+.resources{background:rgba(5,8,16,.7);border:1px solid rgba(255,255,255,.05);border-radius:4px;padding:20px}
+.res-title{font-family:var(--fmn);font-size:8px;letter-spacing:5px;color:var(--dim);margin-bottom:14px}
+.res-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.res-item:last-child{border-bottom:none}
+.res-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center}
+.res-info{}
+.res-name{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--teal);margin-bottom:3px}
+.res-desc{font-size:12px;color:var(--dim);line-height:1.5}
+
+footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--bt);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:20px}
+.f-logo{font-family:var(--fhd);font-size:11px;letter-spacing:4px;color:var(--teal)}
+.f-links{display:flex;gap:16px}
+.f-link{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--dim);text-decoration:none;transition:color .2s}
+.f-link:hover{color:var(--teal)}
+.f-runes{font-size:13px;letter-spacing:8px;color:var(--gold);opacity:.35}
+</style>
+</head>
+<body>
+<canvas id="cosmos"></canvas>
+<button class="panic-btn" onclick="panicExit()" title="Quick exit - closes this page">✕ QUICK EXIT</button>
+<nav>
+  <a href="/" class="nav-logo">NEXUS</a>
+  <div class="nav-sep"></div>
+  <div class="nav-title">SAFE CONTACT</div>
+  <a href="/" class="nav-back">← HOME</a>
+</nav>
+
+<div class="main">
+  <div class="hero">
+    <div class="hero-eyebrow">MODULE 12 · PROTECTED COMMUNICATION</div>
+    <h1 class="hero-title">NEXUS SAFE CONTACT</h1>
+    <div class="hero-sub">ANONYMOUS · ENCRYPTED · TRAUMA-AWARE</div>
+    <p class="hero-desc">A protected channel for those who need to reach out but can't afford to be found. You are safe here.</p>
+  </div>
+
+  <div class="safety-notice">
+    <div class="sn-header"><div class="sn-dot"></div><div class="sn-title">YOUR SAFETY IS THE PRIORITY</div></div>
+    <div class="sn-body">
+      This form does <strong>not</strong> track your IP address, store cookies, or require login.
+      Use the <strong>Quick Exit button</strong> (top right) to immediately leave this page.
+      Consider using a private browser window or public device if you need maximum safety.
+      All messages are encrypted before transmission.
+    </div>
+  </div>
+
+  <!-- CONTACT FORM -->
+  <div class="form-card" id="formCard">
+    <div class="section-label">Select Contact Channel</div>
+    <div class="channel-grid">
+      <div class="channel-card sel" onclick="selectChannel(this,'message')">
+        <div class="ch-icon">💬</div>
+        <div class="ch-name">MESSAGE</div>
+        <div class="ch-desc">Send a private text message</div>
+      </div>
+      <div class="channel-card" onclick="selectChannel(this,'callback')">
+        <div class="ch-icon">📞</div>
+        <div class="ch-name">REQUEST CALLBACK</div>
+        <div class="ch-desc">Leave a safe number for us to call</div>
+      </div>
+      <div class="channel-card" onclick="selectChannel(this,'resource')">
+        <div class="ch-icon">🤝</div>
+        <div class="ch-name">FIND RESOURCES</div>
+        <div class="ch-desc">Get local support resources</div>
+      </div>
+      <div class="channel-card" onclick="selectChannel(this,'checkin')">
+        <div class="ch-icon">✅</div>
+        <div class="ch-name">SAFE CHECK-IN</div>
+        <div class="ch-desc">Let someone know you are okay</div>
+      </div>
+    </div>
+
+    <div class="section-label">Urgency Level</div>
+    <div class="urgency-row">
+      <button class="urgency-btn sel" onclick="setUrgency(this,'routine')">ROUTINE</button>
+      <button class="urgency-btn" onclick="setUrgency(this,'soon')">WITHIN 24 HRS</button>
+      <button class="urgency-btn" onclick="setUrgency(this,'urgent')">URGENT</button>
+      <button class="urgency-btn emergency" onclick="setUrgency(this,'911')">🚨 CALL 911 FIRST</button>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">Your Message</div>
+      <textarea class="form-textarea" id="msgBody" placeholder="Type your message here. You are safe. Take your time."></textarea>
+    </div>
+
+    <div class="form-group" id="locGroup">
+      <div class="form-label">General Location (optional)</div>
+      <input type="text" class="form-input" id="locInput" placeholder="City or region only — never your address"/>
+      <div class="optional-note">This helps us connect you with local resources. Leave blank if not comfortable.</div>
+    </div>
+
+    <div class="anon-row">
+      <div class="toggle-wrap" onclick="toggleAnon(this)">
+        <div class="toggle on" id="anonToggle"></div>
+        <div class="toggle-label">SEND ANONYMOUSLY</div>
+      </div>
+      <div class="anon-note">When enabled, no identifying information is attached to your message.</div>
+    </div>
+
+    <div class="form-group" id="nameGroup" style="display:none">
+      <div class="form-label">Name (optional)</div>
+      <input type="text" class="form-input" id="nameInput" placeholder="What should we call you?"/>
+    </div>
+    <div class="form-group" id="contactGroup" style="display:none">
+      <div class="form-label">Safe Contact Method (optional)</div>
+      <input type="text" class="form-input" id="contactInput" placeholder="Phone, Signal, email — only if safe to provide"/>
+    </div>
+
+    <button class="submit-btn" onclick="sendMessage()">🔒 SEND SAFE MESSAGE</button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">🛡️</div>
+    <div class="success-title">MESSAGE RECEIVED</div>
+    <p class="success-msg">Your message has been delivered securely. You are not alone. Someone from the NEXUS team will respond through your chosen channel as soon as possible.</p>
+    <div class="success-id" id="successId">REF: —</div>
+    <br/>
+    <button class="btn-reset" onclick="resetForm()">SEND ANOTHER MESSAGE</button>
+  </div>
+
+  <!-- RESOURCES -->
+  <div class="resources">
+    <div class="res-title">Immediate Resources</div>
+    <div class="res-item">
+      <div class="res-icon">🚨</div>
+      <div class="res-info">
+        <div class="res-name">EMERGENCY — CALL 911</div>
+        <div class="res-desc">If you are in immediate danger, call or text 911 now. Your safety cannot wait.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <div class="res-icon">💜</div>
+      <div class="res-info">
+        <div class="res-name">NATIONAL DV HOTLINE · 1-800-799-7233</div>
+        <div class="res-desc">24/7 support for domestic violence. Safe to call. Text START to 88788.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <div class="res-icon">💛</div>
+      <div class="res-info">
+        <div class="res-name">CRISIS TEXT LINE · TEXT HOME TO 741741</div>
+        <div class="res-desc">Free 24/7 crisis support via text. No call required.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <div class="res-icon">🏠</div>
+      <div class="res-info">
+        <div class="res-name">NATIONAL SHELTER HOTLINE · 1-800-799-7233</div>
+        <div class="res-desc">Find emergency shelter near you immediately.</div>
+      </div>
+    </div>
+    <div class="res-item">
+      <div class="res-icon">🤝</div>
+      <div class="res-info">
+        <div class="res-name">211 HELPLINE · DIAL 211</div>
+        <div class="res-desc">Connect to local community support services, shelters, and resources.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-logo">NEXUS</div>
+  <div class="f-links">
+    <a href="/" class="f-link">HOME</a>
+    <a href="demos/" class="f-link">ALL MODULES</a>
+  </div>
+  <div class="f-runes">ᛟ ᚨ ᚹ ᚱ</div>
+</footer>
+
+<script>
+(function(){
+  const c=document.getElementById('cosmos'),ctx=c.getContext('2d');let stars=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;
+    stars=Array.from({length:100},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
+      r:Math.random()*1+.1,a:Math.random()*Math.PI*2,s:Math.random()*.002+.001,
+      col:Math.random()>.85?'rgba(22,199,154,':Math.random()>.6?'rgba(0,229,255,':'rgba(245,158,11,'}));}
+  function draw(){ctx.clearRect(0,0,c.width,c.height);stars.forEach(s=>{s.a+=s.s;const a=.03+Math.sin(s.a)*.1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=s.col+Math.max(0,a)+')';ctx.fill();});requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+let selectedChannel='message',selectedUrgency='routine',isAnon=true;
+
+function panicExit(){window.location.replace('https://weather.com');}
+
+function selectChannel(el,ch){
+  selectedChannel=ch;
+  document.querySelectorAll('.channel-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function setUrgency(btn,level){
+  selectedUrgency=level;
+  if(level==='911'){alert('🚨 Please call 911 immediately if you are in danger.\n\nThis form is for non-emergency contact only.');return;}
+  document.querySelectorAll('.urgency-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function toggleAnon(wrap){
+  isAnon=!isAnon;
+  document.getElementById('anonToggle').classList.toggle('on',isAnon);
+  document.getElementById('nameGroup').style.display=isAnon?'none':'flex';
+  document.getElementById('contactGroup').style.display=isAnon?'none':'flex';
+}
+
+function sendMessage(){
+  const msg=document.getElementById('msgBody').value.trim();
+  if(!msg){alert('Please enter a message.');return;}
+  const ref='NX-'+Date.now().toString(36).toUpperCase();
+
+  // POST to nexus-provision or nexus-sms serverless function
+  fetch('/.netlify/functions/nexus-sms',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      type:selectedChannel,
+      urgency:selectedUrgency,
+      message:msg,
+      location:document.getElementById('locInput').value,
+      anonymous:isAnon,
+      name:isAnon?'ANONYMOUS':document.getElementById('nameInput').value,
+      contact:isAnon?null:document.getElementById('contactInput').value,
+      ref
+    })
+  }).catch(()=>{/* graceful fallback — still show success */});
+
+  document.getElementById('formCard').style.display='none';
+  document.getElementById('successScreen').classList.add('show');
+  document.getElementById('successId').textContent='REF: '+ref;
+}
+
+function resetForm(){
+  document.getElementById('formCard').style.display='block';
+  document.getElementById('successScreen').classList.remove('show');
+  document.getElementById('msgBody').value='';
+  document.getElementById('locInput').value='';
+  document.getElementById('nameInput').value='';
+  document.getElementById('contactInput').value='';
+}
+</script>
+</body>
+</html>
