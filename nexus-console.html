@@ -1129,7 +1129,7 @@ async function sendMessage() {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1000,
         system: buildSystemPrompt(currentMode),
         messages: conversationHistory.slice(-20),
@@ -1137,6 +1137,12 @@ async function sendMessage() {
     });
 
     const data = await response.json();
+
+    if (!response.ok) {
+      const errMsg = data.error?.message || `HTTP ${response.status}`;
+      throw new Error(errMsg);
+    }
+
     const reply = data.content?.[0]?.text || 'Signal unclear. Speak again, Kaneon.';
 
     conversationHistory.push({ role: 'assistant', content: reply });
@@ -1151,9 +1157,9 @@ async function sendMessage() {
     setOrbState('');
 
     if (err.message === 'no_key') {
-      addMessage('nexus', 'Enter your Anthropic API key in the panel to activate full Sovereign Intelligence. The key field is in the top-right panel.\n\nFor now — I am still here. Ask me anything. I will hold space in offline mode.');
+      addMessage('nexus', 'No API key found. Click ⚿ API KEY in the header to connect your Anthropic key.');
     } else {
-      addMessage('nexus', 'A signal disruption occurred. The connection flickered but the council holds. Try again, Kaneon.');
+      addMessage('nexus', `Connection error: ${err.message}\n\nCheck the browser console (F12) for details.`);
     }
   }
 
