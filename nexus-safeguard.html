@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NEXUS SafeGuard — Vehicle Security Command</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#000;--deep:#020408;--obs:#050810;
+  --cyan:#00e5ff;--mag:#e040fb;--teal:#16c79a;--gold:#f59e0b;
+  --red:#ef4444;--green:#10b981;--orange:#f97316;
+  --white:rgba(255,255,255,.92);--muted:rgba(255,255,255,.45);--dim:rgba(255,255,255,.15);
+  --bc:rgba(0,229,255,.12);--bm:rgba(224,64,251,.12);--br:rgba(239,68,68,.15);
+  --fhd:'Orbitron',monospace;--fbd:'Rajdhani',sans-serif;--fmn:'Share Tech Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--white);font-family:var(--fbd);overflow-x:hidden;cursor:crosshair;min-height:100vh}
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(0,229,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.015) 1px,transparent 1px);
+  background-size:60px 60px;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;padding:0 32px;gap:20px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--bc);}
+.nav-logo{font-family:var(--fhd);font-size:14px;font-weight:900;letter-spacing:4px;color:var(--cyan);text-decoration:none;text-shadow:0 0 20px rgba(0,229,255,.4)}
+.nav-sep{width:1px;height:18px;background:var(--bc)}
+.nav-title{font-family:var(--fmn);font-size:9px;letter-spacing:4px;color:var(--dim)}
+.nav-back{margin-left:auto;font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--cyan)}
+.nav-status{display:flex;align-items:center;gap:8px;font-family:var(--fmn);font-size:8px;letter-spacing:2px;
+  color:var(--teal);background:rgba(22,199,154,.08);border:1px solid rgba(22,199,154,.2);
+  padding:5px 12px;border-radius:2px;}
+.dot-live{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* MAIN LAYOUT */
+.main{position:relative;z-index:2;padding:80px 24px 40px;max-width:1300px;margin:0 auto}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px}
+.hdr-left{}
+.hdr-eyebrow{font-family:var(--fmn);font-size:8px;letter-spacing:5px;color:var(--cyan);margin-bottom:6px}
+.hdr-title{font-family:var(--fhd);font-size:clamp(20px,4vw,32px);font-weight:900;letter-spacing:4px;
+  background:linear-gradient(135deg,var(--white),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hdr-sub{font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted);margin-top:4px}
+.hdr-alerts{display:flex;gap:10px;flex-wrap:wrap}
+.alert-pill{display:flex;align-items:center;gap:6px;font-family:var(--fmn);font-size:8px;letter-spacing:2px;
+  padding:6px 12px;border-radius:2px;cursor:pointer;transition:all .2s}
+.alert-ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--green)}
+.alert-warn{background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);color:var(--orange)}
+.alert-crit{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--red);animation:critPulse 2s infinite}
+@keyframes critPulse{0%,100%{box-shadow:0 0 0 rgba(239,68,68,0)}50%{box-shadow:0 0 12px rgba(239,68,68,.3)}}
+
+/* TOP ROW: cameras + control panel */
+.top-row{display:grid;grid-template-columns:1fr 340px;gap:20px;margin-bottom:20px}
+@media(max-width:900px){.top-row{grid-template-columns:1fr}}
+
+/* CAMERA GRID */
+.cam-section{}
+.cam-section-label{font-family:var(--fmn);font-size:8px;letter-spacing:4px;color:var(--dim);margin-bottom:12px;text-transform:uppercase}
+.cam-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cam-feed{background:rgba(5,8,16,.9);border:1px solid rgba(0,229,255,.08);border-radius:4px;
+  position:relative;overflow:hidden;aspect-ratio:16/9;cursor:pointer;transition:all .3s}
+.cam-feed:hover,.cam-feed.active{border-color:var(--cyan);box-shadow:0 0 20px rgba(0,229,255,.08)}
+.cam-feed.alert-active{border-color:var(--red);box-shadow:0 0 20px rgba(239,68,68,.15)}
+.cam-canvas{width:100%;height:100%;display:block}
+.cam-overlay{position:absolute;inset:0;padding:10px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.cam-label{font-family:var(--fmn);font-size:8px;color:rgba(0,229,255,.8);
+  background:rgba(0,0,0,.7);padding:3px 7px;border-radius:2px;width:fit-content}
+.cam-bottom{display:flex;justify-content:space-between;align-items:flex-end}
+.cam-badge{font-family:var(--fmn);font-size:7px;background:rgba(0,0,0,.7);padding:3px 7px;border-radius:2px}
+.cam-ok{color:var(--teal)}.cam-motion{color:var(--orange);animation:blink .8s infinite}.cam-alert{color:var(--red);animation:blink .5s infinite}
+.cam-rec{display:flex;align-items:center;gap:4px;font-family:var(--fmn);font-size:7px;color:var(--red);background:rgba(0,0,0,.7);padding:3px 7px;border-radius:2px}
+.rec-dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
+
+/* CONTROL PANEL */
+.ctrl-panel{display:flex;flex-direction:column;gap:12px}
+
+.ctrl-card{background:rgba(5,8,16,.8);border:1px solid rgba(255,255,255,.05);border-radius:4px;padding:16px}
+.ctrl-card-title{font-family:var(--fmn);font-size:8px;letter-spacing:4px;color:var(--dim);margin-bottom:12px;text-transform:uppercase}
+
+/* PA SYSTEM */
+.pa-controls{display:flex;flex-direction:column;gap:8px}
+.pa-btn{width:100%;padding:10px;font-family:var(--fmn);font-size:9px;letter-spacing:3px;
+  background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:2px;
+  color:var(--muted);cursor:pointer;transition:all .2s;text-align:left}
+.pa-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.04)}
+.pa-btn.active{border-color:var(--mag);color:var(--mag);background:rgba(224,64,251,.06)}
+.pa-vol{display:flex;align-items:center;gap:8px;margin-top:8px}
+.pa-vol-label{font-family:var(--fmn);font-size:8px;color:var(--dim);min-width:40px}
+.pa-vol-slider{flex:1;-webkit-appearance:none;height:2px;background:rgba(255,255,255,.1);border-radius:1px;outline:none}
+.pa-vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--cyan);cursor:pointer}
+.pa-vol-val{font-family:var(--fmn);font-size:8px;color:var(--cyan);min-width:28px;text-align:right}
+
+/* LUMILOR */
+.lumilor-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.lum-btn{padding:8px;font-family:var(--fmn);font-size:8px;letter-spacing:2px;
+  background:transparent;border:1px solid rgba(255,255,255,.06);border-radius:2px;
+  color:var(--muted);cursor:pointer;transition:all .2s;text-align:center}
+.lum-btn:hover{border-color:var(--mag);color:var(--mag);background:rgba(224,64,251,.05)}
+.lum-btn.on{border-color:var(--mag);color:var(--mag);background:rgba(224,64,251,.1);box-shadow:0 0 12px rgba(224,64,251,.15)}
+.lum-master{grid-column:1/-1;padding:10px;background:rgba(224,64,251,.06);border:1px solid var(--bm)}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:rgba(5,8,16,.7);border:1px solid rgba(255,255,255,.05);border-radius:4px;padding:16px;text-align:center}
+.stat-val{font-family:var(--fhd);font-size:22px;letter-spacing:2px;margin-bottom:4px}
+.stat-val.c{color:var(--cyan)}.stat-val.g{color:var(--teal)}.stat-val.m{color:var(--mag)}.stat-val.r{color:var(--red)}
+.stat-label{font-family:var(--fmn);font-size:7px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
+
+/* BOTTOM ROW */
+.bottom-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:900px){.bottom-row{grid-template-columns:1fr}}
+
+/* EVENT LOG */
+.log-card{background:rgba(5,8,16,.8);border:1px solid rgba(255,255,255,.05);border-radius:4px;padding:16px}
+.log-title{font-family:var(--fmn);font-size:8px;letter-spacing:4px;color:var(--dim);margin-bottom:12px}
+.log-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:2px}.log-list::-webkit-scrollbar-thumb{background:var(--bc)}
+.log-item{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log-time{font-family:var(--fmn);font-size:8px;color:var(--dim);min-width:48px}
+.log-dot{width:6px;height:6px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.log-dot.ok{background:var(--teal)}.log-dot.warn{background:var(--orange)}.log-dot.crit{background:var(--red)}
+.log-msg{font-family:var(--fmn);font-size:9px;color:var(--muted);line-height:1.5}
+
+/* MOTION MAP */
+.map-card{background:rgba(5,8,16,.8);border:1px solid rgba(255,255,255,.05);border-radius:4px;padding:16px}
+.map-title{font-family:var(--fmn);font-size:8px;letter-spacing:4px;color:var(--dim);margin-bottom:12px}
+.map-canvas-wrap{position:relative;aspect-ratio:4/3;background:rgba(2,4,8,.95);border:1px solid rgba(0,229,255,.06);border-radius:3px;overflow:hidden}
+#motionMap{width:100%;height:100%;display:block}
+
+/* GPS */
+.gps-card{background:rgba(5,8,16,.8);border:1px solid rgba(255,255,255,.05);border-radius:4px;padding:16px}
+.gps-title{font-family:var(--fmn);font-size:8px;letter-spacing:4px;color:var(--dim);margin-bottom:12px}
+.gps-stat{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.gps-key{font-family:var(--fmn);font-size:8px;color:var(--dim);letter-spacing:2px}
+.gps-val{font-family:var(--fmn);font-size:9px;color:var(--cyan)}
+.gps-val.safe{color:var(--teal)}.gps-val.warn{color:var(--orange)}
+.emergency-btn{
+  width:100%;margin-top:14px;padding:12px;
+  font-family:var(--fmn);font-size:10px;letter-spacing:4px;
+  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);
+  color:var(--red);border-radius:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;
+}
+.emergency-btn:hover{background:rgba(239,68,68,.2);box-shadow:0 0 20px rgba(239,68,68,.2)}
+
+footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--bc);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px}
+.f-logo{font-family:var(--fhd);font-size:11px;letter-spacing:4px;color:var(--cyan)}
+.f-links{display:flex;gap:16px}
+.f-link{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--dim);text-decoration:none;transition:color .2s}
+.f-link:hover{color:var(--cyan)}
+.f-runes{font-size:13px;letter-spacing:8px;color:var(--gold);opacity:.35}
+</style>
+</head>
+<body>
+<canvas id="cosmos"></canvas>
+<nav>
+  <a href="/" class="nav-logo">NEXUS</a>
+  <div class="nav-sep"></div>
+  <div class="nav-title">SAFEGUARD V2</div>
+  <div class="nav-status"><div class="dot-live"></div>SYSTEMS ACTIVE</div>
+  <a href="/" class="nav-back">← HOME</a>
+</nav>
+
+<div class="main">
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-eyebrow">MODULE 09 · VEHICLE SECURITY COMMAND</div>
+      <div class="hdr-title">NEXUS SAFEGUARD</div>
+      <div class="hdr-sub">360° PROTECTION · LUMILOR READY · PA SYSTEM · MOTION AI</div>
+    </div>
+    <div class="hdr-alerts">
+      <div class="alert-pill alert-ok" id="alertPerimeter"><span>✓</span> PERIMETER SECURE</div>
+      <div class="alert-pill alert-ok" id="alertCams"><span>✓</span> 4 CAMS LIVE</div>
+      <div class="alert-pill alert-ok" id="alertLock"><span>🔒</span> LOCKED</div>
+    </div>
+  </div>
+
+  <!-- CAMERAS -->
+  <div class="top-row">
+    <div class="cam-section">
+      <div class="cam-section-label">Live Feeds — 360° Coverage</div>
+      <div class="cam-grid">
+        <div class="cam-feed active" id="cam-front" onclick="selectCam(this,'FRONT')">
+          <canvas class="cam-canvas" id="cc-front"></canvas>
+          <div class="cam-overlay">
+            <div class="cam-label">FRONT · WIDE</div>
+            <div class="cam-bottom">
+              <div class="cam-badge cam-ok">● CLEAR</div>
+              <div class="cam-rec"><div class="rec-dot"></div>REC</div>
+            </div>
+          </div>
+        </div>
+        <div class="cam-feed" id="cam-rear" onclick="selectCam(this,'REAR')">
+          <canvas class="cam-canvas" id="cc-rear"></canvas>
+          <div class="cam-overlay">
+            <div class="cam-label">REAR · WIDE</div>
+            <div class="cam-bottom">
+              <div class="cam-badge cam-ok" id="badge-rear">● CLEAR</div>
+              <div class="cam-rec"><div class="rec-dot"></div>REC</div>
+            </div>
+          </div>
+        </div>
+        <div class="cam-feed" id="cam-left" onclick="selectCam(this,'LEFT')">
+          <canvas class="cam-canvas" id="cc-left"></canvas>
+          <div class="cam-overlay">
+            <div class="cam-label">LEFT FLANK</div>
+            <div class="cam-bottom">
+              <div class="cam-badge cam-ok" id="badge-left">● CLEAR</div>
+              <div class="cam-rec"><div class="rec-dot"></div>REC</div>
+            </div>
+          </div>
+        </div>
+        <div class="cam-feed" id="cam-right" onclick="selectCam(this,'RIGHT')">
+          <canvas class="cam-canvas" id="cc-right"></canvas>
+          <div class="cam-overlay">
+            <div class="cam-label">RIGHT FLANK</div>
+            <div class="cam-bottom">
+              <div class="cam-badge cam-ok" id="badge-right">● CLEAR</div>
+              <div class="cam-rec"><div class="rec-dot"></div>REC</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctrl-panel">
+      <!-- PA SYSTEM -->
+      <div class="ctrl-card">
+        <div class="ctrl-card-title">PA System</div>
+        <div class="pa-controls">
+          <button class="pa-btn" onclick="paAlert('WARNING: This vehicle is under surveillance. You are being recorded.')">⚠ SURVEILLANCE WARNING</button>
+          <button class="pa-btn" onclick="paAlert('Please step away from the vehicle.')">🔊 STEP AWAY</button>
+          <button class="pa-btn" onclick="paAlert('Help! Call 911 immediately!')">🚨 EMERGENCY BROADCAST</button>
+          <button class="pa-btn" onclick="paAlert('NEXUS vehicle security armed. Move away now.')">🛡 ARMED NOTICE</button>
+        </div>
+        <div class="pa-vol">
+          <div class="pa-vol-label">VOL</div>
+          <input type="range" class="pa-vol-slider" min="0" max="100" value="80" id="volSlider" oninput="document.getElementById('volVal').textContent=this.value+'%'"/>
+          <div class="pa-vol-val" id="volVal">80%</div>
+        </div>
+      </div>
+
+      <!-- LUMILOR -->
+      <div class="ctrl-card">
+        <div class="ctrl-card-title">Lumilor EL Control</div>
+        <div class="lumilor-grid">
+          <button class="lum-btn" onclick="toggleLum(this,'FRONT')">FRONT</button>
+          <button class="lum-btn" onclick="toggleLum(this,'REAR')">REAR</button>
+          <button class="lum-btn" onclick="toggleLum(this,'DOORS')">DOORS</button>
+          <button class="lum-btn" onclick="toggleLum(this,'HOOD')">HOOD</button>
+          <button class="lum-btn lum-master on" onclick="toggleLumAll(this)">⚡ ALL ZONES</button>
+        </div>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="ctrl-card">
+        <div class="ctrl-card-title">Quick Actions</div>
+        <div class="pa-controls">
+          <button class="pa-btn" onclick="armDisarm()" id="armBtn">🔒 ARMED — TAP TO DISARM</button>
+          <button class="pa-btn" onclick="flashHazards()">⚡ FLASH HAZARDS</button>
+          <button class="pa-btn" onclick="hornBlast()">📯 HORN BLAST (3x)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val c" id="statMotion">0</div>
+      <div class="stat-label">Motion Events Today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val g">4 / 4</div>
+      <div class="stat-label">Cameras Online</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val m" id="statLumilor">ON</div>
+      <div class="stat-label">Lumilor Status</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val r" id="statThreat">LOW</div>
+      <div class="stat-label">Threat Level</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="bottom-row">
+    <!-- EVENT LOG -->
+    <div class="log-card">
+      <div class="log-title">Event Log</div>
+      <div class="log-list" id="logList">
+        <div class="log-item">
+          <div class="log-time" id="logTime1">--:--</div>
+          <div class="log-dot ok"></div>
+          <div class="log-msg">System initialized. All sensors active.</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time" id="logTime2">--:--</div>
+          <div class="log-dot ok"></div>
+          <div class="log-msg">Camera array online. 4/4 feeds active.</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time" id="logTime3">--:--</div>
+          <div class="log-dot ok"></div>
+          <div class="log-msg">Lumilor grid enabled. All zones armed.</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time" id="logTime4">--:--</div>
+          <div class="log-dot ok"></div>
+          <div class="log-msg">PA system standby. Volume 80%.</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time" id="logTime5">--:--</div>
+          <div class="log-dot ok"></div>
+          <div class="log-msg">GPS lock acquired. Zone: HOME.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOTION MAP -->
+    <div class="map-card">
+      <div class="map-title">Motion Detection Map</div>
+      <div class="map-canvas-wrap">
+        <canvas id="motionMap"></canvas>
+      </div>
+    </div>
+
+    <!-- GPS STATUS -->
+    <div class="gps-card">
+      <div class="gps-title">GPS &amp; Status</div>
+      <div class="gps-stat"><div class="gps-key">ZONE</div><div class="gps-val safe" id="gpsZone">HOME BASE</div></div>
+      <div class="gps-stat"><div class="gps-key">STATUS</div><div class="gps-val safe">PARKED · SECURE</div></div>
+      <div class="gps-stat"><div class="gps-key">BATTERY</div><div class="gps-val" id="gpsBatt">94%</div></div>
+      <div class="gps-stat"><div class="gps-key">SIGNAL</div><div class="gps-val">████░ STRONG</div></div>
+      <div class="gps-stat"><div class="gps-key">LAST EVENT</div><div class="gps-val" id="gpsLast">NONE</div></div>
+      <div class="gps-stat"><div class="gps-key">UPTIME</div><div class="gps-val" id="gpsUptime">00:00:00</div></div>
+      <button class="emergency-btn" onclick="emergencyAlert()">🚨 EMERGENCY BROADCAST</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-logo">NEXUS</div>
+  <div class="f-links">
+    <a href="/" class="f-link">HOME</a>
+    <a href="demos/" class="f-link">ALL MODULES</a>
+    <a href="nexus-console.html" class="f-link">CONSOLE</a>
+  </div>
+  <div class="f-runes">ᛟ ᚨ ᚹ ᚱ</div>
+</footer>
+
+<script>
+// ── COSMOS ──
+(function(){
+  const c=document.getElementById('cosmos'),ctx=c.getContext('2d');let stars=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;
+    stars=Array.from({length:120},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
+      r:Math.random()*1.1+.1,a:Math.random()*Math.PI*2,s:Math.random()*.003+.001,
+      col:Math.random()>.85?'rgba(245,158,11,':Math.random()>.6?'rgba(224,64,251,':'rgba(0,229,255,'}));}
+  function draw(){ctx.clearRect(0,0,c.width,c.height);stars.forEach(s=>{s.a+=s.s;const a=.04+Math.sin(s.a)*.12;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=s.col+Math.max(0,a)+')';ctx.fill();});requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+// ── CAMERA SIMULATION ──
+const camColors={front:{base:'#001a0a',scan:'#00e5ff'},rear:{base:'#0a0008',scan:'#e040fb'},
+  left:{base:'#0a0800',scan:'#f59e0b'},right:{base:'#000a0a',scan:'#16c79a'}};
+function initCam(id,color){
+  const c=document.getElementById(id),ctx=c.getContext('2d');
+  let t=0,particles=[];
+  function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight;
+    particles=Array.from({length:15},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5}));}
+  function draw(){
+    ctx.fillStyle=color.base+'cc';ctx.fillRect(0,0,c.width,c.height);
+    // scanline
+    const sy=(t*0.5)%c.height;
+    const sg=ctx.createLinearGradient(0,sy-20,0,sy+2);
+    sg.addColorStop(0,'transparent');sg.addColorStop(1,color.scan+'22');
+    ctx.fillStyle=sg;ctx.fillRect(0,sy-20,c.width,22);
+    // grid
+    ctx.strokeStyle=color.scan+'08';ctx.lineWidth=.5;
+    for(let x=0;x<c.width;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke();}
+    for(let y=0;y<c.height;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke();}
+    // particles
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>c.width)p.vx*=-1;if(p.y<0||p.y>c.height)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=color.scan+'40';ctx.fill();
+    });
+    // crosshair
+    const cx=c.width/2,cy=c.height/2;
+    ctx.strokeStyle=color.scan+'30';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.moveTo(cx-15,cy);ctx.lineTo(cx+15,cy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,cy-15);ctx.lineTo(cx,cy+15);ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,10,0,Math.PI*2);ctx.stroke();
+    t++;requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);resize();draw();
+}
+['cc-front','cc-rear','cc-left','cc-right'].forEach((id,i)=>{
+  const cols=[camColors.front,camColors.rear,camColors.left,camColors.right];
+  initCam(id,cols[i]);
+});
+
+// ── MOTION MAP ──
+(function(){
+  const c=document.getElementById('motionMap'),ctx=c.getContext('2d');
+  let t=0,zones=[];
+  function resize(){c.width=c.offsetWidth||300;c.height=c.offsetHeight||225;}
+  function initZones(){
+    zones=[
+      {x:.5,y:.5,label:'VEHICLE',r:30,active:true,col:'#00e5ff'},
+      {x:.5,y:.1,label:'FRONT',r:15,active:false,col:'#00e5ff'},
+      {x:.5,y:.9,label:'REAR',r:15,active:false,col:'#e040fb'},
+      {x:.1,y:.5,label:'LEFT',r:12,active:false,col:'#f59e0b'},
+      {x:.9,y:.5,label:'RIGHT',r:12,active:false,col:'#16c79a'},
+    ];
+  }
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.fillStyle='#020408';ctx.fillRect(0,0,c.width,c.height);
+    // grid
+    ctx.strokeStyle='rgba(0,229,255,.04)';ctx.lineWidth=.5;
+    for(let x=0;x<c.width;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke();}
+    for(let y=0;y<c.height;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke();}
+    zones.forEach(z=>{
+      const px=z.x*c.width,py=z.y*c.height;
+      if(z.active){
+        const pulse=Math.sin(t*.05)*.3+.7;
+        const g=ctx.createRadialGradient(px,py,0,px,py,z.r*2);
+        g.addColorStop(0,z.col+'44');g.addColorStop(1,'transparent');
+        ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,z.r*2,0,Math.PI*2);ctx.fill();
+      }
+      ctx.beginPath();ctx.arc(px,py,z.r,0,Math.PI*2);
+      ctx.strokeStyle=z.active?z.col+'cc':z.col+'22';ctx.lineWidth=z.label==='VEHICLE'?1.5:.8;ctx.stroke();
+      ctx.fillStyle=z.active?z.col+'20':'transparent';ctx.fill();
+      ctx.fillStyle=z.active?z.col:'rgba(255,255,255,.2)';
+      ctx.font=`${Math.round(c.width*.03)}px 'Share Tech Mono',monospace`;ctx.textAlign='center';
+      ctx.fillText(z.label,px,py+z.r+12);
+    });
+    t++;requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);resize();initZones();draw();
+})();
+
+// ── UPTIME ──
+let startTime=Date.now();
+function updateUptime(){
+  const s=Math.floor((Date.now()-startTime)/1000);
+  const h=String(Math.floor(s/3600)).padStart(2,'0');
+  const m=String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const sec=String(s%60).padStart(2,'0');
+  document.getElementById('gpsUptime').textContent=`${h}:${m}:${sec}`;
+}
+setInterval(updateUptime,1000);
+
+// ── LOG TIMESTAMPS ──
+function now(){return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}
+['logTime1','logTime2','logTime3','logTime4','logTime5'].forEach(id=>document.getElementById(id).textContent=now());
+
+// ── INTERACTIONS ──
+let armed=true,motionCount=0;
+function selectCam(el,label){document.querySelectorAll('.cam-feed').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+function paAlert(msg){addLog('warn',`PA: "${msg.substring(0,40)}..."`);alert(`📢 PA BROADCAST\n\n"${msg}"\n\nVolume: ${document.getElementById('volSlider').value}%`);}
+function toggleLum(btn,zone){btn.classList.toggle('on');addLog('ok',`Lumilor ${zone}: ${btn.classList.contains('on')?'ON':'OFF'}`);}
+function toggleLumAll(btn){const on=btn.classList.toggle('on');document.querySelectorAll('.lum-btn:not(.lum-master)').forEach(b=>{if(on)b.classList.add('on');else b.classList.remove('on');});document.getElementById('statLumilor').textContent=on?'ON':'OFF';addLog('ok',`Lumilor ALL: ${on?'ENABLED':'DISABLED'}`);}
+function armDisarm(){armed=!armed;const btn=document.getElementById('armBtn');btn.textContent=armed?'🔒 ARMED — TAP TO DISARM':'🔓 DISARMED — TAP TO ARM';addLog(armed?'ok':'warn',`System ${armed?'ARMED':'DISARMED'}`);}
+function flashHazards(){addLog('ok','Hazard lights: 5x flash sequence initiated');}
+function hornBlast(){addLog('ok','Horn: 3x blast sequence initiated');}
+function emergencyAlert(){addLog('crit','EMERGENCY BROADCAST TRIGGERED — 911 ALERT SENT');document.getElementById('alertPerimeter').className='alert-pill alert-crit';document.getElementById('alertPerimeter').innerHTML='<span>🚨</span> EMERGENCY ACTIVE';}
+function addLog(type,msg){
+  const list=document.getElementById('logList');
+  const item=document.createElement('div');item.className='log-item';
+  item.innerHTML=`<div class="log-time">${now()}</div><div class="log-dot ${type}"></div><div class="log-msg">${msg}</div>`;
+  list.insertBefore(item,list.firstChild);
+  if(type==='warn'||type==='crit'){motionCount++;document.getElementById('statMotion').textContent=motionCount;}
+  if(type==='crit'){document.getElementById('statThreat').textContent='HIGH';document.getElementById('statThreat').style.color='var(--red)';}
+  document.getElementById('gpsLast').textContent=now();
+}
+
+// ── RANDOM MOTION EVENTS ──
+const motionLabels=['Pedestrian detected — FRONT','Motion — REAR zone','Animal near vehicle — LEFT','Vehicle passed — RIGHT','Wind motion — LOW CONFIDENCE'];
+setInterval(()=>{
+  if(Math.random()>.85){
+    const label=motionLabels[Math.floor(Math.random()*motionLabels.length)];
+    addLog('warn',label);
+    const badges=['badge-rear','badge-left','badge-right'];
+    const b=document.getElementById(badges[Math.floor(Math.random()*badges.length)]);
+    if(b){b.className='cam-badge cam-motion';b.textContent='⚠ MOTION';setTimeout(()=>{b.className='cam-badge cam-ok';b.textContent='● CLEAR';},4000);}
+  }
+},8000);
+</script>
+</body>
+</html>

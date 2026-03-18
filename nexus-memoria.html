@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NEXUS Memoria — Legacy · Memory · Light</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#000;--deep:#020408;--obs:#050810;
+  --cyan:#00e5ff;--mag:#e040fb;--teal:#16c79a;--gold:#f59e0b;
+  --silver:#c0c0d0;--amethyst:#9b59b6;
+  --white:rgba(255,255,255,.92);--muted:rgba(255,255,255,.45);--dim:rgba(255,255,255,.15);
+  --bc:rgba(245,158,11,.12);--ba:rgba(155,89,182,.12);
+  --fhd:'Orbitron',monospace;--fbd:'Rajdhani',sans-serif;--fmn:'Share Tech Mono',monospace;--fit:'Cormorant Garamond',serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--white);font-family:var(--fbd);overflow-x:hidden;cursor:crosshair;min-height:100vh}
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(155,89,182,.01) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.008) 1px,transparent 1px);
+  background-size:80px 80px;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;padding:0 32px;gap:20px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--bc);}
+.nav-logo{font-family:var(--fhd);font-size:14px;font-weight:900;letter-spacing:4px;color:var(--gold);text-decoration:none;text-shadow:0 0 20px rgba(245,158,11,.4)}
+.nav-sep{width:1px;height:18px;background:var(--bc)}
+.nav-title{font-family:var(--fmn);font-size:9px;letter-spacing:4px;color:var(--dim)}
+.nav-back{margin-left:auto;font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--gold)}
+
+.main{position:relative;z-index:2;padding:90px 24px 60px;max-width:960px;margin:0 auto}
+
+/* HERO */
+.hero{text-align:center;padding:40px 0 56px;position:relative}
+.hero-orb-wrap{width:100px;height:100px;margin:0 auto 28px;position:relative}
+.hero-ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(245,158,11,.15);animation:spin 12s linear infinite}
+.hero-ring2{position:absolute;inset:8px;border-radius:50%;border:1px solid rgba(155,89,182,.1);animation:spin 20s linear infinite reverse}
+.hero-orb{position:absolute;inset:18px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,rgba(245,158,11,.7),rgba(155,89,182,.4),rgba(2,4,8,.9));
+  box-shadow:0 0 30px rgba(245,158,11,.2),0 0 60px rgba(155,89,182,.1);animation:orbPulse 5s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes orbPulse{0%,100%{box-shadow:0 0 30px rgba(245,158,11,.2)}50%{box-shadow:0 0 50px rgba(245,158,11,.35)}}
+.hero-eyebrow{font-family:var(--fmn);font-size:9px;letter-spacing:6px;color:var(--gold);margin-bottom:14px}
+.hero-title{font-family:var(--fhd);font-size:clamp(28px,6vw,52px);font-weight:900;letter-spacing:5px;margin-bottom:14px;
+  background:linear-gradient(135deg,var(--silver),var(--gold) 50%,var(--amethyst));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-tagline{font-family:var(--fit);font-size:clamp(18px,3vw,24px);font-style:italic;font-weight:300;color:var(--muted);margin-bottom:8px}
+.hero-sub{font-family:var(--fmn);font-size:10px;letter-spacing:4px;color:var(--dim)}
+
+/* TABS */
+.tab-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;justify-content:center}
+.tab{font-family:var(--fmn);font-size:9px;letter-spacing:3px;padding:8px 18px;
+  background:transparent;border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--muted);cursor:pointer;transition:all .2s;text-transform:uppercase}
+.tab:hover,.tab.active{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);color:var(--gold)}
+
+/* MEMORY FORM */
+.memory-form{background:rgba(5,8,16,.85);border:1px solid rgba(245,158,11,.1);border-radius:4px;padding:28px;margin-bottom:28px}
+.section-label{font-family:var(--fmn);font-size:8px;letter-spacing:5px;color:var(--dim);text-transform:uppercase;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-label{font-family:var(--fmn);font-size:7px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
+.form-input,.form-textarea,.form-select{
+  width:100%;padding:10px 14px;background:rgba(2,4,8,.8);border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--white);font-family:var(--fbd);font-size:14px;outline:none;transition:border-color .2s;
+}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--gold)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--dim)}
+.form-textarea{resize:vertical;min-height:130px;line-height:1.8;font-style:italic}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:580px){.form-row{grid-template-columns:1fr}}
+.form-select option{background:#050810}
+
+/* TYPE SELECT */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+@media(max-width:500px){.type-grid{grid-template-columns:1fr 1fr}}
+.type-card{padding:12px 8px;background:rgba(2,4,8,.7);border:1px solid rgba(255,255,255,.06);border-radius:3px;
+  cursor:pointer;transition:all .2s;text-align:center}
+.type-card:hover,.type-card.sel{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.2)}
+.tc-icon{font-size:20px;margin-bottom:5px}
+.tc-name{font-family:var(--fmn);font-size:8px;letter-spacing:2px;color:var(--muted)}
+
+/* ACTIONS */
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn-primary{font-family:var(--fmn);font-size:10px;letter-spacing:3px;padding:11px 24px;
+  background:var(--gold);color:var(--void);border:none;border-radius:2px;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:var(--amethyst);color:var(--white);box-shadow:0 0 20px rgba(155,89,182,.3)}
+.btn-outline{font-family:var(--fmn);font-size:10px;letter-spacing:3px;padding:11px 20px;
+  background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,.08);border-radius:2px;cursor:pointer;transition:all .2s}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+
+/* MEMORIA WALL */
+.wall-section{margin-bottom:32px}
+.wall-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.wall-count{font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--dim)}
+.memoria-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+
+.memoria-card{
+  background:rgba(5,8,16,.8);border:1px solid rgba(245,158,11,.08);border-radius:4px;
+  padding:24px;position:relative;overflow:hidden;transition:all .3s;
+}
+.memoria-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--amethyst));opacity:.4;transition:opacity .3s}
+.memoria-card:hover::before{opacity:1}
+.memoria-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 20px rgba(245,158,11,.04)}
+.mc-type-badge{font-family:var(--fmn);font-size:7px;letter-spacing:3px;padding:3px 8px;
+  border-radius:1px;display:inline-block;margin-bottom:10px}
+.badge-tribute{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.2)}
+.badge-memory{background:rgba(155,89,182,.1);color:var(--amethyst);border:1px solid rgba(155,89,182,.2)}
+.badge-milestone{background:rgba(22,199,154,.08);color:var(--teal);border:1px solid rgba(22,199,154,.15)}
+.badge-legacy{background:rgba(0,229,255,.08);color:var(--cyan);border:1px solid rgba(0,229,255,.15)}
+.mc-name{font-family:var(--fhd);font-size:14px;letter-spacing:2px;color:var(--white);margin-bottom:4px}
+.mc-dates{font-family:var(--fmn);font-size:9px;color:var(--dim);margin-bottom:12px;letter-spacing:2px}
+.mc-message{font-family:var(--fit);font-size:15px;font-style:italic;font-weight:300;color:var(--muted);line-height:1.8;margin-bottom:14px}
+.mc-author{font-family:var(--fmn);font-size:8px;letter-spacing:3px;color:var(--dim)}
+.mc-candle{position:absolute;top:18px;right:18px;font-size:20px;animation:flicker 3s ease-in-out infinite}
+@keyframes flicker{0%,100%{opacity:.8;transform:scale(1)}25%{opacity:.6;transform:scale(.97)}50%{opacity:1;transform:scale(1.03)}75%{opacity:.7;transform:scale(.98)}}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 20px;color:var(--dim)}
+.empty-icon{font-size:40px;margin-bottom:14px;opacity:.4}
+.empty-text{font-family:var(--fmn);font-size:10px;letter-spacing:3px}
+
+/* GRIEF SUPPORT */
+.support-section{background:rgba(5,8,16,.7);border:1px solid rgba(155,89,182,.1);border-radius:4px;padding:24px;margin-bottom:32px}
+.support-intro{font-family:var(--fit);font-size:17px;font-style:italic;font-weight:300;color:var(--muted);line-height:1.85;margin-bottom:20px}
+.support-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:580px){.support-grid{grid-template-columns:1fr}}
+.support-card{padding:16px;background:rgba(2,4,8,.6);border:1px solid rgba(255,255,255,.04);border-radius:3px}
+.sc-icon{font-size:20px;margin-bottom:8px}
+.sc-name{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:4px}
+.sc-desc{font-size:12px;color:var(--dim);line-height:1.55}
+
+footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--bc);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:20px}
+.f-logo{font-family:var(--fhd);font-size:11px;letter-spacing:4px;color:var(--gold)}
+.f-links{display:flex;gap:16px}
+.f-link{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--dim);text-decoration:none;transition:color .2s}
+.f-link:hover{color:var(--gold)}
+.f-runes{font-size:13px;letter-spacing:8px;color:var(--gold);opacity:.35}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+<canvas id="cosmos"></canvas>
+<nav>
+  <a href="/" class="nav-logo">NEXUS</a>
+  <div class="nav-sep"></div>
+  <div class="nav-title">MEMORIA</div>
+  <a href="/" class="nav-back">← HOME</a>
+</nav>
+
+<div class="main">
+  <div class="hero">
+    <div class="hero-orb-wrap">
+      <div class="hero-ring"></div>
+      <div class="hero-ring2"></div>
+      <div class="hero-orb"></div>
+    </div>
+    <div class="hero-eyebrow">MODULE 14 · MEMORY · LEGACY · LIGHT</div>
+    <h1 class="hero-title">NEXUS MEMORIA</h1>
+    <p class="hero-tagline">Every life deserves a monument</p>
+    <div class="hero-sub">TRIBUTES · MILESTONES · LEGACIES · GRIEF SUPPORT</div>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab active" onclick="setTab('wall',this)">MEMORIA WALL</button>
+    <button class="tab" onclick="setTab('create',this)">CREATE TRIBUTE</button>
+    <button class="tab" onclick="setTab('support',this)">GRIEF SUPPORT</button>
+  </div>
+
+  <!-- WALL -->
+  <div id="tabWall">
+    <div class="wall-section reveal">
+      <div class="wall-header">
+        <div class="section-label">Memory Wall</div>
+        <div class="wall-count" id="wallCount">0 MEMORIES</div>
+      </div>
+      <div class="memoria-grid" id="memoriaGrid">
+        <div class="empty-state">
+          <div class="empty-icon">🕯️</div>
+          <div class="empty-text">BE THE FIRST TO ADD A MEMORY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE -->
+  <div id="tabCreate" style="display:none">
+    <div class="memory-form reveal">
+      <div class="section-label">Memory Type</div>
+      <div class="type-grid">
+        <div class="type-card sel" onclick="selectType(this,'tribute')"><div class="tc-icon">🕯️</div><div class="tc-name">TRIBUTE</div></div>
+        <div class="type-card" onclick="selectType(this,'memory')"><div class="tc-icon">💛</div><div class="tc-name">MEMORY</div></div>
+        <div class="type-card" onclick="selectType(this,'milestone')"><div class="tc-icon">⭐</div><div class="tc-name">MILESTONE</div></div>
+        <div class="type-card" onclick="selectType(this,'legacy')"><div class="tc-icon">📖</div><div class="tc-name">LEGACY</div></div>
+        <div class="type-card" onclick="selectType(this,'birthday')"><div class="tc-icon">🎂</div><div class="tc-name">BIRTHDAY</div></div>
+        <div class="type-card" onclick="selectType(this,'anniversary')"><div class="tc-icon">🌹</div><div class="tc-name">ANNIVERSARY</div></div>
+      </div>
+
+      <div class="section-label">Their Name</div>
+      <div class="form-group">
+        <div class="form-label">Full Name</div>
+        <input type="text" class="form-input" id="honorName" placeholder="The name that deserves to be remembered"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Born / Started</div>
+          <input type="text" class="form-input" id="honorBorn" placeholder="Date, year, or era"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Passed / Ended</div>
+          <input type="text" class="form-input" id="honorPassed" placeholder="Date, year, or leave blank"/>
+        </div>
+      </div>
+
+      <div class="section-label">Your Words</div>
+      <div class="form-group">
+        <div class="form-label">Message, Memory, or Tribute</div>
+        <textarea class="form-textarea" id="honorMessage" placeholder="Write freely. This is a sacred space. Say what needs to be said."></textarea>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Your Name (optional)</div>
+        <input type="text" class="form-input" id="authorName" placeholder="Left by..."/>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="addMemory()">🕯️ ADD TO MEMORIA WALL</button>
+        <button class="btn-outline" onclick="clearForm()">CLEAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div id="tabSupport" style="display:none">
+    <div class="support-section reveal">
+      <div class="section-label">You Are Not Alone</div>
+      <p class="support-intro">Grief is not a malfunction. It is proof of love. NEXUS Memoria holds space for every kind of loss — of people, of chapters, of versions of yourself. Whatever you are carrying, it is valid.</p>
+      <div class="support-grid">
+        <div class="support-card">
+          <div class="sc-icon">💜</div>
+          <div class="sc-name">GRIEF SHARE HOTLINE</div>
+          <div class="sc-desc">1-800-395-5755 · GriefShare support groups nationwide. You do not have to do this alone.</div>
+        </div>
+        <div class="support-card">
+          <div class="sc-icon">🧠</div>
+          <div class="sc-name">CRISIS LINE</div>
+          <div class="sc-desc">988 · Call or text. Immediate support for overwhelming grief, loss, and mental health crisis.</div>
+        </div>
+        <div class="support-card">
+          <div class="sc-icon">🌊</div>
+          <div class="sc-name">WHAT IS GRIEF</div>
+          <div class="sc-desc">Grief is not linear. There is no timeline. You are allowed to cycle through it as many times as you need. Your pace is the right pace.</div>
+        </div>
+        <div class="support-card">
+          <div class="sc-icon">🕯️</div>
+          <div class="sc-name">NEXUS MEMORIA</div>
+          <div class="sc-desc">Leave a tribute. Light a digital candle. The wall holds every name that deserves to be remembered.</div>
+        </div>
+        <div class="support-card">
+          <div class="sc-icon">📖</div>
+          <div class="sc-name">WRITE IT DOWN</div>
+          <div class="sc-desc">Writing a memory, tribute, or letter to the one you lost can begin the healing. This wall is always here.</div>
+        </div>
+        <div class="support-card">
+          <div class="sc-icon">🤝</div>
+          <div class="sc-name">SAFE CONTACT</div>
+          <div class="sc-desc">Reach the NEXUS team anonymously if you need someone to talk to. <a href="nexus-safe-contact.html" style="color:var(--teal)">Open safe channel →</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-logo">NEXUS</div>
+  <div class="f-links">
+    <a href="/" class="f-link">HOME</a>
+    <a href="demos/" class="f-link">ALL MODULES</a>
+    <a href="nexus-console.html" class="f-link">CONSOLE</a>
+    <a href="nexus-safe-contact.html" class="f-link">SAFE CONTACT</a>
+  </div>
+  <div class="f-runes">ᛟ ᚨ ᚹ ᚱ</div>
+</footer>
+
+<script>
+(function(){
+  const c=document.getElementById('cosmos'),ctx=c.getContext('2d');let stars=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;
+    stars=Array.from({length:160},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
+      r:Math.random()*1.2+.1,a:Math.random()*Math.PI*2,s:Math.random()*.002+.0005,
+      col:Math.random()>.85?'rgba(245,158,11,':Math.random()>.6?'rgba(155,89,182,':'rgba(192,192,208,'}));}
+  function draw(){ctx.clearRect(0,0,c.width,c.height);stars.forEach(s=>{s.a+=s.s;const a=.03+Math.sin(s.a)*.1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=s.col+Math.max(0,a)+')';ctx.fill();});requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+const obs=new IntersectionObserver(e=>e.forEach(el=>{if(el.isIntersecting)el.target.classList.add('visible')}),{threshold:.06});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+let memories=JSON.parse(localStorage.getItem('nx_memoria')||'[]');
+let selectedType='tribute';
+
+const TYPE_EMOJIS={tribute:'🕯️',memory:'💛',milestone:'⭐',legacy:'📖',birthday:'🎂',anniversary:'🌹'};
+const TYPE_BADGES={tribute:'badge-tribute',memory:'badge-memory',milestone:'badge-milestone',legacy:'badge-legacy',birthday:'badge-tribute',anniversary:'badge-legacy'};
+
+function setTab(tab,btn){
+  ['tabWall','tabCreate','tabSupport'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display='block';
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(tab==='wall')renderWall();
+}
+
+function selectType(el,type){
+  selectedType=type;
+  document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function addMemory(){
+  const name=document.getElementById('honorName').value.trim();
+  const msg=document.getElementById('honorMessage').value.trim();
+  if(!name){alert('Please enter a name.');return;}
+  if(!msg){alert('Please write a message or memory.');return;}
+  const memory={
+    id:Date.now(),type:selectedType,
+    name,born:document.getElementById('honorBorn').value,
+    passed:document.getElementById('honorPassed').value,
+    message:msg,author:document.getElementById('authorName').value||'Anonymous',
+    date:new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
+  };
+  memories.unshift(memory);
+  localStorage.setItem('nx_memoria',JSON.stringify(memories.slice(0,50)));
+  clearForm();
+  setTab('wall',document.querySelector('.tab'));
+  document.querySelector('.tab').classList.add('active');
+}
+
+function renderWall(){
+  const grid=document.getElementById('memoriaGrid');
+  document.getElementById('wallCount').textContent=memories.length+' MEMOR'+(memories.length===1?'Y':'IES');
+  if(!memories.length){
+    grid.innerHTML='<div class="empty-state"><div class="empty-icon">🕯️</div><div class="empty-text">BE THE FIRST TO ADD A MEMORY</div></div>';
+    return;
+  }
+  grid.innerHTML=memories.map(m=>`
+    <div class="memoria-card">
+      <div class="mc-candle">${TYPE_EMOJIS[m.type]||'🕯️'}</div>
+      <div class="mc-type-badge ${TYPE_BADGES[m.type]||'badge-tribute'}">${m.type.toUpperCase()}</div>
+      <div class="mc-name">${m.name}</div>
+      <div class="mc-dates">${m.born?m.born:''} ${m.born&&m.passed?'–':''} ${m.passed?m.passed:''}</div>
+      <div class="mc-message">"${m.message}"</div>
+      <div class="mc-author">— ${m.author} · ${m.date}</div>
+    </div>`).join('');
+}
+
+function clearForm(){
+  ['honorName','honorBorn','honorPassed','honorMessage','authorName'].forEach(id=>document.getElementById(id).value='');
+}
+
+renderWall();
+</script>
+</body>
+</html>

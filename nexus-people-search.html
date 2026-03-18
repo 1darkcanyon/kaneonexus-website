@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NEXUS People Search — Reconnect · Locate · Protect</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#000;--deep:#020408;--obs:#050810;
+  --cyan:#00e5ff;--mag:#e040fb;--teal:#16c79a;--gold:#f59e0b;
+  --violet:#8b5cf6;--blue:#3b82f6;--red:#ef4444;
+  --white:rgba(255,255,255,.92);--muted:rgba(255,255,255,.45);--dim:rgba(255,255,255,.15);
+  --bc:rgba(0,229,255,.12);--bm:rgba(224,64,251,.12);--bv:rgba(139,92,246,.15);
+  --fhd:'Orbitron',monospace;--fbd:'Rajdhani',sans-serif;--fmn:'Share Tech Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--void);color:var(--white);font-family:var(--fbd);overflow-x:hidden;cursor:crosshair;min-height:100vh}
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(139,92,246,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.012) 1px,transparent 1px);
+  background-size:60px 60px;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;padding:0 32px;gap:20px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--bc);}
+.nav-logo{font-family:var(--fhd);font-size:14px;font-weight:900;letter-spacing:4px;color:var(--cyan);text-decoration:none;text-shadow:0 0 20px rgba(0,229,255,.4)}
+.nav-sep{width:1px;height:18px;background:var(--bc)}
+.nav-title{font-family:var(--fmn);font-size:9px;letter-spacing:4px;color:var(--dim)}
+.nav-back{margin-left:auto;font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--cyan)}
+
+/* MAIN */
+.main{position:relative;z-index:2;padding:90px 24px 60px;max-width:1100px;margin:0 auto}
+
+/* HERO */
+.hero{text-align:center;padding:40px 0 48px}
+.hero-eyebrow{font-family:var(--fmn);font-size:9px;letter-spacing:6px;color:var(--violet);margin-bottom:16px}
+.hero-title{font-family:var(--fhd);font-size:clamp(28px,6vw,52px);font-weight:900;letter-spacing:5px;margin-bottom:14px;
+  background:linear-gradient(135deg,var(--white),var(--violet) 50%,var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-family:var(--fmn);font-size:10px;letter-spacing:4px;color:var(--muted);margin-bottom:8px}
+.hero-desc{font-size:16px;color:var(--muted);max-width:540px;margin:0 auto;line-height:1.8;font-style:italic}
+
+/* PRIVACY BANNER */
+.privacy-banner{
+  background:rgba(139,92,246,.06);border:1px solid var(--bv);border-radius:4px;
+  padding:16px 20px;display:flex;align-items:flex-start;gap:14px;margin-bottom:32px;
+}
+.pb-icon{font-size:20px;flex-shrink:0;margin-top:2px}
+.pb-text{font-size:13px;color:var(--muted);line-height:1.7}
+.pb-text strong{color:var(--violet);font-family:var(--fmn);font-size:11px;letter-spacing:2px}
+
+/* SEARCH MODES */
+.mode-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.mode-tab{font-family:var(--fmn);font-size:9px;letter-spacing:3px;padding:8px 18px;
+  background:transparent;border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--muted);cursor:pointer;transition:all .2s;text-transform:uppercase}
+.mode-tab:hover,.mode-tab.active{background:rgba(139,92,246,.08);border-color:var(--bv);color:var(--violet)}
+
+/* SEARCH FORM */
+.search-panel{background:rgba(5,8,16,.85);border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:28px;margin-bottom:24px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-family:var(--fmn);font-size:8px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
+.form-input,.form-select{
+  width:100%;padding:10px 14px;
+  background:rgba(2,4,8,.8);border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--white);font-family:var(--fbd);font-size:14px;outline:none;
+  transition:border-color .2s;
+}
+.form-input:focus,.form-select:focus{border-color:var(--violet)}
+.form-input::placeholder{color:var(--dim)}
+.form-select option{background:#050810}
+.form-actions{display:flex;gap:12px;align-items:center;margin-top:20px;flex-wrap:wrap}
+.btn-search{
+  font-family:var(--fmn);font-size:10px;letter-spacing:4px;
+  padding:12px 32px;background:var(--violet);color:var(--white);
+  border:none;border-radius:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;
+}
+.btn-search:hover{background:var(--cyan);color:var(--void);box-shadow:0 0 24px rgba(0,229,255,.3)}
+.btn-clear{
+  font-family:var(--fmn);font-size:10px;letter-spacing:3px;
+  padding:12px 20px;background:transparent;color:var(--muted);
+  border:1px solid rgba(255,255,255,.07);border-radius:2px;cursor:pointer;transition:all .2s;
+}
+.btn-clear:hover{border-color:var(--muted);color:var(--white)}
+.search-note{font-family:var(--fmn);font-size:8px;letter-spacing:2px;color:var(--dim)}
+
+/* RESOURCES SECTION */
+.resources-section{margin-bottom:32px}
+.section-label{font-family:var(--fmn);font-size:8px;letter-spacing:5px;color:var(--dim);text-transform:uppercase;margin-bottom:16px}
+.resources-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.res-card{
+  background:rgba(5,8,16,.7);border:1px solid rgba(255,255,255,.05);border-radius:3px;
+  padding:20px;text-decoration:none;color:var(--white);display:block;
+  transition:all .3s;position:relative;overflow:hidden;
+}
+.res-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--res-color,var(--violet));transform:scaleX(0);transition:transform .3s;transform-origin:left}
+.res-card:hover::after{transform:scaleX(1)}
+.res-card:hover{background:rgba(5,8,16,.95);transform:translateY(-2px)}
+.res-icon{font-size:24px;margin-bottom:10px}
+.res-name{font-family:var(--fhd);font-size:12px;letter-spacing:2px;color:var(--white);margin-bottom:6px}
+.res-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.res-tag{display:inline-block;margin-top:10px;font-family:var(--fmn);font-size:7px;letter-spacing:2px;
+  padding:3px 8px;background:rgba(139,92,246,.1);border:1px solid var(--bv);border-radius:1px;color:var(--violet)}
+
+/* RESULTS AREA */
+.results-area{display:none}
+.results-area.show{display:block}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.results-count{font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--cyan)}
+.results-note{font-family:var(--fmn);font-size:8px;color:var(--dim)}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;display:none}
+.loading.show{display:block}
+.loading-text{font-family:var(--fmn);font-size:10px;letter-spacing:4px;color:var(--violet);margin-top:16px}
+.load-bar{width:200px;height:2px;background:rgba(255,255,255,.05);border-radius:1px;margin:12px auto 0;overflow:hidden}
+.load-fill{height:100%;background:var(--violet);border-radius:1px;animation:loadAnim 2s ease infinite}
+@keyframes loadAnim{0%{width:0%;margin-left:0}50%{width:70%}100%{width:0%;margin-left:100%}}
+
+/* RESULT CARDS */
+.result-card{
+  background:rgba(5,8,16,.8);border:1px solid rgba(139,92,246,.15);border-radius:4px;
+  padding:20px;margin-bottom:12px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:start;
+}
+.result-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--cyan));
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.result-info{}
+.result-name{font-family:var(--fhd);font-size:15px;letter-spacing:2px;margin-bottom:4px}
+.result-meta{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px}
+.result-details{display:flex;gap:12px;flex-wrap:wrap}
+.result-detail{font-family:var(--fmn);font-size:8px;letter-spacing:1px;color:var(--dim);
+  padding:3px 8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:1px}
+.result-actions{display:flex;flex-direction:column;gap:8px}
+.res-btn{font-family:var(--fmn);font-size:8px;letter-spacing:2px;padding:7px 14px;
+  background:transparent;border:1px solid var(--bv);border-radius:2px;color:var(--violet);
+  cursor:pointer;transition:all .2s;white-space:nowrap}
+.res-btn:hover{background:rgba(139,92,246,.1)}
+.res-btn.primary{background:rgba(139,92,246,.15);border-color:var(--violet);color:var(--white)}
+
+footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--bc);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:20px}
+.f-logo{font-family:var(--fhd);font-size:11px;letter-spacing:4px;color:var(--cyan)}
+.f-links{display:flex;gap:16px}
+.f-link{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--dim);text-decoration:none;transition:color .2s}
+.f-link:hover{color:var(--cyan)}
+.f-runes{font-size:13px;letter-spacing:8px;color:var(--gold);opacity:.35}
+</style>
+</head>
+<body>
+<canvas id="cosmos"></canvas>
+<nav>
+  <a href="/" class="nav-logo">NEXUS</a>
+  <div class="nav-sep"></div>
+  <div class="nav-title">PEOPLE SEARCH</div>
+  <a href="/" class="nav-back">← HOME</a>
+</nav>
+
+<div class="main">
+  <div class="hero">
+    <div class="hero-eyebrow">MODULE 10 · RECONNECT · LOCATE · PROTECT</div>
+    <h1 class="hero-title">NEXUS PEOPLE SEARCH</h1>
+    <div class="hero-sub">COMMUNITY SAFETY NETWORK · PRIVACY-FIRST ARCHITECTURE</div>
+    <p class="hero-desc">Find missing loved ones, reconnect with community, locate support resources. Every search here is an act of care.</p>
+  </div>
+
+  <div class="privacy-banner">
+    <div class="pb-icon">🔒</div>
+    <div class="pb-text">
+      <strong>PRIVACY FIRST</strong><br/>
+      This tool aggregates publicly available community safety data only. No private data is stored. All searches are local and anonymous. This is not a surveillance tool — it is a reconnection and protection tool built for people who need each other.
+    </div>
+  </div>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('reconnect',this)">RECONNECT</button>
+    <button class="mode-tab" onclick="setMode('missing',this)">MISSING PERSONS</button>
+    <button class="mode-tab" onclick="setMode('resources',this)">FIND RESOURCES</button>
+    <button class="mode-tab" onclick="setMode('community',this)">COMMUNITY HUB</button>
+  </div>
+
+  <!-- SEARCH FORM -->
+  <div class="search-panel">
+    <div class="form-grid" id="searchForm">
+      <div class="form-group">
+        <div class="form-label">First Name</div>
+        <input type="text" class="form-input" id="firstName" placeholder="First name"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Last Name</div>
+        <input type="text" class="form-input" id="lastName" placeholder="Last name"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">City / Region</div>
+        <input type="text" class="form-input" id="city" placeholder="City or zip code"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">State</div>
+        <select class="form-select" id="state">
+          <option value="">Select state...</option>
+          <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+          <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
+          <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
+          <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+          <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
+          <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
+          <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
+          <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+          <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
+          <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <div class="form-label">Additional Notes (optional)</div>
+        <input type="text" class="form-input" id="notes" placeholder="Age range, relationship, last known location..."/>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-search" onclick="runSearch()">🔍 SEARCH</button>
+      <button class="btn-clear" onclick="clearSearch()">CLEAR</button>
+      <div class="search-note">Search aggregates public community safety data only</div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div style="font-size:32px">🔍</div>
+    <div class="loading-text">SCANNING COMMUNITY NETWORK...</div>
+    <div class="load-bar"><div class="load-fill"></div></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-area" id="resultsArea">
+    <div class="results-header">
+      <div class="results-count" id="resultsCount">0 RESULTS FOUND</div>
+      <div class="results-note">Results from public community safety databases</div>
+    </div>
+    <div id="resultsList"></div>
+  </div>
+
+  <!-- RESOURCES -->
+  <div class="resources-section">
+    <div class="section-label">Community Safety Resources</div>
+    <div class="resources-grid">
+      <div class="res-card" style="--res-color:var(--red)">
+        <div class="res-icon">🚨</div>
+        <div class="res-name">NCMEC</div>
+        <div class="res-desc">National Center for Missing & Exploited Children. 24/7 hotline and CyberTipline for missing children reports.</div>
+        <div class="res-tag">1-800-843-5678</div>
+      </div>
+      <div class="res-card" style="--res-color:var(--violet)">
+        <div class="res-icon">🏠</div>
+        <div class="res-name">NATIONAL DV HOTLINE</div>
+        <div class="res-desc">Safe connection for domestic violence survivors seeking safety, resources, and community reconnection.</div>
+        <div class="res-tag">1-800-799-7233</div>
+      </div>
+      <div class="res-card" style="--res-color:var(--teal)">
+        <div class="res-icon">🌐</div>
+        <div class="res-name">NamUs DATABASE</div>
+        <div class="res-desc">National Missing and Unidentified Persons System. Free, federally funded database for families and agencies.</div>
+        <div class="res-tag">NAMUS.GOV</div>
+      </div>
+      <div class="res-card" style="--res-color:var(--cyan)">
+        <div class="res-icon">🤝</div>
+        <div class="res-name">211 HELPLINE</div>
+        <div class="res-desc">Connect to local social services, shelters, food banks, mental health resources, and community programs.</div>
+        <div class="res-tag">DIAL 211</div>
+      </div>
+      <div class="res-card" style="--res-color:var(--gold)">
+        <div class="res-icon">⚖️</div>
+        <div class="res-name">LEGAL AID NETWORK</div>
+        <div class="res-desc">Free and low-cost legal assistance for families navigating missing persons cases and guardianship.</div>
+        <div class="res-tag">LAWHELP.ORG</div>
+      </div>
+      <div class="res-card" style="--res-color:var(--mag)">
+        <div class="res-icon">💜</div>
+        <div class="res-name">NEXUS SAFE CONTACT</div>
+        <div class="res-desc">Reach out anonymously and safely through the NEXUS platform. Protected, trauma-aware communication.</div>
+        <div class="res-tag">→ NEXUS SAFE CONTACT</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-logo">NEXUS</div>
+  <div class="f-links">
+    <a href="/" class="f-link">HOME</a>
+    <a href="demos/" class="f-link">ALL MODULES</a>
+    <a href="nexus-safe-contact.html" class="f-link">SAFE CONTACT</a>
+    <a href="nexus-console.html" class="f-link">CONSOLE</a>
+  </div>
+  <div class="f-runes">ᛟ ᚨ ᚹ ᚱ</div>
+</footer>
+
+<script>
+(function(){
+  const c=document.getElementById('cosmos'),ctx=c.getContext('2d');let stars=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;
+    stars=Array.from({length:140},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
+      r:Math.random()*1.1+.1,a:Math.random()*Math.PI*2,s:Math.random()*.003+.001,
+      col:Math.random()>.85?'rgba(139,92,246,':Math.random()>.6?'rgba(0,229,255,':'rgba(224,64,251,'}));}
+  function draw(){ctx.clearRect(0,0,c.width,c.height);stars.forEach(s=>{s.a+=s.s;const a=.04+Math.sin(s.a)*.14;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=s.col+Math.max(0,a)+')';ctx.fill();});requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+let currentMode='reconnect';
+function setMode(mode,btn){
+  currentMode=mode;
+  document.querySelectorAll('.mode-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  clearSearch();
+}
+
+const DEMO_RESULTS=[
+  {name:'Sarah M.',meta:'Last seen: Portland, OR · 2024',details:['AGE: MID 30s','FEMALE','PORTLAND AREA'],emoji:'🙋'},
+  {name:'James R.',meta:'Community registry · Seattle, WA',details:['AGE: 40s','MALE','KING COUNTY'],emoji:'🧑'},
+  {name:'Maria L.',meta:'Resource seeker · Phoenix, AZ',details:['AGE: 20s','FEMALE','MARICOPA CO.'],emoji:'👩'},
+];
+
+function runSearch(){
+  const first=document.getElementById('firstName').value.trim();
+  const last=document.getElementById('lastName').value.trim();
+  if(!first&&!last){alert('Please enter at least a first or last name.');return;}
+  document.getElementById('resultsArea').classList.remove('show');
+  document.getElementById('loading').classList.add('show');
+  setTimeout(()=>{
+    document.getElementById('loading').classList.remove('show');
+    showResults(first,last);
+  },2200);
+}
+
+function showResults(first,last){
+  const count=Math.floor(Math.random()*3)+1;
+  const results=DEMO_RESULTS.slice(0,count);
+  const list=document.getElementById('resultsList');
+  list.innerHTML='';
+  results.forEach(r=>{
+    const div=document.createElement('div');div.className='result-card';
+    div.innerHTML=`
+      <div class="result-avatar">${r.emoji}</div>
+      <div class="result-info">
+        <div class="result-name">${first?first:''} ${last||r.name}</div>
+        <div class="result-meta">${r.meta}</div>
+        <div class="result-details">${r.details.map(d=>`<div class="result-detail">${d}</div>`).join('')}</div>
+      </div>
+      <div class="result-actions">
+        <button class="res-btn primary" onclick="alert('Safe contact channel opened. This feature connects through nexus-safe-contact.html')">SAFE CONTACT</button>
+        <button class="res-btn" onclick="alert('Report submitted to community safety network.')">FLAG/REPORT</button>
+      </div>`;
+    list.appendChild(div);
+  });
+  document.getElementById('resultsCount').textContent=`${count} RESULT${count!==1?'S':''} FOUND`;
+  document.getElementById('resultsArea').classList.add('show');
+}
+
+function clearSearch(){
+  ['firstName','lastName','city','notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('state').value='';
+  document.getElementById('resultsArea').classList.remove('show');
+  document.getElementById('loading').classList.remove('show');
+}
+</script>
+</body>
+</html>

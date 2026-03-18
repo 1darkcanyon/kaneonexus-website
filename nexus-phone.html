@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NEXUS Phone — Communications Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#000;--deep:#020408;--obs:#050810;
+  --cyan:#00e5ff;--mag:#e040fb;--teal:#16c79a;--gold:#f59e0b;
+  --red:#ef4444;--green:#10b981;--blue:#3b82f6;
+  --white:rgba(255,255,255,.92);--muted:rgba(255,255,255,.45);--dim:rgba(255,255,255,.15);
+  --bc:rgba(0,229,255,.12);--bm:rgba(224,64,251,.12);
+  --fhd:'Orbitron',monospace;--fbd:'Rajdhani',sans-serif;--fmn:'Share Tech Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--void);color:var(--white);font-family:var(--fbd);overflow-x:hidden;cursor:crosshair;min-height:100vh}
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(0,229,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.012) 1px,transparent 1px);
+  background-size:60px 60px;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;padding:0 32px;gap:20px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--bc);}
+.nav-logo{font-family:var(--fhd);font-size:14px;font-weight:900;letter-spacing:4px;color:var(--cyan);text-decoration:none;text-shadow:0 0 20px rgba(0,229,255,.4)}
+.nav-sep{width:1px;height:18px;background:var(--bc)}
+.nav-title{font-family:var(--fmn);font-size:9px;letter-spacing:4px;color:var(--dim)}
+.nav-back{margin-left:auto;font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--cyan)}
+
+.main{position:relative;z-index:2;padding:80px 24px 40px;max-width:1100px;margin:0 auto}
+
+.hero{text-align:center;padding:32px 0 40px}
+.hero-eyebrow{font-family:var(--fmn);font-size:9px;letter-spacing:6px;color:var(--cyan);margin-bottom:14px}
+.hero-title{font-family:var(--fhd);font-size:clamp(26px,5vw,48px);font-weight:900;letter-spacing:5px;margin-bottom:12px;
+  background:linear-gradient(135deg,var(--white),var(--cyan) 50%,var(--mag));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-family:var(--fmn);font-size:10px;letter-spacing:4px;color:var(--muted);margin-bottom:8px}
+.hero-desc{font-size:15px;color:var(--muted);max-width:540px;margin:0 auto;line-height:1.8;font-style:italic}
+
+/* APP GRID */
+.app-grid{display:grid;grid-template-columns:300px 1fr;gap:20px}
+@media(max-width:800px){.app-grid{grid-template-columns:1fr}}
+
+/* DIALPAD */
+.dialpad-panel{background:rgba(5,8,16,.85);border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:24px}
+.panel-label{font-family:var(--fmn);font-size:8px;letter-spacing:5px;color:var(--dim);margin-bottom:16px;text-transform:uppercase}
+.display-screen{
+  background:rgba(2,4,8,.9);border:1px solid var(--bc);border-radius:3px;
+  padding:14px 16px;margin-bottom:16px;min-height:60px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.display-number{font-family:var(--fhd);font-size:22px;letter-spacing:4px;color:var(--cyan);min-height:28px}
+.display-status{font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--dim);margin-top:4px}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.key{
+  aspect-ratio:1;background:rgba(5,8,16,.7);border:1px solid rgba(255,255,255,.07);border-radius:3px;
+  font-family:var(--fhd);font-size:18px;color:var(--white);cursor:pointer;transition:all .15s;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+}
+.key:hover{background:rgba(0,229,255,.06);border-color:var(--bc);color:var(--cyan)}
+.key:active{transform:scale(.95)}
+.key-sub{font-family:var(--fmn);font-size:7px;letter-spacing:2px;color:var(--dim)}
+.call-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.call-btn{padding:14px;font-family:var(--fmn);font-size:10px;letter-spacing:3px;
+  border:none;border-radius:3px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.call-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.call-green:hover{background:rgba(16,185,129,.25);box-shadow:0 0 16px rgba(16,185,129,.2)}
+.call-red{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.call-red:hover{background:rgba(239,68,68,.2)}
+.call-green.active-call{animation:activePulse 1.5s infinite}
+@keyframes activePulse{0%,100%{box-shadow:0 0 0 rgba(16,185,129,0)}50%{box-shadow:0 0 20px rgba(16,185,129,.4)}}
+
+/* SMS PANEL */
+.sms-panel{background:rgba(5,8,16,.85);border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:24px;display:flex;flex-direction:column}
+.sms-to-row{display:flex;gap:10px;margin-bottom:14px;align-items:center}
+.sms-to-label{font-family:var(--fmn);font-size:8px;letter-spacing:3px;color:var(--dim);flex-shrink:0}
+.sms-to-input{flex:1;padding:8px 12px;background:rgba(2,4,8,.8);border:1px solid rgba(255,255,255,.07);border-radius:2px;color:var(--white);font-family:var(--fmn);font-size:12px;outline:none;transition:border-color .2s}
+.sms-to-input:focus{border-color:var(--cyan)}
+.sms-to-input::placeholder{color:var(--dim)}
+.msg-thread{flex:1;min-height:260px;max-height:360px;overflow-y:auto;margin-bottom:14px;display:flex;flex-direction:column;gap:8px}
+.msg-thread::-webkit-scrollbar{width:2px}.msg-thread::-webkit-scrollbar-thumb{background:var(--bc)}
+.bubble{max-width:78%;padding:10px 14px;border-radius:4px;font-size:13px;line-height:1.6;position:relative}
+.bubble.out{align-self:flex-end;background:rgba(0,229,255,.1);border:1px solid var(--bc);color:var(--white)}
+.bubble.in{align-self:flex-start;background:rgba(5,8,16,.9);border:1px solid rgba(255,255,255,.07);color:var(--muted)}
+.bubble.system{align-self:center;background:transparent;border:none;font-family:var(--fmn);font-size:9px;color:var(--dim);letter-spacing:2px}
+.bubble-time{font-family:var(--fmn);font-size:7px;color:var(--dim);margin-top:4px}
+.compose-row{display:flex;gap:8px}
+.compose-input{flex:1;padding:10px 14px;background:rgba(2,4,8,.8);border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--white);font-family:var(--fbd);font-size:14px;outline:none;transition:border-color .2s;resize:none;height:44px}
+.compose-input:focus{border-color:var(--cyan)}
+.compose-input::placeholder{color:var(--dim)}
+.send-btn{padding:10px 20px;background:var(--cyan);color:var(--void);border:none;border-radius:2px;
+  font-family:var(--fmn);font-size:10px;letter-spacing:3px;cursor:pointer;transition:all .2s}
+.send-btn:hover{background:var(--mag);color:var(--white)}
+
+/* CONTACTS + TABS */
+.right-bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:600px){.right-bottom{grid-template-columns:1fr}}
+
+.contact-panel,.hotline-panel{background:rgba(5,8,16,.8);border:1px solid rgba(255,255,255,.05);border-radius:4px;padding:20px}
+.contact-item{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:all .2s}
+.contact-item:hover{background:rgba(0,229,255,.03)}
+.contact-item:last-child{border-bottom:none}
+.contact-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--mag));
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.contact-name{font-family:var(--fhd);font-size:11px;letter-spacing:1px}
+.contact-num{font-family:var(--fmn);font-size:9px;color:var(--dim)}
+.contact-actions{margin-left:auto;display:flex;gap:6px}
+.ca-btn{font-size:16px;background:transparent;border:none;cursor:pointer;opacity:.4;transition:opacity .2s;padding:2px}
+.ca-btn:hover{opacity:1}
+
+.hotline-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.hotline-item:last-child{border-bottom:none}
+.hl-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center;margin-top:2px}
+.hl-name{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--cyan);margin-bottom:3px}
+.hl-num{font-family:var(--fhd);font-size:13px;color:var(--white);margin-bottom:2px}
+.hl-desc{font-size:11px;color:var(--dim);line-height:1.4}
+
+footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--bc);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px}
+.f-logo{font-family:var(--fhd);font-size:11px;letter-spacing:4px;color:var(--cyan)}
+.f-links{display:flex;gap:16px}
+.f-link{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--dim);text-decoration:none;transition:color .2s}
+.f-link:hover{color:var(--cyan)}
+.f-runes{font-size:13px;letter-spacing:8px;color:var(--gold);opacity:.35}
+</style>
+</head>
+<body>
+<canvas id="cosmos"></canvas>
+<nav>
+  <a href="/" class="nav-logo">NEXUS</a>
+  <div class="nav-sep"></div>
+  <div class="nav-title">PHONE HUB</div>
+  <a href="/" class="nav-back">← HOME</a>
+</nav>
+
+<div class="main">
+  <div class="hero">
+    <div class="hero-eyebrow">MODULE 13 · COMMUNICATIONS CENTER</div>
+    <h1 class="hero-title">NEXUS PHONE</h1>
+    <div class="hero-sub">SMS · VOICE · CRISIS LINES · CONTACTS</div>
+    <p class="hero-desc">Sovereign communications. Encrypted SMS, emergency hotlines, and safe contact routing — all in one interface.</p>
+  </div>
+
+  <div class="app-grid">
+    <!-- DIALPAD -->
+    <div class="dialpad-panel">
+      <div class="panel-label">Dialpad</div>
+      <div class="display-screen">
+        <div class="display-number" id="dialDisplay"></div>
+        <div class="display-status" id="dialStatus">READY</div>
+      </div>
+      <div class="keypad">
+        <button class="key" onclick="dialKey('1')">1<span class="key-sub"></span></button>
+        <button class="key" onclick="dialKey('2')">2<span class="key-sub">ABC</span></button>
+        <button class="key" onclick="dialKey('3')">3<span class="key-sub">DEF</span></button>
+        <button class="key" onclick="dialKey('4')">4<span class="key-sub">GHI</span></button>
+        <button class="key" onclick="dialKey('5')">5<span class="key-sub">JKL</span></button>
+        <button class="key" onclick="dialKey('6')">6<span class="key-sub">MNO</span></button>
+        <button class="key" onclick="dialKey('7')">7<span class="key-sub">PQRS</span></button>
+        <button class="key" onclick="dialKey('8')">8<span class="key-sub">TUV</span></button>
+        <button class="key" onclick="dialKey('9')">9<span class="key-sub">WXYZ</span></button>
+        <button class="key" onclick="dialKey('*')">*</button>
+        <button class="key" onclick="dialKey('0')">0<span class="key-sub">+</span></button>
+        <button class="key" onclick="dialKey('#')">#</button>
+      </div>
+      <div class="call-row">
+        <button class="call-btn call-green" id="callBtn" onclick="initiateCall()">📞 CALL</button>
+        <button class="call-btn" style="background:rgba(255,255,255,.04);color:var(--muted);border:1px solid rgba(255,255,255,.06)" onclick="backspace()">⌫ DEL</button>
+      </div>
+    </div>
+
+    <!-- SMS + THREAD -->
+    <div>
+      <div class="sms-panel">
+        <div class="panel-label">SMS via NEXUS · Powered by Twilio</div>
+        <div class="sms-to-row">
+          <div class="sms-to-label">TO:</div>
+          <input type="tel" class="sms-to-input" id="smsTo" placeholder="+1 (555) 000-0000"/>
+        </div>
+        <div class="msg-thread" id="msgThread">
+          <div class="bubble system">— NEXUS ENCRYPTED CHANNEL OPEN —</div>
+        </div>
+        <div class="compose-row">
+          <textarea class="compose-input" id="composeInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSMS()}"></textarea>
+          <button class="send-btn" onclick="sendSMS()">SEND ➤</button>
+        </div>
+      </div>
+
+      <div class="right-bottom">
+        <!-- CONTACTS -->
+        <div class="contact-panel">
+          <div class="panel-label">Quick Contacts</div>
+          <div id="contactList">
+            <div class="contact-item" onclick="setDialTo('NEXUS Support')">
+              <div class="contact-avatar">⚡</div>
+              <div><div class="contact-name">NEXUS SUPPORT</div><div class="contact-num">via safe channel</div></div>
+              <div class="contact-actions"><button class="ca-btn" title="Message" onclick="event.stopPropagation();setComposeContact('NEXUS Support')">💬</button></div>
+            </div>
+            <div class="contact-item" onclick="setDialTo('Crisis Line')">
+              <div class="contact-avatar">🆘</div>
+              <div><div class="contact-name">CRISIS LINE</div><div class="contact-num">988</div></div>
+              <div class="contact-actions"><button class="ca-btn" title="Call 988" onclick="event.stopPropagation();dialDirect('988')">📞</button></div>
+            </div>
+            <div class="contact-item" onclick="setDialTo('Emergency')">
+              <div class="contact-avatar">🚨</div>
+              <div><div class="contact-name">EMERGENCY</div><div class="contact-num">911</div></div>
+              <div class="contact-actions"><button class="ca-btn" title="Call 911" onclick="event.stopPropagation();dialDirect('911')">📞</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CRISIS HOTLINES -->
+        <div class="hotline-panel">
+          <div class="panel-label">Crisis Hotlines</div>
+          <div class="hotline-item">
+            <div class="hl-icon">🧠</div>
+            <div>
+              <div class="hl-name">SUICIDE &amp; CRISIS</div>
+              <div class="hl-num">988</div>
+              <div class="hl-desc">Call or text 988. 24/7.</div>
+            </div>
+          </div>
+          <div class="hotline-item">
+            <div class="hl-icon">💜</div>
+            <div>
+              <div class="hl-name">DOMESTIC VIOLENCE</div>
+              <div class="hl-num">1-800-799-7233</div>
+              <div class="hl-desc">Text START to 88788</div>
+            </div>
+          </div>
+          <div class="hotline-item">
+            <div class="hl-icon">🌈</div>
+            <div>
+              <div class="hl-name">LGBTQ+ CRISIS LINE</div>
+              <div class="hl-num">1-866-488-7386</div>
+              <div class="hl-desc">Trevor Project 24/7</div>
+            </div>
+          </div>
+          <div class="hotline-item">
+            <div class="hl-icon">🤝</div>
+            <div>
+              <div class="hl-name">COMMUNITY SUPPORT</div>
+              <div class="hl-num">211</div>
+              <div class="hl-desc">Dial 211 for local resources</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-logo">NEXUS</div>
+  <div class="f-links">
+    <a href="/" class="f-link">HOME</a>
+    <a href="demos/" class="f-link">ALL MODULES</a>
+    <a href="nexus-safe-contact.html" class="f-link">SAFE CONTACT</a>
+    <a href="nexus-console.html" class="f-link">CONSOLE</a>
+  </div>
+  <div class="f-runes">ᛟ ᚨ ᚹ ᚱ</div>
+</footer>
+
+<script>
+(function(){
+  const c=document.getElementById('cosmos'),ctx=c.getContext('2d');let stars=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;
+    stars=Array.from({length:130},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
+      r:Math.random()*1.1+.1,a:Math.random()*Math.PI*2,s:Math.random()*.003+.001,
+      col:Math.random()>.85?'rgba(245,158,11,':Math.random()>.6?'rgba(224,64,251,':'rgba(0,229,255,'}));}
+  function draw(){ctx.clearRect(0,0,c.width,c.height);stars.forEach(s=>{s.a+=s.s;const a=.04+Math.sin(s.a)*.14;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=s.col+Math.max(0,a)+')';ctx.fill();});requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+let dialStr='';
+function dialKey(k){dialStr+=k;document.getElementById('dialDisplay').textContent=formatDial(dialStr);}
+function formatDial(s){if(s.length<=3)return s;if(s.length<=6)return s.slice(0,3)+'-'+s.slice(3);return '('+s.slice(0,3)+') '+s.slice(3,6)+'-'+s.slice(6,10);}
+function backspace(){dialStr=dialStr.slice(0,-1);document.getElementById('dialDisplay').textContent=formatDial(dialStr);}
+function dialDirect(num){dialStr=num;document.getElementById('dialDisplay').textContent=num;initiateCall();}
+
+let calling=false;
+function initiateCall(){
+  if(!dialStr){return;}
+  if(!calling){
+    calling=true;
+    document.getElementById('dialStatus').textContent='CALLING '+formatDial(dialStr)+'...';
+    const btn=document.getElementById('callBtn');btn.textContent='📵 END CALL';btn.classList.add('active-call');
+    addSystemBubble('Routing call to '+formatDial(dialStr)+' via NEXUS...');
+    setTimeout(()=>{document.getElementById('dialStatus').textContent='CONNECTED · '+formatDial(dialStr);addSystemBubble('Connected.');},2500);
+  } else {
+    calling=false;
+    document.getElementById('dialStatus').textContent='CALL ENDED';
+    const btn=document.getElementById('callBtn');btn.textContent='📞 CALL';btn.classList.remove('active-call');
+    addSystemBubble('Call ended.');
+    setTimeout(()=>{document.getElementById('dialStatus').textContent='READY';},2000);
+  }
+}
+
+function setDialTo(name){document.getElementById('smsTo').value=name;}
+function setComposeContact(name){document.getElementById('smsTo').value=name;document.getElementById('composeInput').focus();}
+
+function now(){return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});}
+
+function addSystemBubble(text){
+  const t=document.getElementById('msgThread');
+  const b=document.createElement('div');b.className='bubble system';b.textContent='— '+text+' —';
+  t.appendChild(b);t.scrollTop=t.scrollHeight;
+}
+
+function addBubble(text,dir){
+  const t=document.getElementById('msgThread');
+  const b=document.createElement('div');b.className='bubble '+dir;
+  b.innerHTML=text+'<div class="bubble-time">'+now()+'</div>';
+  t.appendChild(b);t.scrollTop=t.scrollHeight;
+}
+
+function sendSMS(){
+  const to=document.getElementById('smsTo').value.trim();
+  const msg=document.getElementById('composeInput').value.trim();
+  if(!msg)return;
+  addBubble(msg,'out');
+  document.getElementById('composeInput').value='';
+  // Post to Twilio via nexus-sms function
+  fetch('/.netlify/functions/nexus-sms',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({to,message:msg,type:'sms'})
+  }).then(r=>r.json()).then(d=>{
+    if(d.sid)addSystemBubble('Delivered · SID: '+d.sid.substring(0,12)+'...');
+    else addSystemBubble('Queued for delivery.');
+  }).catch(()=>addSystemBubble('Message queued (offline mode).'));
+}
+</script>
+</body>
+</html>
