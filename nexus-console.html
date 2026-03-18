@@ -1013,7 +1013,12 @@ async function sendMessage() {
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
@@ -1101,12 +1106,26 @@ function toggleVoice() {
   recognition.start();
 }
 
+// ── API KEY PERSISTENCE ──────────────────────────────────────
+function initApiKey() {
+  const saved = localStorage.getItem('nexus_api_key');
+  if (saved) document.getElementById('api-key').value = saved;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('api-key').addEventListener('change', function() {
+    if (this.value.trim()) localStorage.setItem('nexus_api_key', this.value.trim());
+    else localStorage.removeItem('nexus_api_key');
+  });
+});
+
 // ── INIT ─────────────────────────────────────────────────────
 window.addEventListener('load', () => {
   document.getElementById('boot-time').textContent = new Date().toLocaleTimeString();
   initLunar();
   initRunes();
   generateDraws();
+  initApiKey();
 });
 
 </script>
