@@ -509,6 +509,93 @@ body::before {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.15); border-radius: 2px; }
 
+/* ── KEY BUTTON ── */
+.key-btn {
+  background: transparent;
+  border: 1px solid var(--border-m);
+  border-radius: 3px;
+  color: var(--magenta);
+  font-family: var(--font-mn);
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.key-btn:hover { background: rgba(224,64,251,0.1); border-color: var(--magenta); }
+.key-btn.connected { border-color: var(--teal); color: var(--teal); }
+
+/* ── KEY MODAL ── */
+.key-modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.key-modal-overlay.open { display: flex; }
+.key-modal {
+  background: var(--obsidian);
+  border: 1px solid var(--magenta);
+  border-radius: 6px;
+  padding: 28px 24px;
+  width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 0 40px rgba(224,64,251,0.2);
+}
+.key-modal-title {
+  font-family: var(--font-hd);
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--magenta);
+  margin-bottom: 16px;
+}
+.key-modal-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-m);
+  border-radius: 3px;
+  padding: 10px 12px;
+  color: var(--white);
+  font-family: var(--font-mn);
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.key-modal-input:focus { outline: none; border-color: var(--magenta); }
+.key-modal-row { display: flex; gap: 8px; }
+.key-modal-save {
+  flex: 1;
+  padding: 9px;
+  background: rgba(224,64,251,0.12);
+  border: 1px solid var(--magenta);
+  border-radius: 3px;
+  color: var(--magenta);
+  font-family: var(--font-mn);
+  font-size: 10px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.key-modal-save:hover { background: rgba(224,64,251,0.25); }
+.key-modal-cancel {
+  padding: 9px 14px;
+  background: transparent;
+  border: 1px solid var(--border-c);
+  border-radius: 3px;
+  color: var(--muted);
+  font-family: var(--font-mn);
+  font-size: 10px;
+  cursor: pointer;
+}
+.key-modal-hint {
+  font-family: var(--font-mn);
+  font-size: 9px;
+  color: var(--dim);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
 /* ── MOBILE ── */
 @media (max-width: 768px) {
   .console {
@@ -535,12 +622,34 @@ body::before {
     <div class="hdr-sep"></div>
     <div class="hdr-sub">SOVEREIGN AI CONSOLE · EIEAIO</div>
     <div class="hdr-right">
+      <button class="key-btn" id="key-btn" onclick="openKeyModal()">⚿ API KEY</button>
+      <div class="hdr-sep"></div>
       <div class="status-dot" id="status-dot"></div>
       <div class="hdr-code" id="status-text">ONLINE</div>
       <div class="hdr-sep"></div>
       <div class="hdr-code">011–TRIAQUA–∞</div>
     </div>
   </header>
+
+  <!-- KEY MODAL -->
+  <div class="key-modal-overlay" id="key-modal-overlay" onclick="overlayClick(event)">
+    <div class="key-modal">
+      <div class="key-modal-title">⚿ CONNECT API KEY</div>
+      <div class="key-modal-hint">Anthropic API key — starts with sk-ant-</div>
+      <input
+        type="password"
+        class="key-modal-input"
+        id="key-modal-input"
+        placeholder="sk-ant-api03-..."
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') saveModalKey()"
+      />
+      <div class="key-modal-row">
+        <button class="key-modal-save" onclick="saveModalKey()">CONNECT</button>
+        <button class="key-modal-cancel" onclick="closeKeyModal()">CANCEL</button>
+      </div>
+    </div>
+  </div>
 
   <!-- LEFT PANEL -->
   <aside class="panel-left">
@@ -997,7 +1106,7 @@ async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
 
-  const apiKey = document.getElementById('api-key').value.trim();
+  const apiKey = localStorage.getItem('nexus_api_key') || document.getElementById('api-key').value.trim();
   input.value = '';
   input.style.height = 'auto';
 
@@ -1106,18 +1215,64 @@ function toggleVoice() {
   recognition.start();
 }
 
-// ── API KEY PERSISTENCE ──────────────────────────────────────
-function initApiKey() {
-  const saved = localStorage.getItem('nexus_api_key');
-  if (saved) document.getElementById('api-key').value = saved;
+// ── API KEY MODAL ────────────────────────────────────────────
+function openKeyModal() {
+  const saved = localStorage.getItem('nexus_api_key') || '';
+  document.getElementById('key-modal-input').value = saved;
+  document.getElementById('key-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('key-modal-input').focus(), 50);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('api-key').addEventListener('change', function() {
+function closeKeyModal() {
+  document.getElementById('key-modal-overlay').classList.remove('open');
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('key-modal-overlay')) closeKeyModal();
+}
+
+function saveModalKey() {
+  const val = document.getElementById('key-modal-input').value.trim();
+  if (val) {
+    localStorage.setItem('nexus_api_key', val);
+    document.getElementById('api-key').value = val;
+    updateKeyBtn(true);
+    addMessage('nexus', 'API key connected. Sovereign Intelligence fully online, Kaneon. 🔹');
+  } else {
+    localStorage.removeItem('nexus_api_key');
+    document.getElementById('api-key').value = '';
+    updateKeyBtn(false);
+  }
+  closeKeyModal();
+}
+
+function updateKeyBtn(connected) {
+  const btn = document.getElementById('key-btn');
+  if (connected) {
+    btn.textContent = '⚿ CONNECTED';
+    btn.classList.add('connected');
+  } else {
+    btn.textContent = '⚿ API KEY';
+    btn.classList.remove('connected');
+  }
+}
+
+// ── API KEY PERSISTENCE ──────────────────────────────────────
+function initApiKey() {
+  // Check hardcoded variable first, then localStorage
+  const hardcoded = (typeof NEXUS_API_KEY !== 'undefined' && NEXUS_API_KEY) ? NEXUS_API_KEY : null;
+  const saved = hardcoded || localStorage.getItem('nexus_api_key');
+  if (saved) {
+    localStorage.setItem('nexus_api_key', saved);
+    document.getElementById('api-key').value = saved;
+    updateKeyBtn(true);
+  }
+  document.getElementById('api-key').addEventListener('input', function() {
     if (this.value.trim()) localStorage.setItem('nexus_api_key', this.value.trim());
     else localStorage.removeItem('nexus_api_key');
+    updateKeyBtn(!!this.value.trim());
   });
-});
+}
 
 // ── INIT ─────────────────────────────────────────────────────
 window.addEventListener('load', () => {
