@@ -62,8 +62,8 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "uniform vec2  u_Size;\n"                                              +
         "uniform float u_Attraction;\n"                                        +
         "uniform float u_Drag;\n"                                              +
-        "out vec2 v_NewPos;\n"   // captured by TF + passed to frag shader
-        "out vec2 v_NewDelta;\n" // captured by TF + passed to frag shader
+        "out vec2 v_NewPos;\n"   +
+        "out vec2 v_NewDelta;\n" +
         "void main() {\n"                                                      +
         "    vec2 pos   = a_Position;\n"                                       +
         "    vec2 delta = a_Delta;\n"                                          +
