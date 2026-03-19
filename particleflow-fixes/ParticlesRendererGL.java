@@ -12,71 +12,67 @@ import java.util.Random;
 /**
  * Particle renderer using OpenGL ES 3.0 Transform Feedback for GPU-side physics.
  *
- * Each frame, particle positions and velocities are updated entirely on the GPU
- * via the vertex shader. Transform Feedback captures the results back into a
- * ping-pong VBO so the next frame reads the updated state. No CPU readback needed.
- *
  * VBO layout (interleaved, 16 bytes per particle):
  *   [ pos.x (4) | pos.y (4) | delta.x (4) | delta.y (4) ]
  *
- * Colors: slow/fast particle colors are specified as RGB 0-255 and converted to
- * HSV internally. The shader interpolates hue between the two, with direction
- * (clockwise/counterclockwise around the color wheel) controlled by a flag.
+ * Rendering uses additive blending (GL_ONE, GL_ONE) so dense/fast particles
+ * accumulate brightness and bloom to white at attraction centers.
+ *
+ * Each particle is a soft gaussian point sprite — the fragment shader fades
+ * intensity from the center outward, creating the characteristic glow look.
+ *
+ * Default color sweep: slow = blue → cyan → green → red = fast
+ * (counterclockwise around the hue wheel).
  */
 public class ParticlesRendererGL implements GLSurfaceView.Renderer {
 
-    // Hard limits
-    public  static final int MAX_TOUCHES      = 10; // absolute touch-slot limit
-    private static final int FLOATS_PER_VERTEX = 4;
-    private static final int BYTES_PER_VERTEX  = FLOATS_PER_VERTEX * 4; // 16
+    public  static final int   MAX_TOUCHES       = 10;
+    private static final float MAX_SPEED_HARD    = 200f; // internal safety cap
+    private static final int   FLOATS_PER_VERTEX = 4;
+    private static final int   BYTES_PER_VERTEX  = FLOATS_PER_VERTEX * 4;
 
-    // Configurable particle count
-    private int mNumParticles = 50000;
+    // ── Configurable parameters ───────────────────────────────────────────────
 
-    // Configurable max number of attraction points (exposed in settings)
-    private int mMaxAttractionPoints = 5;
+    private volatile int     mNumParticles        = 50000;
+    private volatile int     mMaxAttractionPoints = 5;
 
-    private int mProgram;
-    private final int[] mVbo = new int[2]; // ping-pong VBOs
-    private int mCurrentRead = 0;
+    // Background RGB 0-255; default black
+    private volatile int mBgR = 0, mBgG = 0, mBgB = 0;
+
+    // Slow particle color — pure blue by default
+    private volatile int mSlowR = 0,   mSlowG = 0,   mSlowB = 255;
+    // Fast particle color — pure red by default
+    private volatile int mFastR = 255, mFastG = 0,   mFastB = 0;
+
+    // Counterclockwise default: blue → cyan → green → yellow → red
+    private volatile boolean mHueCCW = true;
+
+    // Internal physics (converted from UI scale by MainActivity)
+    private volatile float mF01Attraction = 5000f; // UI 0-100  → internal * 100
+    private volatile float mF01Drag       = 0.96f; // UI 0-1000 → internal / 1000
+
+    // ── Derived HSV ───────────────────────────────────────────────────────────
+    private float mSlowHue, mSlowSat, mSlowVal;
+    private float mFastHue, mFastSat, mFastVal;
+    private float mFastHueAdjusted;
+
+    // ── GL state ──────────────────────────────────────────────────────────────
+    private int       mProgram;
+    private final int[] mVbo = new int[2];
+    private int       mCurrentRead = 0;
+    private boolean   mVbosReady  = false;
 
     private float mWidth  = 1080f;
     private float mHeight = 1920f;
 
-    // Touch state: x,y pairs; x < 0 means inactive
     private final float[] mTouches = new float[MAX_TOUCHES * 2];
 
-    // Cached uniform locations
     private int mUTouch, mUNumTouches, mUSize, mUAttraction, mUDrag, mUMaxSpeed;
     private int mUSlowHue, mUFastHue, mUSlowSat, mUFastSat, mUSlowVal, mUFastVal;
 
-    // Physics parameters
-    private float mF01Attraction = 5000f;
-    private float mF01Drag       = 0.96f;
-    private float mMaxSpeed      = 30f;   // pixels/frame cap — prevents "running too fast"
-
-    // Background color (RGB 0-255)
-    private int mBgR = 5, mBgG = 5, mBgB = 12;
-
-    // Slow particle color (RGB 0-255)  — default: warm orange
-    private int mSlowR = 233, mSlowG = 166, mSlowB = 99;
-
-    // Fast particle color (RGB 0-255) — default: deep red-orange
-    private int mFastR = 199, mFastG = 66,  mFastB = 33;
-
-    // Hue interpolation direction: false = clockwise, true = counterclockwise
-    private boolean mHueCCW = false;
-
-    // Derived HSV values (recomputed from RGB whenever colors change)
-    private float mSlowHue, mSlowSat, mSlowVal;
-    private float mFastHue, mFastSat, mFastVal;
-    // fastHue is adjusted by direction so the shader can use a plain mix()
-    private float mFastHueAdjusted;
-
-    // ── Vertex shader ────────────────────────────────────────────────────────
-    // Physics computed here; v_NewPos / v_NewDelta captured by Transform Feedback.
-    // u_NumTouches controls how many touch slots are actually evaluated.
-    // u_MaxSpeed clamps velocity each frame so particles can't fly off infinitely.
+    // ── Vertex shader ─────────────────────────────────────────────────────────
+    // Physics on GPU; speed emerges from attraction force and drag.
+    // gl_PointSize = 8 gives the gaussian sprite enough room to bloom.
     private static final String VERTEX_SHADER =
         "#version 300 es\n"                                                         +
         "precision highp float;\n"                                                  +
@@ -102,7 +98,6 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "            }\n"                                                            +
         "        }\n"                                                               +
         "    }\n"                                                                    +
-        // Clamp to max speed — keeps particles from going insane at high frame rates
         "    float spd = length(delta);\n"                                          +
         "    if (spd > u_MaxSpeed) delta = (delta / spd) * u_MaxSpeed;\n"          +
         "    pos   += delta;\n"                                                     +
@@ -114,13 +109,13 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "    v_NewPos   = pos;\n"                                                   +
         "    v_NewDelta = delta;\n"                                                 +
         "    gl_Position  = vec4((pos / u_Size) * 2.0 - 1.0, 0.0, 1.0);\n"       +
-        "    gl_PointSize = 3.0;\n"                                                 +
+        "    gl_PointSize = 8.0;\n"                                                 +
         "}\n";
 
     // ── Fragment shader ───────────────────────────────────────────────────────
-    // Interpolates HSV from slow→fast based on particle speed.
-    // mFastHueAdjusted is pre-adjusted in Java for CW/CCW direction so the
-    // shader can use a plain mix() — fract() in hsv2rgba handles wraparound.
+    // Gaussian point sprite: soft circular falloff so particles glow.
+    // Combined with additive blending (GL_ONE, GL_ONE), dense areas bloom
+    // to white, exactly like the original app.
     private static final String FRAGMENT_SHADER =
         "#version 300 es\n"                                                              +
         "precision highp float;\n"                                                       +
@@ -129,21 +124,30 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "uniform float u_slowSat, u_fastSat;\n"                                         +
         "uniform float u_slowVal, u_fastVal;\n"                                         +
         "out vec4 fragColor;\n"                                                          +
+        // Map particle speed to 0-1
         "float speedCoef(vec2 v) {\n"                                                   +
         "    return clamp(log(dot(v, v) + 1.0) / 4.5, 0.0, 1.0);\n"                   +
         "}\n"                                                                             +
-        // Canonical HSV→RGBA; fract() handles hue values outside [0,1]
-        "vec4 hsv2rgba(float h, float s, float v) {\n"                                  +
+        // HSV → RGB; fract() handles hue values outside [0,1]
+        "vec3 hsv2rgb(float h, float s, float v) {\n"                                   +
         "    vec4  K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);\n"                           +
         "    vec3  p = abs(fract(vec3(h) + K.xyz) * 6.0 - K.www);\n"                  +
-        "    return vec4(v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), s), 1.0);\n"      +
+        "    return v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), s);\n"                 +
         "}\n"                                                                             +
         "void main() {\n"                                                                +
-        "    float c = speedCoef(v_NewDelta);\n"                                        +
-        "    fragColor = hsv2rgba(\n"                                                    +
+        // Gaussian falloff from point center using gl_PointCoord
+        "    vec2  uv    = gl_PointCoord - vec2(0.5);\n"                               +
+        "    float d     = dot(uv, uv);\n"                                             +
+        "    if (d > 0.25) discard;\n"                                                  +
+        "    float alpha = exp(-d * 16.0);\n"                                           +
+        // Color from speed
+        "    float c   = speedCoef(v_NewDelta);\n"                                      +
+        "    vec3  col = hsv2rgb(\n"                                                    +
         "        mix(u_slowHue, u_fastHue, c),\n"                                       +
         "        mix(u_slowSat, u_fastSat, c),\n"                                       +
         "        mix(u_slowVal, u_fastVal, c));\n"                                      +
+        // Additive: output rgb * alpha; blending (GL_ONE,GL_ONE) accumulates brightness
+        "    fragColor = vec4(col * alpha, alpha);\n"                                   +
         "}\n";
 
     public ParticlesRendererGL() {
@@ -155,10 +159,15 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        applyBackgroundColor();
+        GLES30.glClearColor(0f, 0f, 0f, 1f);
         mProgram = buildProgram(VERTEX_SHADER, FRAGMENT_SHADER);
         cacheUniforms();
         GLES30.glGenBuffers(2, mVbo, 0);
+        mVbosReady = true;
+
+        // Additive blending: dense/fast particles accumulate to white (bloom effect)
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE);
     }
 
     @Override
@@ -171,18 +180,18 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        GLES30.glClearColor(mBgR / 255f, mBgG / 255f, mBgB / 255f, 1f);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
         GLES30.glUseProgram(mProgram);
 
         int writeIndex = 1 - mCurrentRead;
 
-        // Upload uniforms
         GLES30.glUniform2fv(mUTouch,      MAX_TOUCHES, mTouches, 0);
-        GLES30.glUniform1i(mUNumTouches,  mMaxAttractionPoints);
+        GLES30.glUniform1i(mUNumTouches,  Math.min(mMaxAttractionPoints, MAX_TOUCHES));
         GLES30.glUniform2f(mUSize,        mWidth, mHeight);
         GLES30.glUniform1f(mUAttraction,  mF01Attraction);
         GLES30.glUniform1f(mUDrag,        mF01Drag);
-        GLES30.glUniform1f(mUMaxSpeed,    mMaxSpeed);
+        GLES30.glUniform1f(mUMaxSpeed,    MAX_SPEED_HARD);
         GLES30.glUniform1f(mUSlowHue,     mSlowHue);
         GLES30.glUniform1f(mUFastHue,     mFastHueAdjusted);
         GLES30.glUniform1f(mUSlowSat,     mSlowSat);
@@ -190,17 +199,13 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         GLES30.glUniform1f(mUSlowVal,     mSlowVal);
         GLES30.glUniform1f(mUFastVal,     mFastVal);
 
-        // Bind read VBO as vertex input
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mVbo[mCurrentRead]);
         GLES30.glEnableVertexAttribArray(0);
         GLES30.glVertexAttribPointer(0, 2, GLES30.GL_FLOAT, false, BYTES_PER_VERTEX, 0);
         GLES30.glEnableVertexAttribArray(1);
         GLES30.glVertexAttribPointer(1, 2, GLES30.GL_FLOAT, false, BYTES_PER_VERTEX, 8);
 
-        // Bind write VBO as transform feedback output
         GLES30.glBindBufferBase(GLES30.GL_TRANSFORM_FEEDBACK_BUFFER, 0, mVbo[writeIndex]);
-
-        // Draw + capture new state via transform feedback
         GLES30.glBeginTransformFeedback(GLES30.GL_POINTS);
         GLES30.glDrawArrays(GLES30.GL_POINTS, 0, mNumParticles);
         GLES30.glEndTransformFeedback();
@@ -208,7 +213,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         mCurrentRead = writeIndex;
     }
 
-    // ── Touch interface ───────────────────────────────────────────────────────
+    // ── Touch ─────────────────────────────────────────────────────────────────
 
     public void setTouch(int index, float x, float y) {
         if (index < 0 || index >= MAX_TOUCHES) return;
@@ -224,74 +229,57 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
 
     // ── Settings setters ──────────────────────────────────────────────────────
 
-    /** Number of particles. Must be called on the GL thread (via queueEvent). */
+    /** Must be called on GL thread (via queueEvent) if VBOs are already allocated. */
     public void setNumParticles(int count) {
-        mNumParticles = Math.max(1000, Math.min(count, 200000));
-        initParticles();
+        mNumParticles = Math.max(1000, Math.min(count, 500000));
+        if (mVbosReady) initParticles();
     }
 
     public void setMaxAttractionPoints(int max) {
-        mMaxAttractionPoints = Math.max(1, Math.min(max, MAX_TOUCHES));
+        mMaxAttractionPoints = Math.max(0, Math.min(max, 100));
     }
 
     public void setBackgroundColor(int r, int g, int b) {
-        mBgR = clamp255(r);
-        mBgG = clamp255(g);
-        mBgB = clamp255(b);
-        applyBackgroundColor();
+        mBgR = clamp255(r); mBgG = clamp255(g); mBgB = clamp255(b);
     }
 
-    /** Set slow-particle color in RGB 0-255 and recompute HSV. */
     public void setSlowColor(int r, int g, int b) {
-        mSlowR = clamp255(r);
-        mSlowG = clamp255(g);
-        mSlowB = clamp255(b);
+        mSlowR = clamp255(r); mSlowG = clamp255(g); mSlowB = clamp255(b);
         updateHSV();
     }
 
-    /** Set fast-particle color in RGB 0-255 and recompute HSV. */
     public void setFastColor(int r, int g, int b) {
-        mFastR = clamp255(r);
-        mFastG = clamp255(g);
-        mFastB = clamp255(b);
+        mFastR = clamp255(r); mFastG = clamp255(g); mFastB = clamp255(b);
         updateHSV();
     }
 
-    /** true = counterclockwise hue sweep, false = clockwise. */
-    public void setHueCCW(boolean ccw) {
-        mHueCCW = ccw;
-        updateHSV();
-    }
+    public void setHueCCW(boolean ccw) { mHueCCW = ccw; updateHSV(); }
 
-    public void setAttraction(float attraction) { mF01Attraction = attraction; }
-    public void setDrag(float drag)              { mF01Drag = Math.max(0f, Math.min(drag, 0.9999f)); }
-    public void setMaxSpeed(float maxSpeed)      { mMaxSpeed = Math.max(1f, maxSpeed); }
+    /** Internal attraction force.  UI 0-100 maps to 0-10000. */
+    public void setAttraction(float attraction) { mF01Attraction = Math.max(0f, attraction); }
 
-    // ── Settings getters ──────────────────────────────────────────────────────
+    /** Internal drag multiplier 0.0-1.0.  UI 0-1000 maps to 0.0-1.0. */
+    public void setDrag(float drag) { mF01Drag = Math.max(0f, Math.min(drag, 0.9999f)); }
 
-    public int     getNumParticles()         { return mNumParticles; }
-    public int     getMaxAttractionPoints()  { return mMaxAttractionPoints; }
-    public int     getBgR()                  { return mBgR; }
-    public int     getBgG()                  { return mBgG; }
-    public int     getBgB()                  { return mBgB; }
-    public int     getSlowR()               { return mSlowR; }
-    public int     getSlowG()               { return mSlowG; }
-    public int     getSlowB()               { return mSlowB; }
-    public int     getFastR()               { return mFastR; }
-    public int     getFastG()               { return mFastG; }
-    public int     getFastB()               { return mFastB; }
-    public boolean getHueCCW()              { return mHueCCW; }
-    public float   getAttraction()          { return mF01Attraction; }
-    public float   getDrag()                { return mF01Drag; }
-    public float   getMaxSpeed()            { return mMaxSpeed; }
+    // ── Getters ───────────────────────────────────────────────────────────────
+
+    public int     getNumParticles()        { return mNumParticles; }
+    public int     getMaxAttractionPoints() { return mMaxAttractionPoints; }
+    public int     getBgR()  { return mBgR; }
+    public int     getBgG()  { return mBgG; }
+    public int     getBgB()  { return mBgB; }
+    public int     getSlowR() { return mSlowR; }
+    public int     getSlowG() { return mSlowG; }
+    public int     getSlowB() { return mSlowB; }
+    public int     getFastR() { return mFastR; }
+    public int     getFastG() { return mFastG; }
+    public int     getFastB() { return mFastB; }
+    public boolean getHueCCW()  { return mHueCCW; }
+    public float   getAttraction() { return mF01Attraction; }
+    public float   getDrag()       { return mF01Drag; }
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    /**
-     * Convert slow/fast RGB to HSV and adjust fastHue for CW/CCW direction.
-     * The shader uses mix(slowHue, fastHueAdjusted, speedCoef) — fract() inside
-     * hsv2rgba handles any hue values outside [0,1].
-     */
     private void updateHSV() {
         float[] hsv = new float[3];
 
@@ -305,46 +293,34 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         mFastSat = hsv[1];
         mFastVal = hsv[2];
 
-        // Adjust fastHue so the interpolation goes in the requested direction.
-        // Clockwise   = increasing hue on the wheel.
-        // Counterclockwise = decreasing hue.
+        // Adjust fastHue for direction so shader mix() travels the right way.
+        // fract() in hsv2rgb handles values outside [0,1].
         float delta = mFastHue - mSlowHue;
         if (!mHueCCW) {
-            // Clockwise: we want delta >= 0
+            // Clockwise = increasing hue
             if (delta < 0f) mFastHue += 1f;
         } else {
-            // Counterclockwise: we want delta <= 0
+            // Counterclockwise = decreasing hue
             if (delta > 0f) mFastHue -= 1f;
         }
         mFastHueAdjusted = mFastHue;
     }
 
-    private void applyBackgroundColor() {
-        GLES30.glClearColor(mBgR / 255f, mBgG / 255f, mBgB / 255f, 1f);
-    }
-
-    /**
-     * Upload initial particle data to both ping-pong VBOs.
-     * Particles are placed uniformly over a disk covering the screen, with a
-     * small random initial velocity so the simulation is alive on first open.
-     */
     private void initParticles() {
         Random rand  = new Random();
         float[] data = new float[mNumParticles * FLOATS_PER_VERTEX];
         float radius = (float) Math.sqrt(mWidth * mWidth + mHeight * mHeight) / 2f;
-        float cx     = mWidth  / 2f;
-        float cy     = mHeight / 2f;
 
         for (int i = 0; i < mNumParticles; i++) {
             float r     = radius * (float) Math.sqrt(rand.nextFloat());
             float theta = rand.nextFloat() * 6.28318530718f;
-            data[i * 4]     = cx + r * (float) Math.cos(theta);
-            data[i * 4 + 1] = cy + r * (float) Math.sin(theta);
-            // Small initial velocity so particles drift on first open
-            float speed = rand.nextFloat() * 1.5f;
-            float dir   = rand.nextFloat() * 6.28318530718f;
-            data[i * 4 + 2] = speed * (float) Math.cos(dir);
-            data[i * 4 + 3] = speed * (float) Math.sin(dir);
+            data[i * 4]     = mWidth  / 2f + r * (float) Math.cos(theta);
+            data[i * 4 + 1] = mHeight / 2f + r * (float) Math.sin(theta);
+            // Tiny initial drift so the field looks alive on first open
+            float spd = rand.nextFloat() * 1.5f;
+            float dir = rand.nextFloat() * 6.28318530718f;
+            data[i * 4 + 2] = spd * (float) Math.cos(dir);
+            data[i * 4 + 3] = spd * (float) Math.sin(dir);
         }
 
         ByteBuffer buf = ByteBuffer.allocateDirect(data.length * 4)
