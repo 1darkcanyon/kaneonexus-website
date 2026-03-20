@@ -89,7 +89,8 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "uniform float u_MaxSpeed;\n"                                               +
         "uniform float u_PointSize;\n"                                              +
         "out vec2 v_NewPos;\n"                                                      +
-        "out vec2 v_NewDelta;\n"                                                    +
+        "out vec2 v_NewDelta;\n"  + // post-drag — TF capture, used next frame
+        "out vec2 v_Speed;\n"     + // pre-drag  — fragment color (RS parity)
         "void main() {\n"                                                           +
         "    vec2 pos   = a_Position;\n"                                            +
         "    vec2 delta = a_Delta;\n"                                               +
@@ -104,8 +105,10 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "    }\n"                                                                    +
         "    float spd = length(delta);\n"                                          +
         "    if (spd > u_MaxSpeed) delta = (delta / spd) * u_MaxSpeed;\n"          +
-        "    pos   += delta;\n"                                                     +
-        "    delta *= u_Drag;\n"                                                    +
+        // RS update order: vel += acc, pos += vel, color = f(vel), vel *= drag
+        "    pos      += delta;\n"                                                  +
+        "    v_Speed   = delta;\n"  + // pre-drag — color sampled here (RS parity)
+        "    delta    *= u_Drag;\n"                                                 +
         "    if (pos.x <  0.0)          pos.x += u_Size.x;\n"                     +
         "    else if (pos.x >= u_Size.x) pos.x -= u_Size.x;\n"                    +
         "    if (pos.y <  0.0)          pos.y += u_Size.y;\n"                     +
@@ -123,7 +126,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
     private static final String FRAGMENT_SHADER =
         "#version 300 es\n"                                                              +
         "precision highp float;\n"                                                       +
-        "in vec2 v_NewDelta;\n"                                                         +
+        "in vec2 v_Speed;\n"                                                             +
         "uniform float u_slowHue, u_fastHue;\n"                                         +
         "uniform float u_slowSat, u_fastSat;\n"                                         +
         "uniform float u_slowVal, u_fastVal;\n"                                         +
@@ -145,7 +148,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "    if (d > 0.25) discard;\n"                                                  +
         "    float alpha = exp(-d * 16.0);\n"                                           +
         // Color from speed
-        "    float c   = speedCoef(v_NewDelta);\n"                                      +
+        "    float c   = speedCoef(v_Speed);\n"                                      +
         "    vec3  col = hsv2rgb(\n"                                                    +
         "        mix(u_slowHue, u_fastHue, c),\n"                                       +
         "        mix(u_slowSat, u_fastSat, c),\n"                                       +

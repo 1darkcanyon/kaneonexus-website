@@ -1,0 +1,162 @@
+diff --git a/app/src/main/java/com/nfaralli/particleflow/ParticlesRendererGL.java b/app/src/main/java/com/nfaralli/particleflow/ParticlesRendererGL.java
+index 336586d..a829ce9 100644
+--- a/app/src/main/java/com/nfaralli/particleflow/ParticlesRendererGL.java
++++ b/app/src/main/java/com/nfaralli/particleflow/ParticlesRendererGL.java
+@@ -20,6 +20,11 @@ import java.util.Random;
+  *
+  * The transform feedback varyings "v_NewPos" and "v_NewDelta" are interleaved
+  * into the write VBO in the same layout, so the buffers are directly swappable.
++ *
++ * Update order matches original RenderScript exactly:
++ *   vel += acc  →  pos += vel  →  color = f(vel)  →  vel *= drag
++ * v_Speed captures velocity BEFORE drag for color (RS parity).
++ * v_NewDelta captures velocity AFTER drag for the next frame's physics.
+  */
+ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+ 
+@@ -43,16 +48,17 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+     private int mUTouch, mUSize, mUAttraction, mUDrag;
+     private int mUSlowHue, mUFastHue, mUSlowSat, mUFastSat, mUSlowVal, mUFastVal;
+ 
+-    // Physics / color parameters (can be exposed via settings later)
+-    private float mF01Attraction = 5000f;
++    // Physics / color parameters
++    // Attraction: UI pref 0-100, default 10 → 10*100 = 1000 (matches particleflow-fixes scale)
++    private float mF01Attraction = 1000f;
+     private float mF01Drag       = 0.96f;
+     private float mSlowHue = 0.67f, mFastHue = 0.0f; // blue → red
+     private float mSlowSat = 1f,   mFastSat = 1f;
+     private float mSlowVal = 1f,   mFastVal = 1f;
+ 
+     // ── Vertex shader ────────────────────────────────────────────────────────
+-    // Physics computed here; v_NewPos / v_NewDelta captured by Transform Feedback
+-    // and also interpolated for the fragment shader.
++    // Physics computed here; v_NewPos / v_NewDelta captured by Transform Feedback.
++    // v_Speed carries pre-drag velocity to the fragment shader for RS-accurate coloring.
+     private static final String VERTEX_SHADER =
+         "#version 300 es\n"                                                    +
+         "precision highp float;\n"                                             +
+@@ -62,8 +68,9 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+         "uniform vec2  u_Size;\n"                                              +
+         "uniform float u_Attraction;\n"                                        +
+         "uniform float u_Drag;\n"                                              +
+-        "out vec2 v_NewPos;\n"   +
+-        "out vec2 v_NewDelta;\n" +
++        "out vec2 v_NewPos;\n"    +
++        "out vec2 v_NewDelta;\n"  + // post-drag — captured by TF, used next frame
++        "out vec2 v_Speed;\n"     + // pre-drag  — used by fragment shader for color (RS parity)
+         "void main() {\n"                                                      +
+         "    vec2 pos   = a_Position;\n"                                       +
+         "    vec2 delta = a_Delta;\n"                                          +
+@@ -76,33 +83,33 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+         "            }\n"                                                       +
+         "        }\n"                                                          +
+         "    }\n"                                                               +
++        // Update order: vel += acc, pos += vel, color = f(vel), vel *= drag
+         "    pos   += delta;\n"                                                +
+-        "    delta *= u_Drag;\n"                                               +
+         // Wrap particles at screen edges
+-        "    if (pos.x < 0.0)        pos.x += u_Size.x;\n"                   +
++        "    if (pos.x < 0.0)           pos.x += u_Size.x;\n"                +
+         "    else if (pos.x >= u_Size.x) pos.x -= u_Size.x;\n"               +
+-        "    if (pos.y < 0.0)        pos.y += u_Size.y;\n"                   +
++        "    if (pos.y < 0.0)           pos.y += u_Size.y;\n"                +
+         "    else if (pos.y >= u_Size.y) pos.y -= u_Size.y;\n"               +
+-        "    v_NewPos   = pos;\n"                                              +
+-        "    v_NewDelta = delta;\n"                                            +
++        "    v_NewPos = pos;\n"                                                +
++        "    v_Speed  = delta;\n"         + // pre-drag speed for color (RS parity)
++        "    delta   *= u_Drag;\n"        + // drag applied after color sample
++        "    v_NewDelta = delta;\n"       + // post-drag stored for next frame
+         // Map screen coords [0..width, 0..height] → NDC [-1..1, -1..1]
+-        "    gl_Position = vec4((pos / u_Size) * 2.0 - 1.0, 0.0, 1.0);\n"   +
++        "    gl_Position  = vec4((pos / u_Size) * 2.0 - 1.0, 0.0, 1.0);\n"  +
+         "    gl_PointSize = 3.0;\n"                                            +
+         "}\n";
+ 
+     // ── Fragment shader ───────────────────────────────────────────────────────
+-    // Uses v_NewDelta (speed) to interpolate between slow/fast colors in HSV.
+-    // hsv2rgba uses the canonical compact GLSL formula (correct and handles
+-    // hue wraparound via fract).
++    // Reads v_Speed (pre-drag velocity) to interpolate between slow/fast colors.
+     private static final String FRAGMENT_SHADER =
+         "#version 300 es\n"                                                         +
+         "precision highp float;\n"                                                  +
+-        "in vec2 v_NewDelta;\n"                                                     +
++        "in vec2 v_Speed;\n"                                                        + // pre-drag (RS parity)
+         "uniform float u_slowHue, u_fastHue;\n"                                    +
+         "uniform float u_slowSat, u_fastSat;\n"                                    +
+         "uniform float u_slowVal, u_fastVal;\n"                                    +
+         "out vec4 fragColor;\n"                                                     +
+-        // Maps speed magnitude to [0,1]: 0=slow, 1=fast
++        // Logarithmic speed→[0,1] mapping — exact RS getSpeedCoef formula
+         "float speedCoef(vec2 v) {\n"                                               +
+         "    return clamp(log(dot(v, v) + 1.0) / 4.5, 0.0, 1.0);\n"              +
+         "}\n"                                                                        +
+@@ -113,7 +120,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+         "    return vec4(v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), s), 1.0);\n" +
+         "}\n"                                                                        +
+         "void main() {\n"                                                            +
+-        "    float c = speedCoef(v_NewDelta);\n"                                    +
++        "    float c = speedCoef(v_Speed);\n"                                       +
+         "    fragColor = hsv2rgba(\n"                                                +
+         "        mix(u_slowHue, u_fastHue, c),\n"                                  +
+         "        mix(u_slowSat, u_fastSat, c),\n"                                  +
+@@ -145,6 +152,18 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+         mWidth  = w;
+         mHeight = h;
+         initParticles();
++
++        // Place 3 default attraction points in a triangle so particles move
++        // from the first frame without requiring user touch.
++        float l = Math.min(mWidth, mHeight) / 3f;
++        for (int i = 0; i < 3; i++) {
++            double angle = i * 2.0 * Math.PI / 3.0;
++            mTouches[i * 2]     = mWidth  / 2f + l * (float) Math.sin(angle);
++            mTouches[i * 2 + 1] = mHeight / 2f + l * (float) Math.cos(angle);
++        }
++        // Points 3 and 4 stay inactive
++        mTouches[6] = -1f; mTouches[7] = -1f;
++        mTouches[8] = -1f; mTouches[9] = -1f;
+     }
+ 
+     @Override
+@@ -209,7 +228,8 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+ 
+     /**
+      * Upload initial particle data to both ping-pong VBOs.
+-     * Particles start uniformly distributed over a disk covering the screen.
++     * Particles start uniformly distributed over a disk covering the screen,
++     * velocity = 0 — matches original RenderScript initParticles() exactly.
+      */
+     private void initParticles() {
+         Random rand   = new Random();
+@@ -221,8 +241,8 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+             float theta = rand.nextFloat() * 6.28318530718f;
+             data[i * 4]     = mWidth  / 2f + r * (float) Math.cos(theta); // pos.x
+             data[i * 4 + 1] = mHeight / 2f + r * (float) Math.sin(theta); // pos.y
+-            data[i * 4 + 2] = 0f; // delta.x
+-            data[i * 4 + 3] = 0f; // delta.y
++            data[i * 4 + 2] = 0f; // delta.x = 0
++            data[i * 4 + 3] = 0f; // delta.y = 0
+         }
+ 
+         ByteBuffer buf = ByteBuffer.allocateDirect(data.length * 4)
+@@ -243,6 +263,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+     /**
+      * Compile and link vertex + fragment shaders.
+      * Transform feedback varyings MUST be specified before glLinkProgram.
++     * v_Speed is NOT listed here — it passes to the fragment shader only.
+      */
+     private int buildProgram(String vertSrc, String fragSrc) {
+         int vs   = compileShader(GLES30.GL_VERTEX_SHADER,   vertSrc);
+@@ -250,7 +271,8 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
+         int prog = GLES30.glCreateProgram();
+         GLES30.glAttachShader(prog, vs);
+         GLES30.glAttachShader(prog, fs);
+-        // Specify TF varyings BEFORE linking — interleaved into a single buffer
++        // Specify TF varyings BEFORE linking — interleaved into a single buffer.
++        // v_Speed is intentionally excluded: it goes to the frag shader only.
+         GLES30.glTransformFeedbackVaryings(prog,
+                 new String[]{"v_NewPos", "v_NewDelta"},
+                 GLES30.GL_INTERLEAVED_ATTRIBS);
