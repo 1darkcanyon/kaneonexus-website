@@ -47,9 +47,12 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
     // Counterclockwise default: blue → cyan → green → yellow → red
     private volatile boolean mHueCCW = true;
 
-    // Internal physics (converted from UI scale by MainActivity)
-    private volatile float mF01Attraction = 5000f; // UI 0-100  → internal * 100
-    private volatile float mF01Drag       = 0.96f; // UI 0-1000 → internal / 1000
+    // Internal physics (converted from UI scale by ParticlesSurfaceView)
+    private volatile float mF01Attraction = 1000f; // UI 0-100  → internal * 100
+    private volatile float mF01Drag       = 0.96f; // UI 0-1000 → 1 - UI/1000
+
+    // Point sprite size in pixels (gl_PointSize); default 4
+    private volatile float mParticleSize = 4f;
 
     // ── Derived HSV ───────────────────────────────────────────────────────────
     private float mSlowHue, mSlowSat, mSlowVal;
@@ -67,7 +70,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
 
     private final float[] mTouches = new float[MAX_TOUCHES * 2];
 
-    private int mUTouch, mUNumTouches, mUSize, mUAttraction, mUDrag, mUMaxSpeed;
+    private int mUTouch, mUNumTouches, mUSize, mUAttraction, mUDrag, mUMaxSpeed, mUPointSize;
     private int mUSlowHue, mUFastHue, mUSlowSat, mUFastSat, mUSlowVal, mUFastVal;
 
     // ── Vertex shader ─────────────────────────────────────────────────────────
@@ -84,6 +87,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "uniform float u_Attraction;\n"                                             +
         "uniform float u_Drag;\n"                                                   +
         "uniform float u_MaxSpeed;\n"                                               +
+        "uniform float u_PointSize;\n"                                              +
         "out vec2 v_NewPos;\n"                                                      +
         "out vec2 v_NewDelta;\n"                                                    +
         "void main() {\n"                                                           +
@@ -109,7 +113,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "    v_NewPos   = pos;\n"                                                   +
         "    v_NewDelta = delta;\n"                                                 +
         "    gl_Position  = vec4((pos / u_Size) * 2.0 - 1.0, 0.0, 1.0);\n"       +
-        "    gl_PointSize = 8.0;\n"                                                 +
+        "    gl_PointSize = u_PointSize;\n"                                                 +
         "}\n";
 
     // ── Fragment shader ───────────────────────────────────────────────────────
@@ -126,7 +130,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         "out vec4 fragColor;\n"                                                          +
         // Map particle speed to 0-1
         "float speedCoef(vec2 v) {\n"                                                   +
-        "    return clamp(log(dot(v, v) + 1.0) / 4.5, 0.0, 1.0);\n"                   +
+        "    return clamp(log(dot(v, v) + 1.0) / 10.0, 0.0, 1.0);\n"                   +
         "}\n"                                                                             +
         // HSV → RGB; fract() handles hue values outside [0,1]
         "vec3 hsv2rgb(float h, float s, float v) {\n"                                   +
@@ -176,6 +180,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         mWidth  = w;
         mHeight = h;
         initParticles();
+        resetAttractionPoints();
     }
 
     @Override
@@ -192,6 +197,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         GLES30.glUniform1f(mUAttraction,  mF01Attraction);
         GLES30.glUniform1f(mUDrag,        mF01Drag);
         GLES30.glUniform1f(mUMaxSpeed,    MAX_SPEED_HARD);
+        GLES30.glUniform1f(mUPointSize,   mParticleSize);
         GLES30.glUniform1f(mUSlowHue,     mSlowHue);
         GLES30.glUniform1f(mUFastHue,     mFastHueAdjusted);
         GLES30.glUniform1f(mUSlowSat,     mSlowSat);
@@ -260,6 +266,35 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
 
     /** Internal drag multiplier 0.0-1.0.  UI 0-1000 maps to 0.0-1.0. */
     public void setDrag(float drag) { mF01Drag = Math.max(0f, Math.min(drag, 0.9999f)); }
+
+    /** Point sprite size in pixels.  UI pref 1-50 maps to roughly 2-8. */
+    public void setParticleSize(float size) { mParticleSize = Math.max(1f, Math.min(size, 32f)); }
+
+    /**
+     * Place mMaxAttractionPoints touch points evenly around the screen center.
+     * Call this (via queueEvent) after the surface dimensions are known.
+     */
+    public void resetAttractionPoints() {
+        if (mWidth <= 0 || mHeight <= 0) return;
+        float l = Math.min(mWidth, mHeight) / 3f;
+        int n = Math.min(mMaxAttractionPoints, MAX_TOUCHES);
+        // Clear all existing touches first
+        for (int i = 0; i < MAX_TOUCHES; i++) {
+            mTouches[i * 2]     = -1f;
+            mTouches[i * 2 + 1] = -1f;
+        }
+        // Place n touches in a circle (first one at top)
+        if (n == 1) {
+            mTouches[0] = mWidth  / 2f;
+            mTouches[1] = mHeight / 2f;
+        } else {
+            for (int i = 0; i < n; i++) {
+                double angle = i * 2.0 * Math.PI / n;
+                mTouches[i * 2]     = mWidth  / 2f + l * (float) Math.sin(angle);
+                mTouches[i * 2 + 1] = mHeight / 2f + l * (float) Math.cos(angle);
+            }
+        }
+    }
 
     // ── Getters ───────────────────────────────────────────────────────────────
 
@@ -366,6 +401,7 @@ public class ParticlesRendererGL implements GLSurfaceView.Renderer {
         mUAttraction = GLES30.glGetUniformLocation(mProgram, "u_Attraction");
         mUDrag       = GLES30.glGetUniformLocation(mProgram, "u_Drag");
         mUMaxSpeed   = GLES30.glGetUniformLocation(mProgram, "u_MaxSpeed");
+        mUPointSize  = GLES30.glGetUniformLocation(mProgram, "u_PointSize");
         mUSlowHue    = GLES30.glGetUniformLocation(mProgram, "u_slowHue");
         mUFastHue    = GLES30.glGetUniformLocation(mProgram, "u_fastHue");
         mUSlowSat    = GLES30.glGetUniformLocation(mProgram, "u_slowSat");
