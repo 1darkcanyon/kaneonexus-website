@@ -23,7 +23,11 @@ function(compile_shader name stage)
     add_custom_command(
         OUTPUT  ${HDR_FILE}
         COMMAND ${GLSLC} -fshader-stage=${stage} ${SRC_FILE} -o ${SPV_FILE}
-        COMMAND xxd -i ${SPV_FILE} > ${HDR_FILE}
+        # Run xxd from BIN so the variable name is derived from just the filename,
+        # e.g. "init.comp.spv" → "init_comp_spv" (dots become underscores).
+        # Full-path argument would produce a mangled absolute-path variable name.
+        COMMAND xxd -i ${name}.spv > ${HDR_FILE}
+        WORKING_DIRECTORY ${BIN}
         DEPENDS ${SRC_FILE}
         COMMENT "Compiling shader ${name}"
     )

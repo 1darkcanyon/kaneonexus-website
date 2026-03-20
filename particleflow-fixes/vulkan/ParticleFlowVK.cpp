@@ -138,7 +138,20 @@ void ParticleFlowVK::drawFrame() {
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     vkBeginCommandBuffer(cmdBuf_, &beginInfo);
 
-    // 4. Compute: update particles
+    // 4a. Barrier: host writes to touch buffer → compute shader reads
+    // HOST_COHERENT means no flush needed, but we still need an execution barrier
+    // so the GPU sees the CPU-written touch data before the compute dispatch.
+    {
+        VkMemoryBarrier hostBarrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER};
+        hostBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+        hostBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        vkCmdPipelineBarrier(cmdBuf_,
+            VK_PIPELINE_STAGE_HOST_BIT,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+            0, 1, &hostBarrier, 0, nullptr, 0, nullptr);
+    }
+
+    // 4b. Compute: update particles
     vkCmdBindPipeline(cmdBuf_, VK_PIPELINE_BIND_POINT_COMPUTE, updatePipeline_);
     vkCmdBindDescriptorSets(cmdBuf_, VK_PIPELINE_BIND_POINT_COMPUTE,
                              computeLayout_, 0, 1, &descSet_, 0, nullptr);
@@ -335,12 +348,17 @@ bool ParticleFlowVK::createDevice() {
     qci.queueCount       = 1;
     qci.pQueuePriorities = &prio;
 
+    // largePoints: required for gl_PointSize > 1 in the vertex shader
+    VkPhysicalDeviceFeatures features{};
+    features.largePoints = VK_TRUE;
+
     const char* devExts[] = { "VK_KHR_swapchain" };
     VkDeviceCreateInfo dci{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
     dci.queueCreateInfoCount    = 1;
     dci.pQueueCreateInfos       = &qci;
     dci.enabledExtensionCount   = 1;
     dci.ppEnabledExtensionNames = devExts;
+    dci.pEnabledFeatures        = &features;
 
     VK_CHECK(vkCreateDevice(physDev_, &dci, nullptr, &device_));
     vkGetDeviceQueue(device_, queueFamily_, 0, &queue_);
@@ -756,6 +774,15 @@ void ParticleFlowVK::dispatchInit() {
     VkCommandBufferBeginInfo bi{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     vkBeginCommandBuffer(cmdBuf_, &bi);
+
+    // Ensure host writes to touch buffer (default attraction points) are visible
+    VkMemoryBarrier hostBarrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER};
+    hostBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+    hostBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    vkCmdPipelineBarrier(cmdBuf_,
+        VK_PIPELINE_STAGE_HOST_BIT,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        0, 1, &hostBarrier, 0, nullptr, 0, nullptr);
 
     vkCmdBindPipeline(cmdBuf_, VK_PIPELINE_BIND_POINT_COMPUTE, initPipeline_);
     vkCmdBindDescriptorSets(cmdBuf_, VK_PIPELINE_BIND_POINT_COMPUTE,
