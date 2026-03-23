@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="NEXUS Ping Test — Live Silver Acoustic Analyzer. Real-time microphone frequency analysis powered by NEXUS intelligence."/>
+<title>NEXUS — Ping Test</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🔹</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --void:    #000000;
+  --deep:    #020408;
+  --silver:  #c0c8d8;
+  --chrome:  #e8ecf4;
+  --steel:   #8892a8;
+  --cyan:    #00e5ff;
+  --mag:     #e040fb;
+  --white:   rgba(255,255,255,0.92);
+  --muted:   rgba(255,255,255,0.45);
+  --dim:     rgba(255,255,255,0.12);
+  --bc:      rgba(192,200,216,0.15);
+  --fhd:    'Orbitron', monospace;
+  --fbd:    'Rajdhani', sans-serif;
+  --fmn:    'Share Tech Mono', monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body {
+  background: var(--void);
+  color: var(--white);
+  font-family: var(--fbd);
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── GRAIN ── */
+body::before {
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity:.5;
+}
+
+/* ── GRID ── */
+body::after {
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(192,200,216,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192,200,216,0.02) 1px, transparent 1px);
+  background-size:60px 60px;
+}
+
+canvas#bg { position:fixed;inset:0;z-index:0;pointer-events:none; }
+
+/* ── NAV ── */
+nav {
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 40px;height:64px;
+  display:flex;align-items:center;gap:24px;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--bc);
+}
+.nav-logo {
+  font-family:var(--fhd);font-size:16px;font-weight:900;
+  letter-spacing:5px;color:var(--silver);
+  text-shadow:0 0 20px rgba(192,200,216,0.4);
+  text-decoration:none;
+}
+.nav-sep { width:1px;height:20px;background:var(--bc); }
+.nav-sub { font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted); }
+.nav-right { margin-left:auto;font-family:var(--fmn);font-size:10px;letter-spacing:2px;color:var(--steel); }
+
+/* ── HERO ── */
+.hero {
+  position:relative;z-index:2;
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 60px;
+  min-height:100vh;
+}
+
+.hero-badge {
+  font-family:var(--fmn);font-size:10px;letter-spacing:6px;
+  color:var(--steel);text-transform:uppercase;
+  margin-bottom:32px;
+  padding:8px 24px;
+  border:1px solid var(--bc);border-radius:40px;
+  background:rgba(192,200,216,0.04);
+}
+
+.hero h1 {
+  font-family:var(--fhd);font-weight:900;
+  font-size:clamp(36px,7vw,72px);
+  letter-spacing:8px;
+  color:var(--chrome);
+  text-shadow:0 0 60px rgba(192,200,216,0.2);
+  margin-bottom:16px;
+  line-height:1.1;
+}
+
+.hero h1 span {
+  display:block;
+  font-size:clamp(14px,2.5vw,22px);
+  letter-spacing:12px;
+  font-weight:400;
+  color:var(--steel);
+  margin-top:8px;
+}
+
+.hero-desc {
+  font-family:var(--fbd);font-size:18px;font-weight:300;
+  color:var(--muted);
+  max-width:520px;
+  line-height:1.7;
+  margin-bottom:48px;
+}
+
+.launch-btn {
+  display:inline-flex;align-items:center;gap:12px;
+  font-family:var(--fhd);font-size:13px;font-weight:700;
+  letter-spacing:4px;text-transform:uppercase;
+  color:var(--void);
+  background:linear-gradient(135deg, var(--silver), var(--chrome));
+  padding:16px 48px;border-radius:4px;border:none;
+  cursor:pointer;text-decoration:none;
+  transition:all 0.3s ease;
+  box-shadow:0 0 40px rgba(192,200,216,0.15);
+}
+.launch-btn:hover {
+  box-shadow:0 0 60px rgba(192,200,216,0.3);
+  transform:translateY(-2px);
+}
+.launch-btn svg { width:18px;height:18px; }
+
+/* ── FEATURES ── */
+.features {
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:24px;padding:0 40px 80px;max-width:960px;margin:0 auto;width:100%;
+}
+.feat {
+  padding:28px;border-radius:8px;
+  border:1px solid var(--bc);
+  background:rgba(192,200,216,0.02);
+  backdrop-filter:blur(8px);
+}
+.feat-icon {
+  font-size:24px;margin-bottom:16px;
+  filter:grayscale(50%);
+}
+.feat h3 {
+  font-family:var(--fhd);font-size:11px;font-weight:700;
+  letter-spacing:3px;color:var(--silver);margin-bottom:8px;
+}
+.feat p {
+  font-size:14px;font-weight:300;color:var(--muted);line-height:1.6;
+}
+
+/* ── FOOTER ── */
+footer {
+  position:relative;z-index:2;
+  text-align:center;padding:40px 24px;
+  border-top:1px solid var(--bc);
+  font-family:var(--fmn);font-size:10px;letter-spacing:3px;color:var(--dim);
+}
+footer a { color:var(--steel);text-decoration:none; }
+footer a:hover { color:var(--silver); }
+
+@media(max-width:600px){
+  nav{padding:0 16px}
+  .features{padding:0 16px 60px}
+  .hero{padding:100px 16px 40px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<nav>
+  <a class="nav-logo" href="/">NEXUS</a>
+  <div class="nav-sep"></div>
+  <span class="nav-sub">PING TEST</span>
+  <span class="nav-right">ACOUSTIC INTELLIGENCE</span>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">Silver Acoustic Analyzer</div>
+  <h1>PING TEST<span>Live Frequency Intelligence</span></h1>
+  <p class="hero-desc">
+    Real-time microphone analysis with precision FFT visualization.
+    Detect frequencies, measure decibels, and map your acoustic environment
+    with military-grade clarity.
+  </p>
+  <a class="launch-btn" href="analyzer.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
+    Launch Analyzer
+  </a>
+</section>
+
+<div class="features">
+  <div class="feat">
+    <div class="feat-icon">&#9201;</div>
+    <h3>REAL-TIME</h3>
+    <p>Live FFT analysis at 60fps with zero perceptible latency. See every frequency as it happens.</p>
+  </div>
+  <div class="feat">
+    <div class="feat-icon">&#9783;</div>
+    <h3>SPECTRUM</h3>
+    <p>Full 20Hz–20kHz frequency spectrum visualization with logarithmic and linear scale options.</p>
+  </div>
+  <div class="feat">
+    <div class="feat-icon">&#9878;</div>
+    <h3>PRECISION</h3>
+    <p>Peak frequency detection, dB metering, and waveform analysis with configurable FFT resolution.</p>
+  </div>
+</div>
+
+<footer>
+  <a href="https://kaneonexus.com">NEXUS</a> &mdash; INTELLIGENCE WITHOUT THE ARTIFICIAL
+</footer>
+
+<script>
+// ── Subtle particle background ──
+(function(){
+  const c = document.getElementById('bg');
+  const ctx = c.getContext('2d');
+  let w, h, pts = [];
+  function resize(){
+    w = c.width = innerWidth;
+    h = c.height = innerHeight;
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  for(let i = 0; i < 60; i++){
+    pts.push({
+      x: Math.random()*w, y: Math.random()*h,
+      vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
+      r: Math.random()*1.5+0.5,
+      a: Math.random()*0.15+0.05
+    });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if(p.x < 0) p.x = w;
+      if(p.x > w) p.x = 0;
+      if(p.y < 0) p.y = h;
+      if(p.y > h) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(192,200,216,${p.a})`;
+      ctx.fill();
+    });
+    // Draw subtle connections
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<150){
+          ctx.beginPath();
+          ctx.moveTo(pts[i].x,pts[i].y);
+          ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle=`rgba(192,200,216,${0.03*(1-d/150)})`;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
