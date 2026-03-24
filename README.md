@@ -24,7 +24,14 @@ NEXUS represents revolutionary AI collaboration technology, integrating:
 
 ## Deployment
 
-This site is deployed to kaneonexus.com via IONOS hosting.
+This site is deployed to [kaneonexus.com](https://kaneonexus.com) via Netlify.
+
+To configure the custom domain in Netlify:
+1. In the Netlify dashboard, go to **Site configuration → Domain management**
+2. Add `kaneonexus.com` as a custom domain
+3. Update your DNS registrar with Netlify's name servers or add the following DNS records:
+   - **A record**: `@` → `75.2.60.5` (Netlify load balancer)
+   - **CNAME record**: `www` → `[your-site-name].netlify.app`
 
 ---
 

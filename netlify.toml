@@ -5,6 +5,26 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Redirect www to apex domain
+[[redirects]]
+  from = "https://www.kaneonexus.com/*"
+  to = "https://kaneonexus.com/:splat"
+  status = 301
+  force = true
+
+# Enforce HTTPS
+[[redirects]]
+  from = "http://kaneonexus.com/*"
+  to = "https://kaneonexus.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.kaneonexus.com/*"
+  to = "https://kaneonexus.com/:splat"
+  status = 301
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]
