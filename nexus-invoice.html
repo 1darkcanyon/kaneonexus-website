@@ -177,7 +177,7 @@ footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--
         </div>
         <div class="form-group">
           <div class="form-label">Website</div>
-          <input type="text" class="form-input" id="bizWeb" placeholder="kaneonexus.com" oninput="updatePreview()"/>
+          <input type="text" class="form-input" id="bizWeb" placeholder="kaneonexus.net" oninput="updatePreview()"/>
         </div>
       </div>
 
@@ -415,7 +415,7 @@ function generatePDF(){
   const tax=sub*(parseFloat(document.getElementById('taxRate').value)||0)/100;
   const grand=sub+tax;
   const lines=items.map(i=>`  ${i.desc||'Service'} x${i.qty} @ $${(i.rate||0).toFixed(2)} = $${((i.qty||0)*(i.rate||0)).toFixed(2)}`).join('\n');
-  const text=`NEXUS INVOICE\n${'='.repeat(40)}\nFrom: ${biz}\nTo: ${client}\nInvoice #: ${num}\nDate: ${document.getElementById('invDate').value}\nDue: ${document.getElementById('dueDate').value}\n\nLINE ITEMS:\n${lines}\n\nSubtotal: $${sub.toFixed(2)}\nTax: $${tax.toFixed(2)}\nTOTAL DUE: $${grand.toFixed(2)}\n\nNotes: ${document.getElementById('notes').value}\n\n${biz} · NEXUS Intelligence Solutions · kaneonexus.com`;
+  const text=`NEXUS INVOICE\n${'='.repeat(40)}\nFrom: ${biz}\nTo: ${client}\nInvoice #: ${num}\nDate: ${document.getElementById('invDate').value}\nDue: ${document.getElementById('dueDate').value}\n\nLINE ITEMS:\n${lines}\n\nSubtotal: $${sub.toFixed(2)}\nTax: $${tax.toFixed(2)}\nTOTAL DUE: $${grand.toFixed(2)}\n\nNotes: ${document.getElementById('notes').value}\n\n${biz} · NEXUS Intelligence Solutions · kaneonexus.net`;
   const blob=new Blob([text],{type:'text/plain'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=`${num}-${client.replace(/\s+/g,'-')}.txt`;a.click();

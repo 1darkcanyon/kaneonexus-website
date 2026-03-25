@@ -1,6 +1,6 @@
 # NEXUS - Integrated Intelligence Solutions
 
-Official website for NEXUS: kaneonexus.com
+Official website for NEXUS: kaneonexus.net
 
 ## About
 
@@ -24,7 +24,7 @@ NEXUS represents revolutionary AI collaboration technology, integrating:
 
 ## Deployment
 
-This site is deployed to kaneonexus.com via IONOS hosting.
+This site is deployed to kaneonexus.net via IONOS hosting.
 
 ---
 

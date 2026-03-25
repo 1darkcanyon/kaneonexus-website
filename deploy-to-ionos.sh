@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "🌙 Deploying kaneonexus.com from GitHub"
+echo "🌙 Deploying kaneonexus.net from GitHub"
 echo -n "IONOS Password: "
 read -s PASS
 echo ""
@@ -10,4 +10,4 @@ set sftp:auto-confirm yes
 mirror -R --verbose . /
 quit
 EOF
-echo "✅ Deployed to kaneonexus.com!"
+echo "✅ Deployed to kaneonexus.net!"
