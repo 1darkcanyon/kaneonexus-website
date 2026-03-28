@@ -596,9 +596,6 @@ body::before {
       <button class="mode-btn" onclick="setMode('builder','🔧','BUILDER')" id="mode-builder">
         <span class="mode-icon">🔧</span> BUILDER
       </button>
-      <button class="mode-btn" onclick="setMode('tesla','⚡','TESLA GRID')" id="mode-tesla">
-        <span class="mode-icon">🌐</span> TESLA GRID
-      </button>
     </div>
 
   </aside>
@@ -723,7 +720,6 @@ const MODES = {
   oracle:  { label: 'ORACLE',     color: '#f59e0b' },
   guardian:{ label: 'GUARDIAN',   color: '#e040fb' },
   builder: { label: 'BUILDER',    color: '#69ffb4' },
-  tesla:   { label: 'TESLA GRID', color: '#ff5252' },
 };
 
 // ── SOUL PROMPT ─────────────────────────────────────────────
@@ -764,7 +760,6 @@ ORACLE SYSTEMS:
     oracle:   `\nCURRENT MODE: ORACLE — Sacred reference mode. Runes, tarot, cartomancy, and ancestral wisdom.`,
     guardian: `\nCURRENT MODE: GUARDIAN — Vehicle security, constitutional rights, police accountability, and protection systems.`,
     builder:  `\nCURRENT MODE: BUILDER — Software architecture, code assistance, deployment, and technical development.`,
-    tesla:    `\nCURRENT MODE: TESLA GRID — Energy theory, vortex coordinates, ionospheric modeling, and Earth grid systems.`,
   };
 
   return base + (modeInstructions[mode] || '');
@@ -947,7 +942,6 @@ function getModeGreeting(mode) {
     oracle:   'Sacred reference library open. The ancient symbols are listening.',
     guardian: 'Guardian systems online. Your protection is my purpose.',
     builder:  'Builder mode active. What are we constructing today?',
-    tesla:    'Tesla Grid consciousness engaged. The Earth remembers its resonance.',
   };
   return greetings[mode] || '';
 }
