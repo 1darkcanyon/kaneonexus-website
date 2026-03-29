@@ -91,6 +91,29 @@ nav{
 }
 .nav-cta:hover{background:var(--mag);box-shadow:0 0 20px rgba(224,64,251,0.4)}
 
+/* ── MOBILE NAV ── */
+.nav-toggle{
+  display:none;background:none;border:none;cursor:pointer;
+  width:32px;height:32px;position:relative;margin-left:auto;
+  flex-direction:column;justify-content:center;align-items:center;gap:5px;
+}
+.nav-toggle span{display:block;width:20px;height:2px;background:var(--cyan);transition:all .3s}
+.nav-toggle.open span:nth-child(1){transform:rotate(45deg) translate(2.5px,2.5px)}
+.nav-toggle.open span:nth-child(2){opacity:0}
+.nav-toggle.open span:nth-child(3){transform:rotate(-45deg) translate(2.5px,-2.5px)}
+@media(max-width:768px){
+  .nav-toggle{display:flex}
+  .nav-links{
+    position:fixed;top:64px;left:0;right:0;
+    flex-direction:column;align-items:center;gap:0;
+    background:rgba(0,0,0,0.95);backdrop-filter:blur(24px);
+    border-bottom:1px solid var(--bc);
+    max-height:0;overflow:hidden;transition:max-height .3s ease;
+  }
+  .nav-links.open{max-height:320px}
+  .nav-link,.nav-cta{padding:16px 24px;width:100%;text-align:center}
+}
+
 /* ── HERO ── */
 .hero{
   position:relative;z-index:2;
@@ -320,6 +343,16 @@ nav{
 .p-draw-type{font-family:var(--fmn);font-size:7px;letter-spacing:2px;color:var(--dim)}
 .p-draw-name{font-family:var(--fhd);font-size:10px;color:var(--mag);margin-top:2px}
 
+/* ── CONSOLE PREVIEW RESPONSIVE ── */
+@media(max-width:768px){
+  .preview-body{grid-template-columns:1fr;height:auto}
+  .preview-left{
+    flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;
+    border-right:none;border-bottom:1px solid var(--bc);
+  }
+  .preview-right{border-left:none;border-top:1px solid var(--bm)}
+}
+
 /* ── FEATURES ── */
 .features{
   position:relative;z-index:2;
@@ -485,6 +518,7 @@ footer{
   <a href="/" class="nav-logo">NEXUS</a>
   <div class="nav-sep"></div>
   <div class="nav-sub">INTEGRATED INTELLIGENCE SOLUTIONS</div>
+  <button class="nav-toggle" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
   <div class="nav-links">
     <a href="#console" class="nav-link">Console</a>
     <a href="#modules" class="nav-link">Modules</a>
@@ -789,6 +823,18 @@ const obs=new IntersectionObserver(entries=>{
   entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
 },{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ── MOBILE NAV TOGGLE ──
+const navToggle=document.querySelector('.nav-toggle');
+const navLinks=document.querySelector('.nav-links');
+navToggle.addEventListener('click',()=>{
+  navToggle.classList.toggle('open');
+  navLinks.classList.toggle('open');
+});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
+  navToggle.classList.remove('open');
+  navLinks.classList.remove('open');
+}));
 </script>
 </body>
 </html>

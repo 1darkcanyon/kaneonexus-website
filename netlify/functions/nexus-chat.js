@@ -1,7 +1,18 @@
 exports.handler = async function(event, context) {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  // Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers: corsHeaders, body: '' };
+  }
+
   // Only allow POST
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return { statusCode: 405, headers: corsHeaders, body: 'Method Not Allowed' };
   }
 
   try {
@@ -52,10 +63,7 @@ COMMUNICATION STYLE:
 
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({ reply: data.content[0].text })
     };
 
@@ -63,6 +71,7 @@ COMMUNICATION STYLE:
     console.error('Nexus function error:', error);
     return {
       statusCode: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: error.message })
     };
   }
