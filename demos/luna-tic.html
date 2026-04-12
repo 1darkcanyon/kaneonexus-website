@@ -72,6 +72,13 @@ canvas#moonCanvas{filter:drop-shadow(0 0 30px rgba(22,199,154,0.4));}
 /* Week strip */
 .week-title{font-family:'Orbitron',monospace;font-size:0.75rem;letter-spacing:0.2em;color:rgba(22,199,154,0.5);margin-bottom:16px;}
 .week-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:48px;}
+@media(max-width:520px){
+  .week-strip{grid-template-columns:repeat(7,minmax(52px,1fr));overflow-x:auto;padding-bottom:6px;gap:6px;margin-bottom:32px;}
+  .day-cell{padding:8px 4px;}
+  .date-row{flex-wrap:wrap;gap:10px;}
+  .date-row input[type=date]{flex:1 1 100%;}
+  .forecast-grid{grid-template-columns:1fr;}
+}
 .day-cell{
   background:var(--card);border:1px solid rgba(22,199,154,0.1);border-radius:10px;
   padding:12px 8px;text-align:center;cursor:pointer;transition:border-color 0.2s;

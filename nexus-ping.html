@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NEXUS Ping Test — Network Diagnostics</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#000;--deep:#020408;--obs:#050810;
+  --cyan:#00e5ff;--mag:#e040fb;--teal:#16c79a;--gold:#f59e0b;
+  --red:#ef4444;--green:#10b981;--yellow:#f59e0b;
+  --white:rgba(255,255,255,.92);--muted:rgba(255,255,255,.45);--dim:rgba(255,255,255,.15);
+  --bc:rgba(0,229,255,.12);--bm:rgba(224,64,251,.12);
+  --fhd:'Orbitron',monospace;--fbd:'Rajdhani',sans-serif;--fmn:'Share Tech Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--void);color:var(--white);font-family:var(--fbd);overflow-x:hidden;cursor:crosshair;min-height:100vh}
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(0,229,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.012) 1px,transparent 1px);
+  background-size:60px 60px;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;padding:0 32px;gap:20px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--bc);}
+.nav-logo{font-family:var(--fhd);font-size:14px;font-weight:900;letter-spacing:4px;color:var(--cyan);text-decoration:none;text-shadow:0 0 20px rgba(0,229,255,.4)}
+.nav-sep{width:1px;height:18px;background:var(--bc)}
+.nav-title{font-family:var(--fmn);font-size:9px;letter-spacing:4px;color:var(--dim)}
+.nav-back{margin-left:auto;font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--cyan)}
+
+.main{position:relative;z-index:2;padding:80px 24px 60px;max-width:900px;margin:0 auto}
+
+.hero{text-align:center;padding:32px 0 40px}
+.hero-eyebrow{font-family:var(--fmn);font-size:9px;letter-spacing:6px;color:var(--cyan);margin-bottom:14px}
+.hero-title{font-family:var(--fhd);font-size:clamp(26px,5vw,48px);font-weight:900;letter-spacing:5px;margin-bottom:12px;
+  background:linear-gradient(135deg,var(--white),var(--cyan) 50%,var(--teal));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-family:var(--fmn);font-size:10px;letter-spacing:4px;color:var(--muted);margin-bottom:8px}
+.hero-desc{font-size:15px;color:var(--muted);max-width:520px;margin:0 auto;line-height:1.8}
+
+/* TERMINAL */
+.terminal{background:rgba(2,4,8,.95);border:1px solid var(--bc);border-radius:4px;overflow:hidden;margin-bottom:24px;
+  box-shadow:0 0 40px rgba(0,229,255,.06),0 0 80px rgba(0,0,0,.4)}
+.term-bar{height:36px;background:rgba(5,8,16,.98);border-bottom:1px solid var(--bc);
+  display:flex;align-items:center;padding:0 14px;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot-r{background:#ff5252}.dot-y{background:#f59e0b}.dot-g{background:#69ffb4}
+.term-url{margin-left:8px;font-family:var(--fmn);font-size:9px;color:var(--dim);letter-spacing:1px;flex:1;text-align:center}
+.term-body{padding:20px 24px;min-height:140px}
+.term-line{font-family:var(--fmn);font-size:12px;line-height:1.9;display:flex;gap:8px;align-items:baseline}
+.term-prompt{color:var(--cyan);flex-shrink:0}
+.term-text{color:rgba(255,255,255,.7)}
+.term-text.dim{color:var(--dim)}
+.term-cursor{display:inline-block;width:8px;height:13px;background:var(--cyan);animation:blink .9s step-end infinite;vertical-align:middle}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* RUN BUTTON */
+.run-wrap{text-align:center;margin-bottom:32px}
+.run-btn{
+  font-family:var(--fmn);font-size:12px;letter-spacing:4px;padding:14px 40px;
+  background:transparent;color:var(--cyan);border:1px solid var(--bc);border-radius:2px;
+  cursor:pointer;transition:all .3s;position:relative;overflow:hidden;
+}
+.run-btn::before{content:'';position:absolute;inset:0;background:rgba(0,229,255,.0);transition:background .3s}
+.run-btn:hover{border-color:var(--cyan);color:var(--white);box-shadow:0 0 20px rgba(0,229,255,.15)}
+.run-btn:hover::before{background:rgba(0,229,255,.05)}
+.run-btn:disabled{opacity:.4;cursor:default;border-color:rgba(255,255,255,.1)}
+.run-btn.running{color:var(--gold);border-color:rgba(245,158,11,.3);animation:runPulse 1.2s ease-in-out infinite}
+@keyframes runPulse{0%,100%{box-shadow:0 0 0 rgba(245,158,11,0)}50%{box-shadow:0 0 20px rgba(245,158,11,.2)}}
+
+/* RESULTS */
+#resultsPanel{display:none}
+.results-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:580px){.results-grid{grid-template-columns:1fr}}
+
+.stat-card{background:rgba(5,8,16,.85);border:1px solid rgba(255,255,255,.05);border-radius:3px;padding:18px 20px;position:relative}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--card-accent,var(--cyan)),transparent);opacity:.5}
+.stat-label{font-family:var(--fmn);font-size:8px;letter-spacing:4px;color:var(--dim);margin-bottom:8px}
+.stat-value{font-family:var(--fhd);font-size:22px;font-weight:700;letter-spacing:2px;color:var(--white);margin-bottom:4px}
+.stat-value.cyan{color:var(--cyan)}
+.stat-value.green{color:var(--green)}
+.stat-value.yellow{color:var(--yellow)}
+.stat-value.red{color:var(--red)}
+.stat-value.mag{color:var(--mag)}
+.stat-sub{font-family:var(--fmn);font-size:9px;color:var(--dim);letter-spacing:1px}
+
+.quality-badge{display:inline-block;font-family:var(--fmn);font-size:10px;letter-spacing:3px;padding:4px 12px;border-radius:1px;margin-top:4px}
+.q-excellent{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.q-good{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.2)}
+.q-fair{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
+.q-poor{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+
+/* PING HISTORY */
+.history-panel{background:rgba(5,8,16,.85);border:1px solid rgba(255,255,255,.05);border-radius:3px;padding:20px;margin-bottom:24px}
+.history-label{font-family:var(--fmn);font-size:8px;letter-spacing:4px;color:var(--dim);margin-bottom:14px}
+.ping-bars{display:flex;align-items:flex-end;gap:6px;height:60px}
+.ping-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.ping-bar{width:100%;border-radius:2px 2px 0 0;transition:height .4s ease,background .4s ease;min-height:2px}
+.ping-bar-val{font-family:var(--fmn);font-size:8px;color:var(--dim);text-align:center}
+
+/* LATENCY METER */
+.latency-meter{margin-top:12px}
+.lm-track{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.lm-fill{height:100%;border-radius:2px;transition:width .6s ease,background .6s ease}
+.lm-labels{display:flex;justify-content:space-between;font-family:var(--fmn);font-size:7px;color:var(--dim)}
+
+/* INFO CARD */
+.info-card{background:rgba(5,8,16,.7);border:1px solid rgba(255,255,255,.04);border-radius:3px;padding:18px 20px;margin-bottom:24px}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.info-row:last-child{border-bottom:none}
+.info-key{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--dim)}
+.info-val{font-family:var(--fmn);font-size:10px;color:var(--muted);text-align:right;max-width:60%}
+
+/* ONLINE INDICATOR */
+.online-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;animation:onlinePulse 2s ease-in-out infinite}
+.online-dot.on{background:var(--green);box-shadow:0 0 6px rgba(16,185,129,.6)}
+.online-dot.off{background:var(--red);box-shadow:0 0 6px rgba(239,68,68,.6)}
+@keyframes onlinePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+
+footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--bc);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px}
+.f-logo{font-family:var(--fhd);font-size:11px;letter-spacing:4px;color:var(--cyan)}
+.f-links{display:flex;gap:16px;flex-wrap:wrap}
+.f-link{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--dim);text-decoration:none;transition:color .2s}
+.f-link:hover{color:var(--cyan)}
+.f-runes{font-size:13px;letter-spacing:8px;color:var(--gold);opacity:.35}
+</style>
+</head>
+<body>
+<canvas id="cosmos"></canvas>
+<nav>
+  <a href="/" class="nav-logo">NEXUS</a>
+  <div class="nav-sep"></div>
+  <div class="nav-title">PING TEST</div>
+  <a href="/" class="nav-back">← HOME</a>
+</nav>
+
+<div class="main">
+  <div class="hero">
+    <div class="hero-eyebrow">MODULE 08 · NETWORK DIAGNOSTICS</div>
+    <h1 class="hero-title">NEXUS PING TEST</h1>
+    <div class="hero-sub">LATENCY · IP · SIGNAL QUALITY · SPEED</div>
+    <p class="hero-desc">Real-time network diagnostics. Measure your connection to NEXUS and display live signal health metrics.</p>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="terminal">
+    <div class="term-bar">
+      <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+      <div class="term-url">NEXUS DIAGNOSTIC TERMINAL v1.0 · kaneonexus.net</div>
+    </div>
+    <div class="term-body" id="termBody">
+      <div class="term-line"><span class="term-prompt">›</span><span class="term-text">NEXUS NETWORK DIAGNOSTIC SYSTEM ONLINE</span></div>
+      <div class="term-line"><span class="term-prompt">›</span><span class="term-text dim">Target: kaneonexus.net · Protocol: HTTPS · Mode: Active</span></div>
+      <div class="term-line"><span class="term-prompt">›</span><span class="term-text dim">Status: <span id="statusLine"><span class="online-dot on"></span>ONLINE — ready for diagnostics</span></span></div>
+      <div class="term-line" id="termLog" style="margin-top:6px"><span class="term-prompt">$</span><span class="term-text">run diagnostics<span class="term-cursor"></span></span></div>
+    </div>
+  </div>
+
+  <div class="run-wrap">
+    <button class="run-btn" id="runBtn" onclick="runDiagnostics()">▶ RUN DIAGNOSTICS</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="resultsPanel">
+    <div class="results-grid">
+      <div class="stat-card" style="--card-accent:var(--cyan)">
+        <div class="stat-label">YOUR IP ADDRESS</div>
+        <div class="stat-value cyan" id="ipVal" style="font-size:16px;letter-spacing:1px">—</div>
+        <div class="stat-sub" id="ipSub">fetching...</div>
+      </div>
+      <div class="stat-card" style="--card-accent:var(--teal)">
+        <div class="stat-label">AVG LATENCY</div>
+        <div class="stat-value green" id="latencyVal">—</div>
+        <div class="stat-sub" id="latencySub">5 samples to kaneonexus.net</div>
+        <div id="qualityBadge"></div>
+      </div>
+      <div class="stat-card" style="--card-accent:var(--mag)">
+        <div class="stat-label">DOWNLOAD SPEED</div>
+        <div class="stat-value mag" id="speedVal">—</div>
+        <div class="stat-sub" id="speedSub">est. via connection API</div>
+      </div>
+      <div class="stat-card" style="--card-accent:var(--gold)">
+        <div class="stat-label">CONNECTION TYPE</div>
+        <div class="stat-value" id="connVal" style="font-size:14px">—</div>
+        <div class="stat-sub" id="connSub">network interface</div>
+      </div>
+    </div>
+
+    <!-- LATENCY METER -->
+    <div class="history-panel">
+      <div class="history-label">PING HISTORY · LAST 5 SAMPLES</div>
+      <div class="ping-bars" id="pingBars">
+        <div class="ping-bar-wrap"><div class="ping-bar" id="pb0" style="height:0;background:var(--cyan)"></div><div class="ping-bar-val" id="pv0">—</div></div>
+        <div class="ping-bar-wrap"><div class="ping-bar" id="pb1" style="height:0;background:var(--cyan)"></div><div class="ping-bar-val" id="pv1">—</div></div>
+        <div class="ping-bar-wrap"><div class="ping-bar" id="pb2" style="height:0;background:var(--cyan)"></div><div class="ping-bar-val" id="pv2">—</div></div>
+        <div class="ping-bar-wrap"><div class="ping-bar" id="pb3" style="height:0;background:var(--cyan)"></div><div class="ping-bar-val" id="pv3">—</div></div>
+        <div class="ping-bar-wrap"><div class="ping-bar" id="pb4" style="height:0;background:var(--cyan)"></div><div class="ping-bar-val" id="pv4">—</div></div>
+      </div>
+      <div class="latency-meter" style="margin-top:16px">
+        <div class="lm-track"><div class="lm-fill" id="lmFill" style="width:0%;background:var(--green)"></div></div>
+        <div class="lm-labels"><span>0ms EXCELLENT</span><span>100ms GOOD</span><span>200ms FAIR</span><span>300ms+ POOR</span></div>
+      </div>
+    </div>
+
+    <!-- SYSTEM INFO -->
+    <div class="info-card">
+      <div class="history-label">SYSTEM INFORMATION</div>
+      <div class="info-row"><span class="info-key">BROWSER</span><span class="info-val" id="infoBrowser">—</span></div>
+      <div class="info-row"><span class="info-key">PLATFORM</span><span class="info-val" id="infoPlatform">—</span></div>
+      <div class="info-row"><span class="info-key">EFFECTIVE TYPE</span><span class="info-val" id="infoEffType">—</span></div>
+      <div class="info-row"><span class="info-key">RTT (BROWSER EST.)</span><span class="info-val" id="infoRTT">—</span></div>
+      <div class="info-row"><span class="info-key">SAVE DATA MODE</span><span class="info-val" id="infoSaveData">—</span></div>
+      <div class="info-row"><span class="info-key">ONLINE STATUS</span><span class="info-val" id="infoOnline">—</span></div>
+      <div class="info-row"><span class="info-key">DIAGNOSTIC TIME</span><span class="info-val" id="infoDiagTime">—</span></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-logo">NEXUS</div>
+  <div class="f-links">
+    <a href="/" class="f-link">HOME</a>
+    <a href="demos/" class="f-link">ALL MODULES</a>
+    <a href="nexus-console.html" class="f-link">CONSOLE</a>
+  </div>
+  <div class="f-runes">ᛟ ᚨ ᚹ ᚱ</div>
+</footer>
+
+<script>
+// ── STARFIELD ──
+(function(){
+  const c=document.getElementById('cosmos'),ctx=c.getContext('2d');let stars=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;
+    stars=Array.from({length:120},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
+      r:Math.random()*1.1+.1,a:Math.random()*Math.PI*2,s:Math.random()*.003+.001,
+      col:Math.random()>.85?'rgba(245,158,11,':Math.random()>.6?'rgba(0,229,255,':'rgba(22,199,154,'}));}
+  function draw(){ctx.clearRect(0,0,c.width,c.height);stars.forEach(s=>{s.a+=s.s;const a=.04+Math.sin(s.a)*.12;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=s.col+Math.max(0,a)+')';ctx.fill();});requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+// ── HELPERS ──
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+function termLog(text,color){
+  const log=document.getElementById('termLog');
+  const line=document.createElement('div');
+  line.className='term-line';
+  line.innerHTML='<span class="term-prompt" style="color:'+(color||'var(--cyan)')+'">›</span><span class="term-text">'+text+'</span>';
+  log.parentNode.insertBefore(line,log);
+}
+
+function qualityClass(ms){
+  if(ms<50) return {cls:'q-excellent',label:'EXCELLENT',color:'var(--green)'};
+  if(ms<100) return {cls:'q-good',label:'GOOD',color:'var(--cyan)'};
+  if(ms<200) return {cls:'q-fair',label:'FAIR',color:'var(--yellow)'};
+  return {cls:'q-poor',label:'POOR',color:'var(--red)'};
+}
+
+// ── DIAGNOSTICS ──
+async function runDiagnostics(){
+  const btn=document.getElementById('runBtn');
+  btn.disabled=true;btn.classList.add('running');btn.textContent='⟳ SCANNING...';
+
+  document.getElementById('resultsPanel').style.display='block';
+  document.getElementById('termLog').innerHTML='<span class="term-prompt">$</span><span class="term-text">run diagnostics --full --target=kaneonexus.net<span class="term-cursor"></span></span>';
+
+  // ── 1. IP ADDRESS ──
+  termLog('Fetching external IP address...','var(--dim)');
+  try{
+    const r=await fetch('https://api.ipify.org?format=json');
+    const d=await r.json();
+    document.getElementById('ipVal').textContent=d.ip;
+    document.getElementById('ipSub').textContent='external IPv4';
+    termLog('IP resolved: '+d.ip,'var(--teal)');
+  }catch(e){
+    document.getElementById('ipVal').textContent='N/A';
+    document.getElementById('ipSub').textContent='blocked by browser policy';
+    termLog('IP fetch blocked (CORS)','var(--dim)');
+  }
+
+  // ── 2. LATENCY (5 samples) ──
+  termLog('Pinging kaneonexus.net — 5 samples...','var(--dim)');
+  const samples=[];
+  for(let i=0;i<5;i++){
+    const t0=performance.now();
+    try{
+      await fetch('/?_t='+Date.now(),{cache:'no-store',method:'HEAD'});
+    }catch(e){}
+    const ms=Math.round(performance.now()-t0);
+    samples.push(ms);
+    // Update bar
+    const maxMs=Math.max(...samples,200);
+    const pct=Math.min((ms/maxMs)*100,100);
+    const q=qualityClass(ms);
+    document.getElementById('pb'+i).style.height=pct+'%';
+    document.getElementById('pb'+i).style.background=q.color;
+    document.getElementById('pv'+i).textContent=ms+'ms';
+    termLog('PING '+(i+1)+': '+ms+'ms','var(--dim)');
+    if(i<4)await delay(300);
+  }
+  const avg=Math.round(samples.reduce((a,b)=>a+b,0)/samples.length);
+  const min=Math.min(...samples);
+  const max=Math.max(...samples);
+  const q=qualityClass(avg);
+
+  document.getElementById('latencyVal').textContent=avg+'ms';
+  document.getElementById('latencyVal').className='stat-value';
+  document.getElementById('latencyVal').style.color=q.color;
+  document.getElementById('latencySub').textContent='min:'+min+'ms  max:'+max+'ms  jitter:±'+Math.round((max-min)/2)+'ms';
+
+  // Quality badge
+  const badge=document.getElementById('qualityBadge');
+  badge.innerHTML='<span class="quality-badge '+q.cls+'">'+q.label+'</span>';
+
+  // Latency meter (0-300ms scale, capped)
+  const meterPct=Math.min((avg/300)*100,100);
+  const mfill=document.getElementById('lmFill');
+  mfill.style.width=meterPct+'%';
+  mfill.style.background=q.color;
+
+  termLog('Avg latency: '+avg+'ms · Quality: '+q.label,'var(--teal)');
+
+  // ── 3. CONNECTION INFO ──
+  const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  if(conn){
+    const dl=conn.downlink;
+    document.getElementById('speedVal').textContent=dl?dl.toFixed(1)+' Mbps':'N/A';
+    document.getElementById('speedSub').textContent=conn.effectiveType?'network API — '+conn.effectiveType:'network API estimate';
+    document.getElementById('connVal').textContent=(conn.type||conn.effectiveType||'UNKNOWN').toUpperCase();
+    document.getElementById('connSub').textContent=conn.type?conn.effectiveType||'':conn.effectiveType||'interface';
+    document.getElementById('infoEffType').textContent=(conn.effectiveType||'—').toUpperCase();
+    document.getElementById('infoRTT').textContent=conn.rtt!=null?conn.rtt+'ms':'—';
+    document.getElementById('infoSaveData').textContent=conn.saveData?'ENABLED':'DISABLED';
+    termLog('Connection: '+(conn.effectiveType||conn.type||'unknown')+(conn.downlink?' · '+conn.downlink+'Mbps':''),'var(--teal)');
+  }else{
+    // Estimate speed via timing a fetch of a known resource
+    try{
+      const t0=performance.now();
+      const res=await fetch('/?_speed='+Date.now(),{cache:'no-store'});
+      const buf=await res.arrayBuffer();
+      const elapsed=(performance.now()-t0)/1000;
+      const bytes=buf.byteLength||parseInt(res.headers.get('content-length')||'0');
+      if(bytes>0&&elapsed>0){
+        const mbps=((bytes*8)/(elapsed*1_000_000)).toFixed(2);
+        document.getElementById('speedVal').textContent=mbps+' Mbps';
+        document.getElementById('speedSub').textContent='measured via page fetch ('+Math.round(bytes/1024)+'KB)';
+      }else{
+        document.getElementById('speedVal').textContent='N/A';
+      }
+    }catch(e){
+      document.getElementById('speedVal').textContent='N/A';
+    }
+    document.getElementById('connVal').textContent='CONNECTED';
+    document.getElementById('connSub').textContent='navigator.connection unavailable';
+    document.getElementById('infoEffType').textContent='—';
+    document.getElementById('infoRTT').textContent='—';
+    document.getElementById('infoSaveData').textContent='—';
+  }
+
+  // ── 4. SYSTEM INFO ──
+  const ua=navigator.userAgent;
+  const browser=ua.includes('Firefox')?'Firefox':ua.includes('Edg')?'Edge':ua.includes('Chrome')?'Chrome':ua.includes('Safari')?'Safari':'Unknown';
+  const platform=navigator.platform||navigator.userAgentData?.platform||'Unknown';
+  document.getElementById('infoBrowser').textContent=browser+' ('+navigator.appVersion.split(' ')[0]+')';
+  document.getElementById('infoPlatform').textContent=platform;
+  document.getElementById('infoOnline').textContent=navigator.onLine?'ONLINE ✓':'OFFLINE ✗';
+  document.getElementById('infoDiagTime').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});
+
+  // ── DONE ──
+  termLog('Diagnostics complete. '+samples.length+' samples collected.','var(--cyan)');
+  btn.disabled=false;btn.classList.remove('running');btn.textContent='↺ RUN AGAIN';
+
+  // Re-scale ping bars to max sample
+  const maxSample=Math.max(...samples);
+  samples.forEach((ms,i)=>{
+    const pct=maxSample>0?Math.min((ms/maxSample)*100,100):50;
+    document.getElementById('pb'+i).style.height=pct+'%';
+  });
+}
+
+// Online/offline watcher
+window.addEventListener('online',()=>{document.getElementById('statusLine').innerHTML='<span class="online-dot on"></span>ONLINE';});
+window.addEventListener('offline',()=>{document.getElementById('statusLine').innerHTML='<span class="online-dot off"></span>OFFLINE';});
+if(!navigator.onLine){document.getElementById('statusLine').innerHTML='<span class="online-dot off"></span>OFFLINE';}
+</script>
+</body>
+</html>

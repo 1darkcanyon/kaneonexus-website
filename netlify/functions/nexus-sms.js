@@ -40,7 +40,7 @@ exports.handler = async function(event) {
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken  = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_FROM_NUMBER;
+  const fromNumber = process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_FROM_NUMBER;
 
   if (!accountSid || !authToken || !fromNumber) {
     // Dev mode — return a mock successful response so the UI works
@@ -106,7 +106,7 @@ exports.handler = async function(event) {
 async function handleSafeContact({ type, urgency, message, location, anonymous, name, contact, ref, headers }) {
   const accountSid   = process.env.TWILIO_ACCOUNT_SID;
   const authToken    = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber   = process.env.TWILIO_FROM_NUMBER;
+  const fromNumber   = process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_FROM_NUMBER;
   const notifyNumber = process.env.NEXUS_NOTIFY_NUMBER;
 
   const alertBody = [

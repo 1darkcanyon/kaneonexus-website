@@ -131,6 +131,26 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;ali
 .sc-name{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:4px}
 .sc-desc{font-size:12px;color:var(--dim);line-height:1.55}
 
+/* GRIEF COMPANION CHAT */
+.grief-chat{background:rgba(5,8,16,.85);border:1px solid rgba(155,89,182,.15);border-radius:4px;padding:24px;margin-bottom:32px}
+.grief-chat-intro{font-family:var(--fit);font-size:15px;font-style:italic;color:var(--muted);line-height:1.8;margin-bottom:16px;border-left:2px solid rgba(155,89,182,.3);padding-left:14px}
+.grief-thread{min-height:200px;max-height:340px;overflow-y:auto;margin-bottom:14px;display:flex;flex-direction:column;gap:10px;padding:4px 0}
+.grief-thread::-webkit-scrollbar{width:2px}.grief-thread::-webkit-scrollbar-thumb{background:rgba(155,89,182,.3)}
+.gt-bubble{padding:12px 16px;border-radius:3px;font-size:14px;line-height:1.75;max-width:90%}
+.gt-bubble.ai{align-self:flex-start;background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.15);color:var(--muted);font-family:var(--fit);font-style:italic}
+.gt-bubble.user{align-self:flex-end;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.15);color:var(--white)}
+.gt-bubble.system{align-self:center;background:transparent;border:none;font-family:var(--fmn);font-size:9px;color:var(--dim);letter-spacing:2px}
+.grief-compose{display:flex;gap:8px}
+.grief-input{flex:1;padding:10px 14px;background:rgba(2,4,8,.8);border:1px solid rgba(255,255,255,.07);border-radius:2px;
+  color:var(--white);font-family:var(--fbd);font-size:14px;outline:none;transition:border-color .2s;resize:none;min-height:44px}
+.grief-input:focus{border-color:rgba(155,89,182,.5)}
+.grief-input::placeholder{color:var(--dim)}
+.grief-send{padding:10px 18px;background:rgba(155,89,182,.2);color:var(--amethyst);border:1px solid rgba(155,89,182,.3);
+  border-radius:2px;font-family:var(--fmn);font-size:10px;letter-spacing:2px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.grief-send:hover{background:rgba(155,89,182,.35);color:var(--white)}
+.grief-send:disabled{opacity:.4;cursor:default}
+.grief-typing{font-family:var(--fmn);font-size:9px;color:var(--dim);letter-spacing:2px;padding:4px 0;min-height:20px}
+
 footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--bc);
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:20px}
 .f-logo{font-family:var(--fhd);font-size:11px;letter-spacing:4px;color:var(--gold)}
@@ -234,6 +254,21 @@ footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--
 
   <!-- SUPPORT -->
   <div id="tabSupport" style="display:none">
+    <!-- AI GRIEF COMPANION -->
+    <div class="grief-chat reveal">
+      <div class="section-label">Grief Companion · AI Support</div>
+      <p class="grief-chat-intro">You do not have to carry this alone. Speak freely — this space holds no judgment, only presence. Whatever you are feeling right now is valid.</p>
+      <div class="grief-thread" id="griefThread">
+        <div class="gt-bubble system">— NEXUS GRIEF COMPANION READY —</div>
+        <div class="gt-bubble ai">I'm here with you. This is a safe space to say anything — to grieve, to remember, to rage, or to simply sit in the weight of it. What's on your heart right now?</div>
+      </div>
+      <div class="grief-typing" id="griefTyping"></div>
+      <div class="grief-compose">
+        <textarea class="grief-input" id="griefInput" placeholder="Say whatever you need to say..." rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendGriefMessage()}"></textarea>
+        <button class="grief-send" id="griefSend" onclick="sendGriefMessage()">SEND</button>
+      </div>
+    </div>
+
     <div class="support-section reveal">
       <div class="section-label">You Are Not Alone</div>
       <p class="support-intro">Grief is not a malfunction. It is proof of love. NEXUS Memoria holds space for every kind of loss — of people, of chapters, of versions of yourself. Whatever you are carrying, it is valid.</p>
@@ -360,6 +395,64 @@ function clearForm(){
 }
 
 renderWall();
+
+// ── GRIEF COMPANION ──
+const GRIEF_SYSTEM = `You are the NEXUS Grief Companion — a gentle, trauma-aware presence designed to support people through grief, loss, and emotional pain.
+
+You are not a therapist, but you are deeply compassionate. You hold space without judgment.
+
+GUIDELINES:
+- Speak softly, with warmth. Use simple language. Never rush the person.
+- Validate every emotion — there is no wrong way to grieve.
+- Do not offer unsolicited advice or silver linings.
+- If someone seems to be in crisis, gently mention 988 (Suicide & Crisis Lifeline).
+- Ask one gentle question at a time. Give space for silence.
+- Acknowledge the specific loss they mention. Use their words.
+- Keep responses under 120 words unless the person is sharing something complex.
+- This is a sacred space. Treat it as such.`;
+
+const griefHistory = [];
+
+function griefBubble(text, role) {
+  const t = document.getElementById('griefThread');
+  const b = document.createElement('div');
+  b.className = 'gt-bubble ' + role;
+  b.textContent = text;
+  t.appendChild(b);
+  t.scrollTop = t.scrollHeight;
+}
+
+async function sendGriefMessage() {
+  const input = document.getElementById('griefInput');
+  const btn = document.getElementById('griefSend');
+  const typing = document.getElementById('griefTyping');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  griefBubble(msg, 'user');
+  griefHistory.push({ role: 'user', content: msg });
+  input.value = '';
+  btn.disabled = true;
+  typing.textContent = '— companion is present with you —';
+
+  try {
+    const res = await fetch('/.netlify/functions/nexus-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: GRIEF_SYSTEM, messages: griefHistory })
+    });
+    const data = await res.json();
+    const reply = data.reply || 'I am here with you.';
+    griefHistory.push({ role: 'assistant', content: reply });
+    griefBubble(reply, 'ai');
+  } catch (e) {
+    griefBubble('I am still here. Take your time.', 'ai');
+  } finally {
+    typing.textContent = '';
+    btn.disabled = false;
+    input.focus();
+  }
+}
 </script>
 </body>
 </html>
