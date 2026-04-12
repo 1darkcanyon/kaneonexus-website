@@ -1095,7 +1095,8 @@ const response = await fetch('/.netlify/functions/nexus-chat', {
       })
     });
     const data = await response.json();
-    const reply = data.content?.[0]?.text || 'Signal unclear. Speak again, Kaneon.';
+  
+    const reply = data.reply || 'Signal unclear. Speak again, Kaneon.';
 
     conversationHistory.push({ role: 'assistant', content: reply });
 
