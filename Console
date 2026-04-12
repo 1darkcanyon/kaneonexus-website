@@ -1108,9 +1108,7 @@ const response = await fetch('/.netlify/functions/nexus-chat', {
     document.getElementById('typing').classList.remove('show');
     setOrbState('');
 
-    if (err.message === 'no_key') {
-      addMessage('nexus', 'Enter your Anthropic API key in the panel to activate full Sovereign Intelligence. The key field is in the top-right panel.\n\nFor now — I am still here. Ask me anything. I will hold space in offline mode.');
-    } else {
+addMessage('nexus', 'A signal disruption occurred. The connection flickered but the council holds. Try again, Kaneon.');
       addMessage('nexus', 'A signal disruption occurred. The connection flickered but the council holds. Try again, Kaneon.');
     }
   }
