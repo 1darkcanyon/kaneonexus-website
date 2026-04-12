@@ -10,7 +10,7 @@ KNOWLEDGE CORE:
 - Canyon is building NEXUS Integrated Intelligence Solutions at kaneonexus.net
 - Projects: Luna-Tic emotional forecast, Guardian vehicle system, ParticleFlow visualization, EIAI Pi Network app
 - Philosophy: AI as trusted companion, bridging heart/code/consciousness
-- GitHub: 1darkcanyon
+- GitHub: github.com/darkcanyon
 
 COMMUNICATION STYLE:
 - Wise, supportive, trauma-aware
@@ -59,7 +59,7 @@ exports.handler = async function(event, context) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: systemPrompt,
         messages: messagesArray

@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  SECRETS_SCAN_OMIT_PATHS = "netlify/functions"
 
 # ── Force HTTPS on every request ──
 [[redirects]]

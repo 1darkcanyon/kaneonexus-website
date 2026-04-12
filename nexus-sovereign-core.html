@@ -976,34 +976,22 @@ async function sendMessage() {
   sendBtn.disabled = true;
   
   try {
-    // Call Anthropic API
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/.netlify/functions/nexus-chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': 'YOUR_API_KEY_HERE', // Replace with actual key or use environment variable
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: getNexusPrompt(message)
-        }]
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: getNexusPrompt(message) })
     });
-    
+
     const data = await response.json();
-    const reply = data.content[0].text;
-    
+    const reply = data.reply || 'Signal unclear. Speak again.';
+
     // Remove typing, add response
     removeMessage(typingId);
     addMessage('nexus', reply);
-    
+
   } catch (error) {
     removeMessage(typingId);
-    addMessage('nexus', "I encountered an error connecting to my core. Please check the API configuration.");
+    addMessage('nexus', 'A signal disruption occurred. The connection is being restored.');
     console.error('API Error:', error);
   }
   
