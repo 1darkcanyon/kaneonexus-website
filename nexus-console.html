@@ -518,8 +518,8 @@ body::before {
   }
   .panel-left, .panel-right { display: none; }
   .hdr { grid-column: 1; grid-row: 1; }
-  .chat-main { grid-column: 1; grid-row: 2; }
-  .input-bar { grid-column: 1; grid-row: 3; }
+  .chat-main { grid-column: 1; grid-row: 2; min-height: 0; overflow: hidden; }
+  .input-bar { grid-column: 1; grid-row: 3; display: flex;  }
   .footer { grid-column: 1; grid-row: 4; }
 }
 
