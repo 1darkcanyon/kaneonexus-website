@@ -600,7 +600,7 @@ async function sendMsg(){
   const id=loadId();
   usrMsg(txt,id.name);hist.push({role:'user',content:txt});updMC();typOn();
   try{
-    const res=await fetch('/api/nexus-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:buildSys(id),messages:hist.slice(-24),max_tokens:700})});
+    const res=await fetch('/.netlify/functions/nexus-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:buildSys(id),messages:hist.slice(-24),max_tokens:700})});
     typOff();if(!res.ok)throw new Error(`Status ${res.status}`);
     const data=await res.json();
     let reply='';
@@ -629,7 +629,7 @@ async function readOracle(){
   try{
     const sign=getZodiac(id.birthdate);
     const ctx=[id.title&&`Sovereign title: ${id.title}`,sign&&`Sign: ${sign}`,id.location&&`Location: ${id.location}`,id.focus&&`Current focus: ${id.focus}`,id.interests?.length&&`Interests: ${id.interests.join(', ')}`].filter(Boolean).join('. ');
-    const res=await fetch('/api/nexus-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:`You are the NEXUS Oracle. Daily reading for ${id.title||id.name} — three cards: The Emperor (authority), Perchta (boundaries), Sovereign Fire (energy). ${ctx} Weave context naturally. Poetic, sovereign, precise. Under 120 words.`,messages:[{role:'user',content:'Give me my daily oracle reading for today.'}],max_tokens:220})});
+    const res=await fetch('/.netlify/functions/nexus-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:`You are the NEXUS Oracle. Daily reading for ${id.title||id.name} — three cards: The Emperor (authority), Perchta (boundaries), Sovereign Fire (energy). ${ctx} Weave context naturally. Poetic, sovereign, precise. Under 120 words.`,messages:[{role:'user',content:'Give me my daily oracle reading for today.'}],max_tokens:220})});
     typOff();const data=await res.json();
     const txt=data.content?.[0]?.text||data.message||'The oracle is silent today.';
     const prev=mode;document.getElementById('cp-badge').textContent='ORACLE';
