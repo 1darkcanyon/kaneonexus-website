@@ -24,7 +24,7 @@ NEXUS represents revolutionary AI collaboration technology, integrating:
 
 ## Deployment
 
-This site is deployed to kaneonexus.net via Netlify.
+This site is deployed to kaneonexus.net 
 
 ---
 
