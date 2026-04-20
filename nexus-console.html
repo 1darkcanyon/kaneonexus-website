@@ -519,7 +519,7 @@ body::before {
   .panel-left, .panel-right { display: none; }
   .hdr { grid-column: 1; grid-row: 1; }
   .chat-main { grid-column: 1; grid-row: 2; min-height: 0; overflow: hidden; }
-  .input-bar { grid-column: 1; grid-row: 3; display: flex;  }
+  .input-bar { position: fixed; bottom: 56px; left: 0; right: 0; z-index: 100; display: flex; }
   .footer { grid-column: 1; grid-row: 4; }
 }
 
