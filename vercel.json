@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [{"type": "host", "value": "family.kaneonexus.net"}],
+      "destination": "/family/index.html"
+    },
+    {
+      "source": "/index.html",
+      "has": [{"type": "host", "value": "family.kaneonexus.net"}],
+      "destination": "/family/index.html"
+    }
+  ]
+}
