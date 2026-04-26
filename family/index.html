@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For My Family — Kaneon Parker</title>
+<meta name="description" content="A letter to McKenzie, Phoenix, Summer, and Mom — from Kaneon Parker.">
+<meta property="og:title" content="For My Family — Kaneon Parker">
+<meta property="og:description" content="Dad's letter — for McKenzie Mae Lynne Parker & Phoenix Reign Edward Parker.">
+<meta property="og:url" content="https://family.kaneonexus.net">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Lato:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:   #c9a84c;
+    --gold2:  #e8c96a;
+    --copper: #b87333;
+    --cream:  #f5f0e8;
+    --ivory:  #faf7f2;
+    --warm:   #ede5d8;
+    --mid:    #c4b49a;
+    --soft:   #8a7a68;
+    --muted:  #5a4e40;
+    --deep:   #2c2318;
+    --ink:    #100d09;
+    --rose:   #c9847a;
+    --rose2:  #f2b8b0;
+    --sage:   #7a9e7e;
+    --sage2:  #a8c9ac;
+    --sky:    #7aa8c9;
+    --lavender: #b8a8d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: .55;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 70px 24px 90px;
+    position: relative;
+    background:
+      radial-gradient(ellipse 80% 55% at 50% 0%,  rgba(201,168,76,.08) 0%, transparent 68%),
+      radial-gradient(ellipse 55% 40% at 15% 85%, rgba(184,115,51,.06) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 45% at 85% 90%, rgba(122,158,126,.05) 0%, transparent 60%),
+      linear-gradient(180deg, #100d09 0%, #1a1510 45%, #1e1a13 100%);
+  }
+  .hero-stars { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .star {
+    position: absolute; border-radius: 50%;
+    background: var(--gold2);
+    animation: twinkle var(--dur,4s) ease-in-out infinite var(--delay,0s);
+    opacity: var(--op,.45);
+  }
+  @keyframes twinkle { 0%,100%{opacity:var(--op,.45);transform:scale(1)} 50%{opacity:.08;transform:scale(.4)} }
+
+  .hero-eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(8px,1.4vw,10px);
+    letter-spacing: .45em;
+    color: var(--gold);
+    margin-bottom: 26px;
+    opacity: 0;
+    animation: fadeUp .8s ease forwards .3s;
+  }
+  .hero-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(30px,7.5vw,68px);
+    font-weight: 400;
+    letter-spacing: .05em;
+    line-height: 1.14;
+    color: var(--ivory);
+    text-shadow: 0 4px 50px rgba(201,168,76,.2);
+    margin-bottom: 12px;
+    opacity: 0;
+    animation: fadeUp .9s ease forwards .5s;
+  }
+  .hero-names {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(17px,4vw,34px);
+    font-weight: 300; font-style: italic;
+    color: var(--gold2);
+    letter-spacing: .04em;
+    line-height: 1.5;
+    margin-bottom: 34px;
+    opacity: 0;
+    animation: fadeUp .9s ease forwards .7s;
+  }
+  .hero-rule {
+    width: 72px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto 30px;
+    opacity: 0; animation: fadeIn 1s ease forwards .9s;
+  }
+  .hero-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(14px,2.2vw,18px);
+    font-weight: 300; font-style: italic;
+    color: var(--mid);
+    max-width: 520px;
+    opacity: 0; animation: fadeUp .9s ease forwards 1.1s;
+    line-height: 1.75;
+  }
+  .scroll-cue {
+    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    color: var(--muted); font-family: 'Cinzel', serif;
+    font-size: 8px; letter-spacing: .3em;
+    opacity: 0; animation: fadeIn 1s ease forwards 2.2s;
+  }
+  .scroll-cue::after {
+    content: ""; width: 1px; height: 34px;
+    background: linear-gradient(180deg, var(--muted), transparent);
+    animation: breathe 2.2s ease-in-out infinite;
+  }
+  @keyframes breathe { 0%,100%{opacity:.45} 50%{opacity:.9} }
+
+  /* ── SHARED ── */
+  hr.rule {
+    border: none; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,.28), transparent);
+  }
+  .section {
+    max-width: 780px; margin: 0 auto;
+    padding: clamp(56px,8vw,108px) 28px;
+    opacity: 0; transform: translateY(28px);
+    transition: opacity .85s ease, transform .85s ease;
+  }
+  .section.visible { opacity: 1; transform: translateY(0); }
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: .42em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .section-label::after {
+    content: ""; flex: 1; height: 1px;
+    background: linear-gradient(90deg, rgba(201,168,76,.38), transparent);
+    max-width: 200px;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(24px,5vw,42px);
+    font-weight: 600; line-height: 1.22;
+    color: var(--ivory); margin-bottom: 26px;
+  }
+  .body-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(16px,2.3vw,20px);
+    font-weight: 300; line-height: 2;
+    color: var(--warm);
+  }
+  .body-text p { margin-bottom: 1.4em; }
+  .body-text em  { color: var(--gold2); font-style: italic; }
+  .body-text strong { color: var(--ivory); font-weight: 600; }
+
+  .divider { text-align: center; padding: 16px 0; color: var(--gold); font-size: 16px; letter-spacing: .5em; opacity: .38; }
+
+  /* ── CHILD CARDS ── */
+  .children-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 38px; }
+  @media(max-width:540px){ .children-grid{grid-template-columns:1fr;} }
+  .child-card {
+    background: linear-gradient(140deg, rgba(201,168,76,.07) 0%, rgba(18,14,9,.65) 100%);
+    border: 1px solid rgba(201,168,76,.22);
+    border-radius: 3px; padding: 30px 24px;
+    position: relative; overflow: hidden;
+  }
+  .child-card::before {
+    content: ""; position: absolute; top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold2), transparent);
+    opacity: .55;
+  }
+  .child-icon   { font-size: 26px; margin-bottom: 12px; display: block; }
+  .child-name   { font-family:'Cinzel',serif; font-size:clamp(12px,2.2vw,15px); letter-spacing:.1em; color:var(--gold2); margin-bottom:5px; line-height:1.45; }
+  .child-sub    { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--soft); margin-bottom:14px; }
+  .child-msg    { font-family:'Cormorant Garamond',serif; font-size:clamp(15px,2.1vw,17px); color:var(--cream); line-height:1.88; font-weight:300; }
+
+  /* ── QUOTE ── */
+  .quote-block {
+    border-left: 2px solid var(--gold);
+    padding: 18px 26px; margin: 36px 0;
+    background: rgba(201,168,76,.04);
+    border-radius: 0 3px 3px 0;
+  }
+  .quote-block p { font-family:'Cormorant Garamond',serif; font-size:clamp(16px,2.4vw,21px); font-style:italic; color:var(--gold2); line-height:1.7; font-weight:300; }
+  .quote-author  { font-family:'Cinzel',serif; font-size:9px; letter-spacing:.3em; color:var(--soft); margin-top:10px; }
+
+  /* ── TIMELINE ── */
+  .timeline { margin-top: 34px; position: relative; }
+  .timeline::before {
+    content: ""; position: absolute;
+    left: 13px; top: 8px; bottom: 8px; width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(201,168,76,.3) 10%, rgba(201,168,76,.3) 90%, transparent);
+  }
+  .t-item {
+    display: flex; gap: 26px; margin-bottom: 34px; padding-left: 3px;
+    opacity: 0; transform: translateX(-14px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .t-item.visible { opacity: 1; transform: translateX(0); }
+  .t-dot {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+    border: 1px solid var(--gold); background: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; margin-top: 4px; position: relative; z-index: 1;
+  }
+  .t-label { font-family:'Cinzel',serif; font-size:9.5px; letter-spacing:.28em; color:var(--gold); margin-bottom:4px; }
+  .t-text  { font-family:'Cormorant Garamond',serif; font-size:clamp(15px,2vw,17px); color:var(--warm); line-height:1.88; font-weight:300; }
+
+  /* ── SPECIAL CARDS ── */
+  .warm-card {
+    border-radius: 3px; padding: 36px 32px; margin-top: 34px;
+    position: relative; overflow: hidden;
+  }
+  .warm-card::before {
+    content: ""; position: absolute; top: 0; left: 0;
+    width: 100%; height: 2px;
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* Summer – rose tones */
+  .card-summer {
+    background: linear-gradient(135deg, rgba(201,132,122,.07) 0%, rgba(16,11,8,.6) 100%);
+    border: 1px solid rgba(201,132,122,.28);
+  }
+  .card-summer::before { background: linear-gradient(90deg, transparent, var(--rose2), transparent); opacity: .6; }
+  .label-summer { color: var(--rose2); }
+  .label-summer::after { background: linear-gradient(90deg, rgba(201,132,122,.35), transparent); }
+  .title-summer { color: var(--rose2); }
+
+  /* Mother – sage tones */
+  .card-mother {
+    background: linear-gradient(135deg, rgba(122,158,126,.07) 0%, rgba(16,11,8,.6) 100%);
+    border: 1px solid rgba(122,158,126,.28);
+  }
+  .card-mother::before { background: linear-gradient(90deg, transparent, var(--sage2), transparent); opacity: .6; }
+
+  /* ── CLOSING ── */
+  .closing {
+    text-align: center;
+    padding: clamp(60px,8vw,110px) 28px;
+    background:
+      radial-gradient(ellipse 65% 45% at 50% 100%, rgba(201,168,76,.06) 0%, transparent 70%),
+      linear-gradient(180deg, #1a1510 0%, #0e0b07 100%);
+  }
+  .closing-glyph {
+    font-family: 'Cinzel', serif; font-size: 30px; color: var(--gold);
+    margin-bottom: 22px; display: block;
+    filter: drop-shadow(0 0 16px rgba(201,168,76,.4));
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+  @keyframes glowPulse { 0%,100%{filter:drop-shadow(0 0 14px rgba(201,168,76,.3))} 50%{filter:drop-shadow(0 0 26px rgba(201,168,76,.65))} }
+  .closing-title { font-family:'Cormorant Garamond',serif; font-size:clamp(20px,4.2vw,36px); font-weight:300; font-style:italic; color:var(--ivory); margin-bottom:14px; line-height:1.28; }
+  .closing-body  { font-family:'Cormorant Garamond',serif; font-size:clamp(14px,2vw,17px); color:var(--mid); max-width:470px; margin:0 auto 34px; line-height:1.92; font-weight:300; }
+  .sig      { font-family:'Cormorant Garamond',serif; font-size:clamp(18px,3vw,26px); font-style:italic; color:var(--gold2); margin-bottom:5px; }
+  .sig-sub  { font-family:'Cinzel',serif; font-size:9px; letter-spacing:.4em; color:var(--soft); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 26px 24px;
+    border-top: 1px solid rgba(201,168,76,.1);
+    background: #080604;
+  }
+  footer a    { color:var(--gold); text-decoration:none; font-family:'Cinzel',serif; font-size:10px; letter-spacing:.25em; }
+  footer .url { font-family:'Cinzel',serif; font-size:9px; color:var(--muted); margin-top:10px; letter-spacing:.25em; }
+  footer .dedication { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--muted); margin-top:6px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-stars" id="stars"></div>
+  <div class="hero-eyebrow">family.kaneonexus.net &nbsp;·&nbsp; A Letter from Dad</div>
+  <h1 class="hero-title">For McKenzie.<br>For Phoenix.<br>For Mom.</h1>
+  <div class="hero-names">
+    McKenzie Mae Lynne Parker<br>
+    &amp; Phoenix Reign Edward Parker
+  </div>
+  <div class="hero-rule"></div>
+  <p class="hero-sub">
+    This page exists so that no matter what distance stands between us,<br>
+    you can always find me here — and know that you are loved<br>
+    beyond anything these words can fully hold.
+  </p>
+  <div class="scroll-cue">Read on</div>
+</section>
+
+<hr class="rule">
+
+<!-- ══ SECTION 1 · DIRECT TO KIDS ══════════════════════════════════════ -->
+<section class="section" id="s1">
+  <div class="section-label">To my children</div>
+  <h2 class="section-title">I Think About You Every Single Day</h2>
+  <div class="body-text">
+    <p>
+      McKenzie. Phoenix. If you ever find this page — and I believe you will —
+      I want the very first thing you read to be the most important truth I have:
+    </p>
+    <p>
+      <em>I love you. I have always loved you. Nothing has ever changed that,
+      and nothing in this world ever could.</em>
+    </p>
+    <p>
+      There is a kind of love that does not require closeness to survive.
+      It lives in the bones. It is what makes me rise every morning,
+      keep building, keep fighting, keep reaching —
+      because everything I create is a message sent forward through time,
+      aimed directly at you.
+    </p>
+    <p>You are my greatest reason. You always have been.</p>
+  </div>
+
+  <div class="children-grid">
+    <div class="child-card">
+      <span class="child-icon">🌸</span>
+      <div class="child-name">McKenzie Mae Lynne Parker</div>
+      <div class="child-sub">My firstborn light</div>
+      <div class="child-msg">
+        McKenzie — your name carries Mae and Lynne,
+        and it carries everything gentle and strong about you.
+        I see your curiosity, your spirit, your sharp and beautiful mind —
+        even across the distance. You were never far from my heart.
+        Not for a single day. Whatever you grow up to become,
+        I am already proud of you. Already.
+      </div>
+    </div>
+    <div class="child-card">
+      <span class="child-icon">⚡</span>
+      <div class="child-name">Phoenix Reign Edward Parker</div>
+      <div class="child-sub">My son who carries fire</div>
+      <div class="child-msg">
+        Phoenix — a phoenix rises from what others thought was over.
+        That name was chosen with intention, and I believe in every word of it.
+        You carry Edward — a name shared with your grandfather's line
+        and with your father's own middle name.
+        You are part of something larger than you know yet.
+        I will tell you all of it one day, face to face, and I cannot wait.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══ SECTION 2 · ACCOUNTABILITY ══════════════════════════════════════ -->
+<section class="section" id="s2">
+  <div class="section-label">My truth, without flinching</div>
+  <h2 class="section-title">What I Want You to Know About This Time</h2>
+  <div class="body-text">
+    <p>
+      Life took us down a road I never would have chosen.
+      There was real pain — deep, lasting pain — and I want to be honest
+      with you about that without placing its weight on anyone else's shoulders.
+    </p>
+    <p>
+      I have had to look inward. Hard. What I found was a man carrying
+      more unresolved trauma than he fully understood — and sometimes,
+      without meaning to, letting it show up in the spaces that mattered most.
+      <em>That is on me. I own it fully, without conditions.</em>
+    </p>
+    <p>
+      The circumstances that led to us being apart are larger than any one person.
+      There are forces — systems, histories, wounds — that none of us chose.
+      I am not here to assign blame or rewrite the past to serve only my story.
+      What I know is that <strong>every person in your life
+      is carrying something.</strong> Learning to hold that truth
+      with compassion — even when it is difficult — is where healing begins.
+    </p>
+    <p>
+      I made choices I would take back in a heartbeat.
+      I have sat with those choices until they stopped burning
+      and started teaching. And I am a different man because of that work.
+    </p>
+    <p>
+      What I will not do is let the past be the loudest voice in the room.
+      You deserve a father who is <em>becoming</em> — not one still drowning
+      in what went wrong. That is who I work to be every single day.
+    </p>
+  </div>
+  <div class="quote-block">
+    <p>"The goal was never to be perfect.
+    The goal was to keep choosing you —
+    even when that meant changing everything about myself first."</p>
+    <div class="quote-author">— Kaneon Parker</div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══ SECTION 3 · APOLOGY TO SUMMER ══════════════════════════════════ -->
+<section class="section" id="s3">
+  <div class="section-label label-summer" style="color:var(--rose2)">A word I owe &nbsp;·&nbsp; To Summer</div>
+  <h2 class="section-title" style="color:var(--ivory)">To Summer — Their Mother</h2>
+
+  <div class="warm-card card-summer">
+    <div class="body-text">
+      <p>
+        Summer — I want to say something to you here, openly and without agenda.
+        Not to revisit old pain or relitigate the past, but because I believe
+        some things deserve to be said clearly, in a place where our children
+        might one day read them too.
+      </p>
+      <p>
+        <strong>I am sorry.</strong>
+      </p>
+      <p>
+        In the beginning — in those early, unsteady seasons — there were things
+        that happened between us that I did not have the tools, the awareness,
+        or the emotional foundation to handle well. Some of those things
+        were genuinely beyond my control at the time.
+        I was carrying wounds I had not yet named, patterns I had not yet seen,
+        and I brought all of that into spaces where you deserved steadiness.
+        <em>That was not fair to you.</em>
+      </p>
+      <p>
+        I do not say this to excuse anything or to reopen closed chapters.
+        I say it because you are the mother of McKenzie and Phoenix —
+        two extraordinary human beings — and you deserve to hear from me
+        that I recognize the weight you carried, including weight
+        that I added without fully understanding what I was doing.
+      </p>
+      <p>
+        You showed up for them when things were hard.
+        Whatever path brought us here, that matters —
+        and I want you to know that I see it.
+      </p>
+      <p>
+        I carry no anger toward you. I carry no blame.
+        I carry only the hope that whatever healing each of us needs
+        continues to unfold — for our sake, and most of all
+        for McKenzie and Phoenix, who deserve to grow up
+        knowing that their parents made peace with the past.
+      </p>
+      <p>
+        <em>Thank you for being their mother. I mean that sincerely.</em>
+      </p>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══ SECTION 4 · WHAT I'VE BEEN BUILDING ════════════════════════════ -->
+<section class="section" id="s4">
+  <div class="section-label">What your Dad has been doing</div>
+  <h2 class="section-title">A Life Built with Purpose — and for You</h2>
+  <div class="body-text">
+    <p>
+      I want you to know what these years have looked like from my side —
+      not to make excuses, but because one day you will be old enough to understand
+      that <em>building something from nothing, in hard conditions,
+      is its own form of love.</em>
+    </p>
+  </div>
+
+  <div class="timeline" id="timeline">
+    <div class="t-item" id="t1">
+      <div class="t-dot">⚡</div>
+      <div>
+        <div class="t-label">NEXUS Integrated Intelligence Solutions</div>
+        <div class="t-text">
+          I built a technology platform from scratch — <strong>kaneonexus.net</strong> —
+          with tools designed to protect people from scammers, guard their safety,
+          and put intelligent technology in the hands of everyday people.
+          My philosophy: <em>"Intelligence Without the Artificial."</em>
+          Modules include ScamShield, SafeGuard Pro, Luna-Tic, NEXUS Memoria, and more.
+          No investors. No team. Just me, a Chromebook, and a clear vision.
+        </div>
+      </div>
+    </div>
+    <div class="t-item" id="t2">
+      <div class="t-dot">⛏</div>
+      <div>
+        <div class="t-label">Gold Prospecting · Pickett Creek Mining District</div>
+        <div class="t-text">
+          I have been walking the land of Josephine County —
+          your grandmother's home ground —
+          tracing mineral evidence suppressed for over a century.
+          Blue clay. Iron gossan. Gold-bearing seams mapped back to 1903.
+          This is the land your ancestors worked.
+          I am fighting to restore what was taken from this community —
+          and to secure something real for our family's future.
+        </div>
+      </div>
+    </div>
+    <div class="t-item" id="t3">
+      <div class="t-dot">△</div>
+      <div>
+        <div class="t-label">NEMESIS Project 10 · Sacred Geometry</div>
+        <div class="t-text">
+          I am constructing a copper pyramid built to Giza proportions —
+          8 feet at the base, oriented to true north by compass.
+          It is built from sacred geometry and the earth's own mathematics.
+          I designed every angle by hand.
+          One day I want you to stand inside it with me.
+        </div>
+      </div>
+    </div>
+    <div class="t-item" id="t4">
+      <div class="t-dot">🎵</div>
+      <div>
+        <div class="t-label">Music · CanyonNexus "Echoes of Time"</div>
+        <div class="t-text">
+          I have been making music — tracks that carry the sound of
+          Josephine County canyon wind, harmonica echoes,
+          and the frequency of a life being reclaimed.
+          Music has always been where I process the things
+          that words alone cannot hold.
+          These songs exist because you exist.
+        </div>
+      </div>
+    </div>
+    <div class="t-item" id="t5">
+      <div class="t-dot">🪃</div>
+      <div>
+        <div class="t-label">Boomerang Design · NEXUS ChromaRang</div>
+        <div class="t-text">
+          I design and build boomerangs by hand —
+          aerodynamically tuned, crafted with care,
+          a platform I call the NEXUS ChromaRang.
+          A boomerang always comes back.
+          <em>I chose this craft for a reason.</em>
+        </div>
+      </div>
+    </div>
+    <div class="t-item" id="t6">
+      <div class="t-dot">📱</div>
+      <div>
+        <div class="t-label">ParticleFlow · Personal Healing Tool</div>
+        <div class="t-text">
+          I built an app called ParticleFlow —
+          a visual meditation tool I made for myself to help quiet
+          a mind that sometimes takes in too much at once.
+          I have high-functioning autism, and this app is something
+          I created during the hard seasons as a way to stay grounded.
+          Building things for your own healing is never selfish.
+          It is necessary.
+        </div>
+      </div>
+    </div>
+    <div class="t-item" id="t7">
+      <div class="t-dot">⚖</div>
+      <div>
+        <div class="t-label">Fighting Back · Navigating Hard Systems</div>
+        <div class="t-text">
+          I have faced identity theft that affected my banking, my credit,
+          and my stability. I have navigated systems that were not designed
+          to work in my favor. I have filed formal complaints, documented
+          everything, and kept going. I tell you this not to burden you —
+          but so that one day, when you ask why things were so hard,
+          you know your father did not fold.
+          <em>Not once.</em>
+        </div>
+      </div>
+    </div>
+    <div class="t-item" id="t8">
+      <div class="t-dot">💜</div>
+      <div>
+        <div class="t-label">Princess Brandee · Love &amp; Partnership</div>
+        <div class="t-text">
+          I want you to know there is love in my life —
+          a woman named Brandee who sees me clearly,
+          who stands beside me through the difficult seasons,
+          and who already holds space for you in her heart.
+          Love does not shrink when it grows. It multiplies.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══ SECTION 5 · LETTER TO MOM ═══════════════════════════════════════ -->
+<section class="section" id="s5">
+  <div class="section-label" style="color:var(--sage2)">To my mother</div>
+  <h2 class="section-title">Mom — You Are Woven Into Everything</h2>
+  <div class="warm-card card-mother">
+    <div class="body-text">
+      <p>
+        Mom — I know these years have not been easy to watch.
+        I know you have carried a worry that no parent should carry alone,
+        and you have done it with a quiet steadiness that I do not take for granted.
+      </p>
+      <p>
+        You gave me Josephine County. You gave me the land and the stubbornness
+        to never quit — and the sensitivity to care deeply about everything.
+        Both of those things have saved me and challenged me in equal measure.
+      </p>
+      <p>
+        I am still here. I am still building. And everything I am building
+        carries your name in its foundation, even when it is not written there.
+      </p>
+      <p>
+        <em>I love you. Thank you for not giving up on me
+        even when I struggled to believe in myself.</em>
+      </p>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══ CLOSING ══════════════════════════════════════════════════════════ -->
+<section class="closing" id="closing">
+  <span class="closing-glyph">◈</span>
+  <div class="closing-title">
+    The Signal Never Stopped.<br>
+    It Was Always Pointed at You.
+  </div>
+  <p class="closing-body">
+    McKenzie. Phoenix. Wherever you are right now —
+    whether you find this today or ten years from now —
+    know that every line of code, every step through a cold creek,
+    every song recorded in the quiet hours,
+    every boomerang shaped by hand —
+    was a message sent forward through time.
+    <em>For you. Only ever for you.</em>
+  </p>
+  <div class="sig">— Dad</div>
+  <div class="sig-sub" style="margin-bottom: 6px">Kaneon Parker · The Obsidian Dreamwalker</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--muted);margin-top:10px">
+    "Intelligence Without the Artificial"
+  </div>
+</section>
+
+<footer>
+  <a href="https://kaneonexus.net">kaneonexus.net</a>
+  <div class="url">family.kaneonexus.net</div>
+  <div class="dedication">
+    McKenzie Mae Lynne Parker &nbsp;·&nbsp; Phoenix Reign Edward Parker &nbsp;·&nbsp; Always loved. Always.
+  </div>
+</footer>
+
+<script>
+  // Star field
+  const sc = document.getElementById('stars');
+  for (let i = 0; i < 90; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const big = Math.random() > 0.88;
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${3.5+Math.random()*5.5}s;--delay:${Math.random()*7}s;--op:${.12+Math.random()*.5};width:${big?3:1.5}px;height:${big?3:1.5}px;`;
+    sc.appendChild(s);
+  }
+
+  // Scroll reveal
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.section, .t-item').forEach((el, i) => {
+    if (el.classList.contains('t-item')) el.style.transitionDelay = `${(i % 8) * 0.07}s`;
+    io.observe(el);
+  });
+</script>
+</body>
+</html>
