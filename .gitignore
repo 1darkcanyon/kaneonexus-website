@@ -16,3 +16,8 @@ deploy-config.txt
 *.key
 ParticleFlowGL/
 kaneonexus-website/
+
+# Local Netlify folder
+.netlify
+.vercel
+.env*.local

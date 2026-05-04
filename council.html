@@ -1071,7 +1071,7 @@ async function sendMessage() {
   document.getElementById('status-text').textContent = 'PROCESSING';
 
   try {
-    const response = await fetch('/.netlify/functions/nexus-chat', {
+    const response = await fetch('/api/nexus-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

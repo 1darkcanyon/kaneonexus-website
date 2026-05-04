@@ -436,7 +436,7 @@ async function sendGriefMessage() {
   typing.textContent = '— companion is present with you —';
 
   try {
-    const res = await fetch('/.netlify/functions/nexus-chat', {
+    const res = await fetch('/api/nexus-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: GRIEF_SYSTEM, messages: griefHistory })
