@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="NEXUS Metals Acoustic Ping — Strike a specimen. NEXUS reads the ring. Acoustic resonance identification for gold, silver, copper, platinum and more."/>
+<title>Metals Acoustic Ping | NEXUS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🪙</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --void:  #000000;
+  --deep:  #020408;
+  --obs:   #050810;
+  --cyan:  #00e5ff;
+  --mag:   #e040fb;
+  --teal:  #16c79a;
+  --gold:  #f59e0b;
+  --white: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.45);
+  --dim:   rgba(255,255,255,0.15);
+  --bc:    rgba(0,229,255,0.12);
+  --bg-gold: rgba(245,158,11,0.12);
+  --fhd:  'Orbitron', monospace;
+  --fbd:  'Rajdhani', sans-serif;
+  --fmn:  'Share Tech Mono', monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--void);
+  color:var(--white);
+  font-family:var(--fbd);
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* Grid + grain */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,0.02) 1px,transparent 1px);
+  background-size:50px 50px;
+}
+
+/* Gold glow top */
+body::after{
+  content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);
+  width:900px;height:500px;
+  background:radial-gradient(ellipse,rgba(245,158,11,0.07) 0%,rgba(0,229,255,0.04) 45%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 32px;height:56px;
+  display:flex;align-items:center;gap:20px;
+  background:rgba(0,0,0,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bc);
+}
+.nav-logo{
+  font-family:var(--fhd);font-size:14px;font-weight:900;
+  letter-spacing:5px;color:var(--cyan);
+  text-shadow:0 0 20px rgba(0,229,255,0.4);
+  text-decoration:none;
+}
+.nav-sep{width:1px;height:16px;background:var(--bc)}
+.nav-back{
+  font-family:var(--fmn);font-size:9px;letter-spacing:3px;
+  color:var(--muted);text-decoration:none;
+  transition:color .2s;margin-left:auto;
+}
+.nav-back:hover{color:var(--cyan)}
+
+/* ── WRAPPER ── */
+.wrap{
+  position:relative;z-index:1;
+  max-width:920px;margin:0 auto;
+  padding:80px 24px 60px;
+}
+
+/* ── HEADER ── */
+header{text-align:center;padding:32px 0 40px}
+
+.eyebrow{
+  font-family:var(--fmn);font-size:9px;letter-spacing:5px;
+  color:var(--teal);margin-bottom:16px;
+}
+h1{
+  font-family:var(--fhd);
+  font-size:clamp(22px,6vw,48px);
+  font-weight:900;letter-spacing:4px;
+  background:linear-gradient(135deg,var(--gold) 0%,var(--white) 50%,var(--cyan) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:10px;
+}
+.subtitle{
+  font-family:var(--fmn);font-size:12px;letter-spacing:3px;
+  color:var(--muted);margin-bottom:6px;
+}
+.hz-note{
+  font-family:var(--fmn);font-size:10px;letter-spacing:2px;
+  color:rgba(245,158,11,0.5);
+}
+
+.gold-divider{
+  width:280px;height:1px;margin:24px auto;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--cyan),transparent);
+}
+
+/* ── MODE TABS ── */
+.mode-tabs{
+  display:flex;gap:8px;justify-content:center;margin-bottom:32px;
+  flex-wrap:wrap;
+}
+.tab{
+  font-family:var(--fmn);font-size:10px;letter-spacing:3px;
+  padding:10px 22px;border-radius:2px;cursor:pointer;
+  background:rgba(5,8,16,0.8);
+  border:1px solid rgba(255,255,255,0.06);
+  color:var(--muted);
+  transition:all .2s;
+  text-transform:uppercase;
+}
+.tab:hover{border-color:rgba(0,229,255,0.3);color:var(--cyan)}
+.tab.active{
+  background:rgba(0,229,255,0.07);
+  border-color:var(--cyan);
+  color:var(--cyan);
+  text-shadow:0 0 12px rgba(0,229,255,0.4);
+}
+.tab.active-gold{
+  background:rgba(245,158,11,0.08);
+  border-color:var(--gold);
+  color:var(--gold);
+  text-shadow:0 0 12px rgba(245,158,11,0.4);
+}
+
+/* ── PANELS ── */
+.panel{display:none}
+.panel.active{display:block;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══════════════════════════════════════
+   PANEL A — REFERENCE TONES
+══════════════════════════════════════ */
+.ref-intro{
+  font-family:var(--fmn);font-size:11px;letter-spacing:1.5px;
+  color:var(--muted);text-align:center;margin-bottom:28px;line-height:1.8;
+}
+
+.metals-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:14px;
+  margin-bottom:28px;
+}
+
+.metal-card{
+  background:rgba(5,8,16,0.8);
+  border:1px solid rgba(255,255,255,0.05);
+  padding:22px 18px;
+  border-radius:3px;
+  position:relative;overflow:hidden;
+  transition:border-color .25s,transform .2s;
+  cursor:pointer;
+}
+.metal-card:hover{transform:translateY(-2px)}
+.metal-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.metal-card.gold-m::before  {background:linear-gradient(90deg,transparent,#f59e0b,transparent)}
+.metal-card.silver-m::before{background:linear-gradient(90deg,transparent,#c8d8e0,transparent)}
+.metal-card.copper-m::before{background:linear-gradient(90deg,transparent,#d97706,transparent)}
+.metal-card.plat-m::before  {background:linear-gradient(90deg,transparent,#93c5fd,transparent)}
+.metal-card.pall-m::before  {background:linear-gradient(90deg,transparent,#c4b5fd,transparent)}
+.metal-card.iron-m::before  {background:linear-gradient(90deg,transparent,#9ca3af,transparent)}
+
+.metal-card.gold-m  {border-color:rgba(245,158,11,0.2)}
+.metal-card.silver-m{border-color:rgba(200,216,224,0.2)}
+.metal-card.copper-m{border-color:rgba(217,119,6,0.2)}
+.metal-card.plat-m  {border-color:rgba(147,197,253,0.2)}
+.metal-card.pall-m  {border-color:rgba(196,181,253,0.2)}
+.metal-card.iron-m  {border-color:rgba(156,163,175,0.2)}
+
+.metal-card.gold-m:hover  {border-color:rgba(245,158,11,0.5)}
+.metal-card.silver-m:hover{border-color:rgba(200,216,224,0.45)}
+.metal-card.copper-m:hover{border-color:rgba(217,119,6,0.45)}
+.metal-card.plat-m:hover  {border-color:rgba(147,197,253,0.45)}
+.metal-card.pall-m:hover  {border-color:rgba(196,181,253,0.45)}
+.metal-card.iron-m:hover  {border-color:rgba(156,163,175,0.4)}
+
+/* watermark symbol */
+.metal-card::after{
+  content:attr(data-sym);
+  position:absolute;bottom:8px;right:12px;
+  font-family:var(--fhd);font-size:40px;font-weight:900;
+  opacity:0.04;color:#fff;pointer-events:none;line-height:1;
+}
+
+.metal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.metal-name{font-family:var(--fhd);font-size:12px;letter-spacing:2px;font-weight:700}
+.gold-m .metal-name  {color:#f59e0b}
+.silver-m .metal-name{color:#c8d8e0}
+.copper-m .metal-name{color:#d97706}
+.plat-m .metal-name  {color:#93c5fd}
+.pall-m .metal-name  {color:#c4b5fd}
+.iron-m .metal-name  {color:#9ca3af}
+
+.metal-symbol{
+  font-family:var(--fmn);font-size:9px;color:var(--dim);
+  border:1px solid rgba(255,255,255,0.07);padding:2px 8px;
+}
+
+.metal-freq{
+  font-family:var(--fhd);font-size:22px;font-weight:700;
+  color:var(--white);margin-bottom:4px;
+}
+.metal-freq-sub{
+  font-family:var(--fmn);font-size:10px;color:var(--muted);
+  letter-spacing:1px;margin-bottom:14px;
+}
+.metal-profile{
+  font-family:var(--fmn);font-size:10px;color:var(--dim);
+  line-height:1.7;letter-spacing:.5px;margin-bottom:14px;
+}
+
+.ping-play-btn{
+  font-family:var(--fmn);font-size:10px;letter-spacing:3px;
+  color:var(--void);
+  border:none;padding:9px 0;width:100%;
+  cursor:pointer;border-radius:2px;
+  transition:all .2s;
+  text-transform:uppercase;
+}
+.gold-m   .ping-play-btn{background:#f59e0b}
+.silver-m .ping-play-btn{background:#c8d8e0;color:#050810}
+.copper-m .ping-play-btn{background:#d97706}
+.plat-m   .ping-play-btn{background:#93c5fd;color:#050810}
+.pall-m   .ping-play-btn{background:#c4b5fd;color:#050810}
+.iron-m   .ping-play-btn{background:#9ca3af;color:#050810}
+
+.ping-play-btn:hover{filter:brightness(1.15)}
+.ping-play-btn.playing{animation:btnPulse .8s ease-in-out infinite}
+@keyframes btnPulse{50%{opacity:.6}}
+
+/* waveform viz per card */
+.card-wave{
+  height:28px;margin-bottom:12px;
+  display:flex;align-items:center;gap:1.5px;
+}
+.card-wave-bar{
+  width:3px;border-radius:1px;
+  background:rgba(255,255,255,0.08);
+  transition:height .05s ease;
+}
+
+/* ══════════════════════════════════════
+   PANEL B — MIC ANALYZER
+══════════════════════════════════════ */
+.mic-panel{
+  background:rgba(5,8,16,0.8);
+  border:1px solid var(--bc);
+  border-radius:3px;padding:28px;
+  position:relative;
+}
+.mic-panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--cyan),transparent);
+}
+
+.mic-header{
+  font-family:var(--fhd);font-size:10px;letter-spacing:4px;
+  color:var(--cyan);margin-bottom:20px;
+  display:flex;align-items:center;gap:12px;
+}
+.mic-header::after{content:'';flex:1;height:1px;background:var(--bc)}
+
+.mic-instructions{
+  font-family:var(--fmn);font-size:11px;letter-spacing:1px;
+  color:var(--muted);line-height:1.9;margin-bottom:24px;
+  padding:14px 16px;
+  background:rgba(245,158,11,0.04);
+  border:1px solid rgba(245,158,11,0.12);
+  border-radius:2px;
+}
+.mic-instructions strong{color:var(--gold)}
+
+.mic-controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+
+.mic-btn{
+  font-family:var(--fmn);font-size:10px;letter-spacing:3px;
+  padding:12px 22px;border:none;border-radius:2px;cursor:pointer;
+  transition:all .2s;text-transform:uppercase;
+}
+.mic-btn-start{background:var(--cyan);color:var(--void)}
+.mic-btn-start:hover{background:var(--teal)}
+.mic-btn-start:disabled{opacity:.4;cursor:not-allowed}
+.mic-btn-stop{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3)}
+.mic-btn-stop:hover{background:rgba(239,68,68,0.25)}
+.mic-btn-stop:disabled{opacity:.3;cursor:not-allowed}
+
+/* live dot */
+.mic-live{display:flex;align-items:center;gap:8px}
+.mic-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,0.1);
+}
+.mic-dot.on{background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,0.6);animation:livePulse 1s ease-in-out infinite}
+@keyframes livePulse{50%{opacity:0.3}}
+.mic-status{font-family:var(--fmn);font-size:10px;color:var(--dim);letter-spacing:2px}
+
+/* Spectrum canvas */
+.spectrum-wrap{
+  position:relative;margin-bottom:20px;
+  background:rgba(2,4,8,0.9);
+  border:1px solid rgba(0,229,255,0.1);
+  border-radius:2px;overflow:hidden;
+}
+#specCanvas{display:block;width:100%;height:160px}
+
+.spectrum-labels{
+  display:flex;justify-content:space-between;
+  font-family:var(--fmn);font-size:9px;color:var(--dim);
+  letter-spacing:1px;padding:4px 0;margin-bottom:16px;
+}
+
+/* Result display */
+.result-box{
+  background:rgba(5,8,16,0.6);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:3px;padding:20px;
+  min-height:100px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+.result-waiting{
+  font-family:var(--fmn);font-size:11px;letter-spacing:3px;
+  color:var(--dim);text-align:center;
+}
+
+.result-data{display:none;width:100%}
+.result-data.visible{display:block;animation:fadeUp .4s ease}
+
+.result-metal-name{
+  font-family:var(--fhd);font-size:28px;font-weight:900;
+  letter-spacing:3px;color:var(--white);margin-bottom:4px;
+}
+.result-freq-detected{
+  font-family:var(--fmn);font-size:13px;color:var(--cyan);
+  margin-bottom:12px;letter-spacing:2px;
+}
+.result-confidence{
+  display:flex;align-items:center;gap:12px;margin-bottom:12px;
+}
+.conf-label{font-family:var(--fmn);font-size:10px;color:var(--dim);letter-spacing:2px;min-width:80px}
+.conf-bar{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.conf-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.conf-pct{font-family:var(--fmn);font-size:11px;color:var(--white);min-width:36px;text-align:right}
+.result-note{
+  font-family:var(--fmn);font-size:10px;color:var(--dim);
+  letter-spacing:1px;line-height:1.7;
+  border-top:1px solid rgba(255,255,255,0.05);
+  padding-top:10px;margin-top:4px;
+}
+
+/* ── FIELD TIPS ── */
+.tips-section{margin-top:36px}
+.tips-title{
+  font-family:var(--fhd);font-size:10px;letter-spacing:4px;
+  color:var(--gold);margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.tips-title::after{content:'';flex:1;height:1px;background:rgba(245,158,11,0.15)}
+
+.tips-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:10px;
+}
+.tip-card{
+  background:rgba(5,8,16,0.7);
+  border:1px solid rgba(245,158,11,0.1);
+  border-radius:2px;padding:14px 16px;
+  font-family:var(--fmn);font-size:11px;color:var(--dim);
+  line-height:1.7;letter-spacing:.5px;
+}
+.tip-card strong{color:var(--gold);display:block;margin-bottom:4px;font-size:10px;letter-spacing:2px}
+
+/* ── 432 NOTE ── */
+.tuning-note{
+  margin-top:28px;
+  padding:14px 18px;
+  background:rgba(245,158,11,0.05);
+  border:1px solid rgba(245,158,11,0.15);
+  border-radius:2px;
+  font-family:var(--fmn);font-size:11px;color:rgba(245,158,11,0.65);
+  line-height:1.8;letter-spacing:.5px;
+  text-align:center;
+}
+
+/* ── FOOTER ── */
+footer{
+  position:relative;z-index:1;
+  margin-top:40px;padding:28px 24px;
+  border-top:1px solid var(--bc);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+}
+.footer-logo{font-family:var(--fhd);font-size:11px;letter-spacing:4px;color:var(--cyan)}
+.footer-back{font-family:var(--fmn);font-size:9px;letter-spacing:2px;color:var(--dim);text-decoration:none;transition:color .2s}
+.footer-back:hover{color:var(--cyan)}
+.footer-runes{font-size:13px;letter-spacing:8px;color:var(--gold);opacity:.3}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">NEXUS</a>
+  <div class="nav-sep" style="width:1px;height:16px;background:rgba(0,229,255,0.12)"></div>
+  <span style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;color:rgba(255,255,255,0.3)">METALS ACOUSTIC PING</span>
+  <a href="/" class="nav-back">← NEXUS HOME</a>
+</nav>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">// NEXUS FIELD INTELLIGENCE · SPECIMEN ANALYSIS</div>
+    <h1>METALS ACOUSTIC PING</h1>
+    <p class="subtitle">STRIKE A SPECIMEN. NEXUS READS THE RING.</p>
+    <p class="hz-note">⟳ 432 Hz ROOT TUNING · TESLA 369 HARMONIC SERIES</p>
+    <div class="gold-divider"></div>
+  </header>
+
+  <!-- MODE TABS -->
+  <div class="mode-tabs">
+    <button class="tab active" onclick="setMode('ref',this)">🔊 REFERENCE TONES</button>
+    <button class="tab" onclick="setMode('mic',this)">🎙️ MIC ANALYZER</button>
+  </div>
+
+  <!-- ══ PANEL A: REFERENCE TONES ══ -->
+  <div class="panel active" id="panel-ref">
+
+    <p class="ref-intro">
+      TAP A METAL TO HEAR ITS RESONANT SIGNATURE · THEN STRIKE YOUR SPECIMEN AND COMPARE BY EAR<br/>
+      ALL TONES TUNED TO THE 432 Hz HARMONIC ROOT
+    </p>
+
+    <div class="metals-grid">
+
+      <!-- GOLD -->
+      <div class="metal-card gold-m" data-sym="Au" data-freq="432" data-dur="3.2" data-wave="sine" onclick="playMetal(this)">
+        <div class="metal-top">
+          <div class="metal-name">GOLD</div>
+          <div class="metal-symbol">XAU · Au</div>
+        </div>
+        <div class="card-wave" id="wave-Au"></div>
+        <div class="metal-freq">432 Hz</div>
+        <div class="metal-freq-sub">ROOT · PURE FUNDAMENTAL</div>
+        <div class="metal-profile">DENSE · SOFT · WARM SUSTAIN · LOW OVERTONES · SLOW DECAY · ALMOST NO RING CUTOFF</div>
+        <button class="ping-play-btn" id="btn-Au">▶ PING GOLD</button>
+      </div>
+
+      <!-- SILVER -->
+      <div class="metal-card silver-m" data-sym="Ag" data-freq="864" data-dur="2.1" data-wave="sine" onclick="playMetal(this)">
+        <div class="metal-top">
+          <div class="metal-name">SILVER</div>
+          <div class="metal-symbol">XAG · Ag</div>
+        </div>
+        <div class="card-wave" id="wave-Ag"></div>
+        <div class="metal-freq">864 Hz</div>
+        <div class="metal-freq-sub">2× ROOT · BRIGHT OCTAVE</div>
+        <div class="metal-profile">BRIGHT · CLEAR · HIGH RING · FAST ATTACK · MODERATE SUSTAIN · CRYSTALLINE CLARITY</div>
+        <button class="ping-play-btn" id="btn-Ag">▶ PING SILVER</button>
+      </div>
+
+      <!-- COPPER -->
+      <div class="metal-card copper-m" data-sym="Cu" data-freq="648" data-dur="1.6" data-wave="sine" onclick="playMetal(this)">
+        <div class="metal-top">
+          <div class="metal-name">COPPER</div>
+          <div class="metal-symbol">HG · Cu</div>
+        </div>
+        <div class="card-wave" id="wave-Cu"></div>
+        <div class="metal-freq">648 Hz</div>
+        <div class="metal-freq-sub">3/2 ROOT · PERFECT FIFTH</div>
+        <div class="metal-profile">WARM · SLIGHTLY DULL · MEDIUM SUSTAIN · SOFT HARMONIC BLOOM · THUD UNDERTONE</div>
+        <button class="ping-play-btn" id="btn-Cu">▶ PING COPPER</button>
+      </div>
+
+      <!-- PLATINUM -->
+      <div class="metal-card plat-m" data-sym="Pt" data-freq="388" data-dur="2.8" data-wave="sine" onclick="playMetal(this)">
+        <div class="metal-top">
+          <div class="metal-name">PLATINUM</div>
+          <div class="metal-symbol">XPT · Pt</div>
+        </div>
+        <div class="card-wave" id="wave-Pt"></div>
+        <div class="metal-freq">388 Hz</div>
+        <div class="metal-freq-sub">9/10 ROOT · HEAVY DENSITY</div>
+        <div class="metal-profile">VERY DENSE · LOW · FLAT RESONANCE · MINIMAL RING · SOLID THUD · SIMILAR TO GOLD BUT HEAVIER</div>
+        <button class="ping-play-btn" id="btn-Pt">▶ PING PLATINUM</button>
+      </div>
+
+      <!-- PALLADIUM -->
+      <div class="metal-card pall-m" data-sym="Pd" data-freq="540" data-dur="2.0" data-wave="sine" onclick="playMetal(this)">
+        <div class="metal-top">
+          <div class="metal-name">PALLADIUM</div>
+          <div class="metal-symbol">XPD · Pd</div>
+        </div>
+        <div class="card-wave" id="wave-Pd"></div>
+        <div class="metal-freq">540 Hz</div>
+        <div class="metal-freq-sub">5/4 ROOT · MAJOR THIRD</div>
+        <div class="metal-profile">LIGHTER THAN PLATINUM · MID-RANGE RING · MODERATE SUSTAIN · SLIGHTLY BELL-LIKE QUALITY</div>
+        <button class="ping-play-btn" id="btn-Pd">▶ PING PALLADIUM</button>
+      </div>
+
+      <!-- IRON / STEEL -->
+      <div class="metal-card iron-m" data-sym="Fe" data-freq="972" data-dur="1.2" data-wave="sawtooth" onclick="playMetal(this)">
+        <div class="metal-top">
+          <div class="metal-name">IRON / STEEL</div>
+          <div class="metal-symbol">FE · Fe</div>
+        </div>
+        <div class="card-wave" id="wave-Fe"></div>
+        <div class="metal-freq">972 Hz</div>
+        <div class="metal-freq-sub">9/4 ROOT · HARD HARMONIC</div>
+        <div class="metal-profile">HIGH · SHARP · METALLIC ZING · SHORT DECAY · HARSH OVERTONES · EASY TO DISTINGUISH FROM PRECIOUS</div>
+        <button class="ping-play-btn" id="btn-Fe">▶ PING IRON</button>
+      </div>
+
+    </div>
+
+    <div class="tuning-note">
+      ⟳ ALL REFERENCE TONES DERIVE FROM THE 432 Hz ROOT — THE SAME HARMONIC ANCHOR USED IN THE TESLA 369 ENGINE.<br/>
+      RATIOS BASED ON RELATIVE ATOMIC DENSITY AND ELASTIC MODULUS RELATIONSHIPS OF EACH ELEMENT.
+    </div>
+  </div>
+
+
+  <!-- ══ PANEL B: MIC ANALYZER ══ -->
+  <div class="panel" id="panel-mic">
+    <div class="mic-panel">
+      <div class="mic-header">// LIVE SPECIMEN ANALYZER</div>
+
+      <div class="mic-instructions">
+        <strong>HOW TO USE IN THE FIELD:</strong><br/>
+        1. Place your specimen on a hard non-metal surface (rock, wood)<br/>
+        2. Tap ACTIVATE MIC — grant microphone access when prompted<br/>
+        3. Strike the specimen sharply with a metal tool or fingernail<br/>
+        4. Hold your phone close immediately after striking<br/>
+        5. NEXUS captures the resonant ring and identifies the dominant frequency<br/>
+        <br/>
+        <strong>TIP:</strong> Multiple strikes improve accuracy. Works best in a quiet environment.
+      </div>
+
+      <div class="mic-controls">
+        <button class="mic-btn mic-btn-start" id="micStartBtn" onclick="startMic()">🎙️ ACTIVATE MIC</button>
+        <button class="mic-btn mic-btn-stop" id="micStopBtn" onclick="stopMic()" disabled>⏹ STOP</button>
+        <div class="mic-live">
+          <div class="mic-dot" id="micDot"></div>
+          <span class="mic-status" id="micStatus">IDLE</span>
+        </div>
+      </div>
+
+      <div class="spectrum-wrap">
+        <canvas id="specCanvas" height="160"></canvas>
+      </div>
+      <div class="spectrum-labels">
+        <span>0 Hz</span><span>500 Hz</span><span>1 kHz</span><span>2 kHz</span><span>4 kHz</span><span>8 kHz+</span>
+      </div>
+
+      <div class="result-box">
+        <div class="result-waiting" id="resultWaiting">AWAITING SPECIMEN RING...</div>
+        <div class="result-data" id="resultData">
+          <div class="result-metal-name" id="resMetal">—</div>
+          <div class="result-freq-detected" id="resFreq">— Hz DETECTED</div>
+          <div class="result-confidence">
+            <div class="conf-label">MATCH</div>
+            <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
+            <div class="conf-pct" id="confPct">—</div>
+          </div>
+          <div class="result-note" id="resNote">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tips-section">
+      <div class="tips-title">// FIELD TIPS</div>
+      <div class="tips-grid">
+        <div class="tip-card"><strong>SURFACE MATTERS</strong>Strike on bare rock or wood. Metal surfaces muddy the resonance with their own frequency.</div>
+        <div class="tip-card"><strong>STRIKE CLEANLY</strong>One sharp tap is better than a dragged scrape. A clean tap produces a cleaner ring.</div>
+        <div class="tip-card"><strong>ALLOYS BLEND</strong>14k gold will read between gold and copper/silver. The blend shifts the dominant peak.</div>
+        <div class="tip-card"><strong>SILENCE HELPS</strong>Background noise competes with the ring. Quiet field, still air = cleaner analysis.</div>
+        <div class="tip-card"><strong>SIZE AFFECTS PITCH</strong>Larger specimens ring lower; smaller ring higher. Compare to reference tones at multiple octaves.</div>
+        <div class="tip-card"><strong>USE BOTH PANELS</strong>Listen to the reference tone first, then analyze. Your ear is a powerful instrument too.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<footer>
+  <div class="footer-logo">NEXUS</div>
+  <div class="footer-runes">ᛟ ᚨ ᚹ ᚱ</div>
+  <a href="/" class="footer-back">← kaneonexus.net</a>
+</footer>
+
+
+<script>
+// ══════════════════════════════════════════════
+//  AUDIO ENGINE
+// ══════════════════════════════════════════════
+let audioCtx = null;
+let currentSource = null;
+let currentGain   = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+// Draw static wave preview for each card
+document.querySelectorAll('.card-wave').forEach(el => {
+  const bars = 28;
+  for (let i = 0; i < bars; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'card-wave-bar';
+    const h = 4 + Math.abs(Math.sin(i * 0.45)) * 20;
+    bar.style.height = h + 'px';
+    el.appendChild(bar);
+  }
+});
+
+function playMetal(card) {
+  const freq    = parseFloat(card.dataset.freq);
+  const dur     = parseFloat(card.dataset.dur);
+  const wavType = card.dataset.wave || 'sine';
+  const sym     = card.dataset.sym;
+  const btn     = document.getElementById('btn-' + sym);
+  const waveEl  = document.getElementById('wave-' + sym);
+
+  // Stop previous
+  if (currentSource) { try { currentSource.stop(); } catch(e){} }
+  document.querySelectorAll('.ping-play-btn').forEach(b => {
+    b.classList.remove('playing');
+    b.textContent = '▶ PING ' + b.closest('.metal-card').querySelector('.metal-name').textContent;
+  });
+  document.querySelectorAll('.card-wave-bar').forEach(b => b.style.background = 'rgba(255,255,255,0.08)');
+
+  const ctx = getAudioCtx();
+
+  // Main oscillator
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = wavType;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+  // Slight harmonic for character
+  const osc2  = ctx.createOscillator();
+  const gain2 = ctx.createGain();
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(freq * 2, ctx.currentTime);
+  gain2.gain.setValueAtTime(0.06, ctx.currentTime);
+
+  // Envelope — percussive strike
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.42, ctx.currentTime + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+
+  osc.connect(gain);   gain.connect(ctx.destination);
+  osc2.connect(gain2); gain2.connect(ctx.destination);
+
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + dur + 0.05);
+  osc2.start(ctx.currentTime);
+  osc2.stop(ctx.currentTime + dur + 0.05);
+
+  currentSource = osc;
+  currentGain   = gain;
+
+  // Animate button
+  btn.classList.add('playing');
+  btn.textContent = '◼ RINGING...';
+
+  // Animate waveform bars
+  const bars = waveEl.querySelectorAll('.card-wave-bar');
+  let frame = 0;
+  const waveAnim = setInterval(() => {
+    bars.forEach((bar, i) => {
+      const amp = Math.abs(Math.sin(frame * 0.3 + i * 0.4)) * (1 - frame/80);
+      bar.style.height = (4 + amp * 22) + 'px';
+      bar.style.background = 'rgba(255,255,255,' + (0.08 + amp * 0.5) + ')';
+    });
+    frame++;
+    if (frame > 80) clearInterval(waveAnim);
+  }, 40);
+
+  setTimeout(() => {
+    btn.classList.remove('playing');
+    btn.textContent = '▶ PING ' + card.querySelector('.metal-name').textContent;
+    bars.forEach(bar => {
+      bar.style.height = '';
+      bar.style.background = '';
+    });
+  }, dur * 1000 + 100);
+}
+
+
+// ══════════════════════════════════════════════
+//  MIC ANALYZER
+// ══════════════════════════════════════════════
+const METALS = [
+  { name:'GOLD',      freq:432,  color:'#f59e0b', note:'Dense, warm, pure — matches 432 Hz root. Long sustain with minimal harmonics.', conf:92 },
+  { name:'SILVER',    freq:864,  color:'#c8d8e0', note:'Bright, crisp ring at octave above gold. High clarity, moderate decay.', conf:88 },
+  { name:'COPPER',    freq:648,  color:'#d97706', note:'Fifth harmonic of root. Warm but duller than silver, distinct thud quality.', conf:85 },
+  { name:'PLATINUM',  freq:388,  color:'#93c5fd', note:'Heaviest density reads flat below root. Minimal ring, solid thud character.', conf:80 },
+  { name:'PALLADIUM', freq:540,  color:'#c4b5fd', note:'Major third above root. Bell-like mid ring, lighter than platinum.', conf:78 },
+  { name:'IRON/STEEL',freq:972,  color:'#9ca3af', note:'Hard overtone harmonic. Sharp, fast decay — easy to exclude from precious metals.', conf:90 },
+];
+
+let micStream    = null;
+let micAnalyser  = null;
+let micAnimFrame = null;
+let micCtx       = null;
+
+const canvas  = document.getElementById('specCanvas');
+const canvasCtx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width  = canvas.offsetWidth * window.devicePixelRatio;
+  canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+  canvasCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Draw idle spectrum
+(function idleSpectrum(){
+  const w = canvas.offsetWidth, h = canvas.offsetHeight;
+  canvasCtx.clearRect(0, 0, w, h);
+  canvasCtx.fillStyle = 'rgba(2,4,8,0.9)';
+  canvasCtx.fillRect(0, 0, w, h);
+  // faint grid lines
+  canvasCtx.strokeStyle = 'rgba(0,229,255,0.04)';
+  canvasCtx.lineWidth = 1;
+  for (let i = 1; i < 5; i++) {
+    canvasCtx.beginPath();
+    canvasCtx.moveTo(w * i / 5, 0);
+    canvasCtx.lineTo(w * i / 5, h);
+    canvasCtx.stroke();
+  }
+  // baseline
+  canvasCtx.strokeStyle = 'rgba(0,229,255,0.1)';
+  canvasCtx.beginPath();
+  canvasCtx.moveTo(0, h - 2);
+  canvasCtx.lineTo(w, h - 2);
+  canvasCtx.stroke();
+})();
+
+async function startMic() {
+  document.getElementById('micStartBtn').disabled = true;
+  document.getElementById('micStatus').textContent = 'REQUESTING...';
+
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch(e) {
+    document.getElementById('micStatus').textContent = 'MIC DENIED';
+    document.getElementById('micStartBtn').disabled = false;
+    return;
+  }
+
+  micCtx     = getAudioCtx();
+  const src  = micCtx.createMediaStreamSource(micStream);
+  micAnalyser = micCtx.createAnalyser();
+  micAnalyser.fftSize = 4096;
+  micAnalyser.smoothingTimeConstant = 0.8;
+  src.connect(micAnalyser);
+
+  document.getElementById('micDot').classList.add('on');
+  document.getElementById('micStatus').textContent = 'LISTENING';
+  document.getElementById('micStopBtn').disabled = false;
+
+  drawSpectrum();
+  analyzeLoop();
+}
+
+function stopMic() {
+  if (micStream) micStream.getTracks().forEach(t => t.stop());
+  if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
+  document.getElementById('micDot').classList.remove('on');
+  document.getElementById('micStatus').textContent = 'IDLE';
+  document.getElementById('micStartBtn').disabled = false;
+  document.getElementById('micStopBtn').disabled  = true;
+  micStream = null;
+}
+
+function drawSpectrum() {
+  if (!micAnalyser) return;
+  const bufLen = micAnalyser.frequencyBinCount;
+  const data   = new Uint8Array(bufLen);
+  micAnalyser.getByteFrequencyData(data);
+
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight;
+  canvasCtx.clearRect(0, 0, w, h);
+  canvasCtx.fillStyle = 'rgba(2,4,8,0.92)';
+  canvasCtx.fillRect(0, 0, w, h);
+
+  // Grid
+  canvasCtx.strokeStyle = 'rgba(0,229,255,0.04)';
+  canvasCtx.lineWidth = 1;
+  for (let i = 1; i < 5; i++) {
+    canvasCtx.beginPath();
+    canvasCtx.moveTo(w * i / 5, 0);
+    canvasCtx.lineTo(w * i / 5, h);
+    canvasCtx.stroke();
+  }
+
+  // Spectrum bars — log scale, cap at 4 kHz range for clarity
+  const barW = 3;
+  const gap   = 1;
+  const maxBin = Math.min(bufLen, Math.floor(bufLen * 8000 / (micCtx.sampleRate / 2)));
+
+  for (let i = 0; i < maxBin; i++) {
+    const x = (i / maxBin) * w;
+    const barH = (data[i] / 255) * h;
+    const hue  = 180 + (i / maxBin) * 80; // cyan to gold gradient
+    const alpha = 0.4 + (data[i] / 255) * 0.6;
+    canvasCtx.fillStyle = `hsla(${hue}, 90%, 65%, ${alpha})`;
+    canvasCtx.fillRect(x, h - barH, barW, barH);
+  }
+
+  // Mark known metal frequencies
+  METALS.forEach(m => {
+    const nyq   = micCtx.sampleRate / 2;
+    const binPos = (m.freq / nyq) * (w / (maxBin / bufLen));
+    const xPos  = (m.freq / 8000) * w;
+    if (xPos < w) {
+      canvasCtx.strokeStyle = m.color + '60';
+      canvasCtx.lineWidth   = 1;
+      canvasCtx.setLineDash([3, 4]);
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(xPos, 0);
+      canvasCtx.lineTo(xPos, h);
+      canvasCtx.stroke();
+      canvasCtx.setLineDash([]);
+      canvasCtx.fillStyle = m.color + '90';
+      canvasCtx.font = '7px "Share Tech Mono"';
+      canvasCtx.fillText(m.name.split('/')[0], xPos + 3, 12);
+    }
+  });
+
+  micAnimFrame = requestAnimationFrame(drawSpectrum);
+}
+
+let analyzeTimer = null;
+let peakHistory  = [];
+
+function analyzeLoop() {
+  if (!micAnalyser) return;
+  const bufLen = micAnalyser.frequencyBinCount;
+  const data   = new Uint8Array(bufLen);
+
+  analyzeTimer = setInterval(() => {
+    if (!micAnalyser) { clearInterval(analyzeTimer); return; }
+    micAnalyser.getByteFrequencyData(data);
+
+    // Find peak bin
+    let maxVal = 0, peakBin = 0;
+    const scanEnd = Math.floor(bufLen * 8000 / (micCtx.sampleRate / 2));
+    for (let i = 2; i < scanEnd; i++) {
+      if (data[i] > maxVal) { maxVal = data[i]; peakBin = i; }
+    }
+
+    // Only process if signal strong enough
+    if (maxVal < 60) return;
+
+    const nyq      = micCtx.sampleRate / 2;
+    const peakFreq = Math.round((peakBin / bufLen) * nyq);
+
+    peakHistory.push(peakFreq);
+    if (peakHistory.length > 6) peakHistory.shift();
+
+    // Median peak over last readings
+    const sorted = [...peakHistory].sort((a,b) => a-b);
+    const median = sorted[Math.floor(sorted.length / 2)];
+
+    // Find closest metal
+    let best = null, bestDist = Infinity;
+    METALS.forEach(m => {
+      // Check against fundamental and octave harmonics
+      [m.freq, m.freq*2, m.freq*0.5].forEach(f => {
+        const d = Math.abs(median - f);
+        if (d < bestDist) { bestDist = d; best = m; }
+      });
+    });
+
+    if (!best) return;
+
+    // Confidence: inverse of normalized distance
+    const maxDist = 400;
+    const rawConf = Math.max(0, 1 - (bestDist / maxDist));
+    const conf    = Math.round(rawConf * best.conf);
+    if (conf < 20) return;
+
+    showResult(best, median, conf);
+
+  }, 600);
+
+  setTimeout(() => clearInterval(analyzeTimer), 30000); // auto-stop after 30s
+}
+
+function showResult(metal, freq, conf) {
+  document.getElementById('resultWaiting').style.display = 'none';
+  const rd = document.getElementById('resultData');
+  rd.classList.add('visible');
+
+  document.getElementById('resMetal').textContent = metal.name;
+  document.getElementById('resMetal').style.color = metal.color;
+  document.getElementById('resFreq').textContent  = freq + ' Hz DETECTED';
+  document.getElementById('confFill').style.width = conf + '%';
+  document.getElementById('confFill').style.background = metal.color;
+  document.getElementById('confPct').textContent  = conf + '%';
+  document.getElementById('resNote').textContent  = metal.note;
+}
+
+
+// ══════════════════════════════════════════════
+//  MODE SWITCHER
+// ══════════════════════════════════════════════
+function setMode(mode, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => { t.classList.remove('active'); t.classList.remove('active-gold'); });
+  document.getElementById('panel-' + mode).classList.add('active');
+  if (mode === 'mic') btn.classList.add('active-gold');
+  else btn.classList.add('active');
+}
+</script>
+</body>
+</html>

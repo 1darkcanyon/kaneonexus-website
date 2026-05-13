@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Property Tax Intelligence | NEXUS</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --teal: #00c8b4;
+    --teal-dim: rgba(0,200,180,0.12);
+    --teal-glow: rgba(0,200,180,0.3);
+    --bg: #05080b;
+    --bg2: #080d11;
+    --bg3: #0c1218;
+    --border: rgba(0,200,180,0.2);
+    --text: #c8d8dc;
+    --text-dim: #5a7a80;
+    --warn: #ff6b35;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,180,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,180,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow top */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(0,200,180,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 0 32px;
+    text-align: center;
+  }
+
+  .nexus-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--teal);
+    background: var(--teal-dim);
+    border: 1px solid var(--border);
+    padding: 5px 16px;
+    margin-bottom: 20px;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(22px, 5vw, 38px);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 2px;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+
+  h1 span { color: var(--teal); }
+
+  .tagline {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+  }
+
+  .divider {
+    width: 240px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    margin-bottom: 32px;
+  }
+
+  /* ── QUICK LINKS ── */
+  .quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 36px;
+  }
+
+  .quick-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  }
+
+  .quick-btn:hover {
+    color: var(--teal);
+    border-color: var(--teal);
+    background: var(--teal-dim);
+  }
+
+  /* ── SEARCH BOX ── */
+  .search-panel {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .search-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+  }
+
+  .search-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--teal);
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  #searchInput {
+    flex: 1;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 13px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  #searchInput:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 1px var(--teal-glow);
+  }
+
+  #searchInput::placeholder { color: var(--text-dim); font-weight: 400; }
+
+  #searchBtn {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--bg);
+    background: var(--teal);
+    border: none;
+    padding: 13px 22px;
+    cursor: pointer;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  #searchBtn:hover { opacity: 0.88; }
+  #searchBtn:active { transform: scale(0.97); }
+  #searchBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── RESULT PANEL ── */
+  .result-panel {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 28px;
+    display: none;
+    animation: fadeIn 0.35s ease;
+    position: relative;
+  }
+
+  .result-panel.visible { display: block; }
+
+  .result-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+  }
+
+  .result-header {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--teal);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .result-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  #resultContent {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  #resultContent a {
+    color: var(--teal);
+    text-decoration: none;
+    border-bottom: 1px solid var(--teal-glow);
+    transition: border-color 0.2s;
+  }
+  #resultContent a:hover { border-color: var(--teal); }
+
+  /* ── LOADING ── */
+  .loading-bar {
+    width: 100%;
+    height: 2px;
+    background: var(--bg2);
+    overflow: hidden;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .loading-bar.active { display: block; }
+
+  .loading-bar::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: 40%;
+    background: var(--teal);
+    animation: scan 1.2s ease-in-out infinite;
+  }
+
+  @keyframes scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+  }
+
+  /* ── INFO CARDS ── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .info-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .info-card:hover { border-color: rgba(0,200,180,0.4); }
+
+  .info-card-icon {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .info-card-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+
+  .info-card-body {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* ── RESOURCE LINKS ── */
+  .resources {
+    margin-top: 28px;
+  }
+
+  .resource-section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--teal);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .resource-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .resource-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .resource-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+    clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  }
+
+  .resource-link:hover {
+    border-color: var(--teal);
+    color: var(--teal);
+    background: var(--teal-dim);
+  }
+
+  .resource-link .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--teal);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── DISCLAIMER ── */
+  .disclaimer {
+    margin-top: 36px;
+    padding: 14px 18px;
+    background: rgba(255,107,53,0.06);
+    border: 1px solid rgba(255,107,53,0.2);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,107,53,0.7);
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding-top: 36px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  footer a {
+    color: var(--teal);
+    text-decoration: none;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 560px) {
+    .input-row { flex-direction: column; }
+    #searchBtn { clip-path: none; }
+    .search-panel, .result-panel { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div class="nexus-badge">NEXUS INTELLIGENCE SOLUTIONS</div>
+    <h1>PROPERTY TAX<br><span>INTELLIGENCE</span></h1>
+    <p class="tagline">// locate · understand · appeal · resolve</p>
+    <div class="divider"></div>
+  </header>
+
+  <!-- QUICK PRESETS -->
+  <div class="quick-links">
+    <button class="quick-btn" onclick="preset('How do I appeal my property tax assessment?')">Appeal Assessment</button>
+    <button class="quick-btn" onclick="preset('Oregon property tax exemptions and relief programs')">OR Exemptions</button>
+    <button class="quick-btn" onclick="preset('How is property tax calculated?')">How It\'s Calculated</button>
+    <button class="quick-btn" onclick="preset('What is a homestead exemption?')">Homestead Exemption</button>
+    <button class="quick-btn" onclick="preset('Property tax deadlines and due dates by state')">Due Dates</button>
+    <button class="quick-btn" onclick="preset('Senior or veteran property tax exemptions')">Senior / Veteran Relief</button>
+  </div>
+
+  <!-- SEARCH PANEL -->
+  <div class="search-panel">
+    <span class="search-label">// QUERY INTERFACE</span>
+    <div class="input-row">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="e.g. Oregon Josephine County property tax rate, how to appeal, homestead exemption..."
+        onkeydown="if(event.key==='Enter') runSearch()"
+      />
+      <button id="searchBtn" onclick="runSearch()">QUERY ▶</button>
+    </div>
+  </div>
+
+  <!-- RESULT PANEL -->
+  <div class="result-panel" id="resultPanel">
+    <div class="result-header">NEXUS RESPONSE</div>
+    <div class="loading-bar" id="loadingBar"></div>
+    <div id="resultContent"></div>
+  </div>
+
+  <!-- INFO CARDS -->
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-card-icon">🏠</div>
+      <div class="info-card-title">ASSESSMENT</div>
+      <div class="info-card-body">Your property is assigned an assessed value by the county assessor, which forms the tax base.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">📋</div>
+      <div class="info-card-title">LEVY RATE</div>
+      <div class="info-card-body">Local governments set millage rates. Tax = Assessed Value × Rate. Rates vary by county and school district.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">⚖️</div>
+      <div class="info-card-title">APPEAL RIGHTS</div>
+      <div class="info-card-body">You have the right to challenge your assessment. Most counties allow appeals within 30–90 days of notice.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">🛡️</div>
+      <div class="info-card-title">EXEMPTIONS</div>
+      <div class="info-card-body">Homestead, senior, veteran, and disability exemptions can significantly reduce your taxable value.</div>
+    </div>
+  </div>
+
+  <!-- RESOURCE LINKS -->
+  <div class="resources">
+    <div class="resource-section-title">OFFICIAL RESOURCES</div>
+    <div class="resource-links">
+      <a class="resource-link" href="https://www.oregon.gov/dor/programs/property/pages/default.aspx" target="_blank" rel="noopener">
+        <span class="dot"></span> Oregon DOR Property Tax
+      </a>
+      <a class="resource-link" href="https://www.assessor.co.josephine.or.us/" target="_blank" rel="noopener">
+        <span class="dot"></span> Josephine County Assessor
+      </a>
+      <a class="resource-link" href="https://www.irs.gov/businesses/small-businesses-self-employed/real-estate-tax-center" target="_blank" rel="noopener">
+        <span class="dot"></span> IRS Real Estate Tax Center
+      </a>
+      <a class="resource-link" href="https://www.lincoln-institute.org/our-work/property-tax/" target="_blank" rel="noopener">
+        <span class="dot"></span> Lincoln Institute (Research)
+      </a>
+      <a class="resource-link" href="https://www.propertytax101.org/" target="_blank" rel="noopener">
+        <span class="dot"></span> PropertyTax101.org
+      </a>
+      <a class="resource-link" href="https://www.naco.org/topics/property-tax" target="_blank" rel="noopener">
+        <span class="dot"></span> National Assoc. of Counties
+      </a>
+    </div>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    ⚠ NEXUS AI responses are for informational purposes only and do not constitute legal or financial advice.
+    Tax laws vary by state and county. Always verify information with your local assessor's office or a licensed tax professional.
+  </div>
+
+  <footer>
+    <p>NEXUS INTEGRATED INTELLIGENCE SOLUTIONS · <a href="https://kaneonexus.net">kaneonexus.net</a></p>
+    <p style="margin-top:6px;">Intelligence Without the Artificial</p>
+  </footer>
+
+</div>
+
+<script>
+  function preset(text) {
+    document.getElementById('searchInput').value = text;
+    runSearch();
+  }
+
+  async function runSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) return;
+
+    const panel = document.getElementById('resultPanel');
+    const content = document.getElementById('resultContent');
+    const btn = document.getElementById('searchBtn');
+    const bar = document.getElementById('loadingBar');
+
+    panel.classList.add('visible');
+    content.textContent = '';
+    bar.classList.add('active');
+    btn.disabled = true;
+    btn.textContent = 'SCANNING...';
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `You are NEXUS Property Tax Intelligence, an expert assistant on U.S. property taxes. 
+Provide clear, accurate, actionable information. When relevant, include:
+- Key facts and how things work
+- Relevant official resources or websites (format as plain URLs)
+- Practical next steps for the user
+- State-specific info when a state is mentioned (especially Oregon/Josephine County when relevant)
+Keep responses concise but thorough. Use plain text, no markdown formatting. 
+End with a one-line note reminding users to verify with their local assessor.`,
+          messages: [{ role: 'user', content: query }]
+        })
+      });
+
+      const data = await response.json();
+      const text = data.content?.map(b => b.text || '').join('') || 'No response received.';
+      
+      bar.classList.remove('active');
+      
+      // Linkify URLs
+      const linkified = text.replace(
+        /(https?:\/\/[^\s,\)]+)/g,
+        '<a href="$1" target="_blank" rel="noopener">$1</a>'
+      );
+      content.innerHTML = linkified;
+
+    } catch (err) {
+      bar.classList.remove('active');
+      content.textContent = 'Error connecting to NEXUS intelligence layer. Please try again.';
+      console.error(err);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'QUERY ▶';
+  }
+</script>
+</body>
+</html>
