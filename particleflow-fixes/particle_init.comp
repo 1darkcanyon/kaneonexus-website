@@ -1,0 +1,91 @@
+#version 450
+// ParticleFlow — Init Compute Shader (v3 — EXACT RenderScript parity)
+// Matches initParticles() from particleflow.rs exactly:
+//   - Uniform distribution over a DISK (not random scatter)
+//   - Disk radius = sqrt(width²+height²)/2 (screen diagonal / 2)
+//   - r = radius * sqrt(rand) for proper uniform disk distribution
+//   - Initial velocity = 0
+//   - Initial color based on zero-speed HSV
+// NEXUS Engineering — Canyon (Kaneon)
+layout(local_size_x = 256) in;
+layout(std430, binding = 0) buffer Positions  { vec2 positions[];  };
+layout(std430, binding = 1) buffer Velocities { vec2 velocities[]; };
+layout(std430, binding = 2) buffer Colors     { vec4 colors[];     };
+layout(std430, binding = 3) buffer TouchPoints{ vec2 touch[];      };
+layout(push_constant) uniform PushConstants {
+    int   numParticles;
+    int   numTouch;
+    float attract;
+    float drag;
+    float width;
+    float height;
+    float slowH;
+    float slowS;
+    float slowV;
+    float fastH;
+    float fastS;
+    float fastV;
+    int   hueDir;
+    uint  frameSeed;
+};
+// ── Hash / RNG ──
+// Approximates rsRand — produces float in [0, maxVal)
+uint hash(uint x) {
+    x += (x << 10u); x ^= (x >>  6u);
+    x += (x <<  3u); x ^= (x >> 11u);
+    x += (x << 15u);
+    return x;
+}
+float rand01(uint seed) {
+    return float(hash(seed)) / 4294967295.0;
+}
+// ── Exact RenderScript hsv2rgba ──
+// Uses the original's piecewise linear formula, not the mod trick
+vec4 hsv2rgba(float h, float s, float v) {
+    float h6 = 6.0 * h;
+    float r, g, b;
+    if      (h6 < 1.0) { r = 0.0;      g = 1.0-h6;  b = 1.0;      }
+    else if (h6 < 2.0) { r = h6-1.0;   g = 0.0;      b = 1.0;      }
+    else if (h6 < 3.0) { r = 1.0;      g = 0.0;      b = 3.0-h6;   }
+    else if (h6 < 4.0) { r = 1.0;      g = h6-3.0;   b = 0.0;      }
+    else if (h6 < 5.0) { r = 5.0-h6;   g = 1.0;      b = 0.0;      }
+    else               { r = 0.0;      g = 1.0;      b = h6-5.0;   }
+    float coef = v * s;
+    return vec4(v - coef*r, v - coef*g, v - coef*b, 1.0);
+}
+// ── Exact getHue logic from particleflow.rs ──
+float getHue(float coef, float sh, float fh, int hueDir) {
+    if (sh < fh && hueDir == 0) sh += 1.0;
+    else if (sh > fh && hueDir == 1) fh += 1.0;
+    float hue = (1.0 - coef) * sh + coef * fh;
+    if (hue >= 1.0) hue -= 1.0;
+    return hue;
+}
+// ── Exact getSpeedCoef from particleflow.rs ──
+// log(vx²+vy²+1) / 4.5  — logarithmic, NOT linear
+float getSpeedCoef(vec2 v) {
+    float coef = log(v.x*v.x + v.y*v.y + 1.0) / 4.5;
+    return min(coef, 1.0);
+}
+void main() {
+    uint idx = gl_GlobalInvocationID.x;
+    if (idx >= uint(numParticles)) return;
+    uint seed = hash(idx + frameSeed * 1000003u);
+    // Uniform disk distribution — matches original:
+    //   r = radius * sqrt(rsRand(1.f))
+    //   theta = rsRand(6.28318...)
+    float radius = sqrt(width*width + height*height) / 2.0;
+    float r     = radius * sqrt(rand01(seed));
+    float theta = rand01(seed + 1u) * 6.28318530718;
+    positions[idx]  = vec2(
+        width/2.0  + r * cos(theta),
+        height/2.0 + r * sin(theta)
+    );
+    velocities[idx] = vec2(0.0);
+    // Color at zero speed
+    float sc = getSpeedCoef(vec2(0.0));
+    float h  = getHue(sc, slowH, fastH, hueDir);
+    float s  = (1.0 - sc) * slowS + sc * fastS;
+    float v  = (1.0 - sc) * slowV + sc * fastV;
+    colors[idx] = hsv2rgba(h, s, v);
+}

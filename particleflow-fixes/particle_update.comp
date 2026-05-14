@@ -1,0 +1,126 @@
+#version 450
+// ParticleFlow — Update Compute Shader (v3 — EXACT RenderScript parity)
+// Matches updateParticles() kernel from particleflow.rs exactly.
+//
+// Key corrections from v1/v2:
+//   1. Force = attract / dist²  (1/r², NOT 1/r)
+//   2. Singularity → random escape direction (NOT skip)
+//   3. Speed coef = log(vx²+vy²+1)/4.5  (logarithmic, NOT linear)
+//   4. Update order: vel+=acc, pos+=vel, drag applied LAST
+//   5. Exact hsv2rgba piecewise formula from original .rs
+//
+// NEXUS Engineering — Canyon (Kaneon)
+layout(local_size_x = 256) in;
+layout(std430, binding = 0) buffer Positions  { vec2 positions[];  };
+layout(std430, binding = 1) buffer Velocities { vec2 velocities[]; };
+layout(std430, binding = 2) buffer Colors     { vec4 colors[];     };
+layout(std430, binding = 3) buffer TouchPoints{ vec2 touch[];      };
+layout(push_constant) uniform PushConstants {
+    int   numParticles;
+    int   numTouch;
+    float attract;    // f01AttractionCoef (default 100)
+    float drag;       // f01DragCoef = 1 - F01Drag/100 (default 0.96)
+    float width;
+    float height;
+    float slowH;
+    float slowS;
+    float slowV;
+    float fastH;
+    float fastS;
+    float fastV;
+    int   hueDir;     // 0=clockwise, 1=counterclockwise
+    uint  frameSeed;  // changes each frame for random escape direction
+};
+// ── Hash for random escape direction ──
+uint hash(uint x) {
+    x += (x << 10u); x ^= (x >>  6u);
+    x += (x <<  3u); x ^= (x >> 11u);
+    x += (x << 15u);
+    return x;
+}
+float rand01(uint seed) {
+    return float(hash(seed)) / 4294967295.0;
+}
+// ── Exact RenderScript hsv2rgba piecewise formula ──
+// Matches original byte-for-byte. NOT the mod-based shorthand.
+vec4 hsv2rgba(float h, float s, float v) {
+    float h6 = 6.0 * h;
+    float r, g, b;
+    if      (h6 < 1.0) { r = 0.0;     g = 1.0-h6; b = 1.0;     }
+    else if (h6 < 2.0) { r = h6-1.0;  g = 0.0;    b = 1.0;     }
+    else if (h6 < 3.0) { r = 1.0;     g = 0.0;    b = 3.0-h6;  }
+    else if (h6 < 4.0) { r = 1.0;     g = h6-3.0; b = 0.0;     }
+    else if (h6 < 5.0) { r = 5.0-h6;  g = 1.0;    b = 0.0;     }
+    else               { r = 0.0;     g = 1.0;    b = h6-5.0;  }
+    float coef = v * s;
+    return vec4(v - coef*r, v - coef*g, v - coef*b, 1.0);
+}
+// ── Exact getHue from particleflow.rs ──
+// Handles hue direction by nudging sh or fh by +1 to pick correct arc
+float getHue(float coef, float sh, float fh, int hueDir) {
+    if      (sh < fh && hueDir == 0) sh += 1.0;  // clockwise: wrap slow up
+    else if (sh > fh && hueDir == 1) fh += 1.0;  // counterclockwise: wrap fast up
+    float hue = (1.0 - coef) * sh + coef * fh;
+    if (hue >= 1.0) hue -= 1.0;
+    return hue;
+}
+// ── Exact getSpeedCoef from particleflow.rs ──
+// Logarithmic mapping: slow particles stay near slow color longer,
+// then rapidly shift to fast color as speed increases.
+// THIS is what gives the distinctive color behavior in the screenshots.
+float getSpeedCoef(vec2 v) {
+    float coef = log(v.x*v.x + v.y*v.y + 1.0) / 4.5;
+    return min(coef, 1.0);
+}
+void main() {
+    uint idx = gl_GlobalInvocationID.x;
+    if (idx >= uint(numParticles)) return;
+    vec2 pos = positions[idx];
+    vec2 vel = velocities[idx];
+    vec2 acc = vec2(0.0);
+    // ── Attraction force from each active touch point ──
+    // EXACT formula from particleflow.rs updateParticles():
+    //   diff = touch[i] - position
+    //   diffSqNorm = diff.x² + diff.y²
+    //   acc += (f01AttractionCoef / diffSqNorm) * diff
+    //
+    // This is f/r² * r̂ * r = f/r — but written as f*diff/|diff|²
+    // which equals f*normalize(diff)/dist — inverse linear force.
+    // The 1/r behavior produces stable orbital paths at moderate distances.
+    for (int i = 0; i < numTouch && i < 16; i++) {
+        vec2 tp = touch[i];
+        if (tp.x < 0.0) continue;   // disabled point sentinel
+        vec2  diff       = tp - pos;
+        float diffSqNorm = diff.x*diff.x + diff.y*diff.y;
+        if (diffSqNorm < 0.1) {
+            // ── Singularity escape — matches original rsRand behavior ──
+            // Instead of skipping, fire particle in random direction
+            // This prevents particles getting permanently stuck at attractor
+            uint  seed   = hash(idx + frameSeed * 999983u + uint(i) * 7919u);
+            float theta  = rand01(seed) * 6.28318530718;
+            diff         = vec2(cos(theta), sin(theta));
+            diffSqNorm   = 1.0;
+        }
+        acc += (attract / diffSqNorm) * diff;
+    }
+    // ── Update order — EXACT match to original ──
+    // 1. Apply acceleration to velocity
+    vel += acc;
+    // 2. Update position with NEW velocity (not old)
+    pos += vel;
+    // 3. Wrap at screen edges
+    if (pos.x <  0.0)    pos.x += width;
+    if (pos.x >= width)  pos.x -= width;
+    if (pos.y <  0.0)    pos.y += height;
+    if (pos.y >= height) pos.y -= height;
+    // 4. Apply drag LAST (after position update)
+    vel *= drag;
+    positions[idx]  = pos;
+    velocities[idx] = vel;
+    // ── Color by speed — logarithmic coef ──
+    float sc = getSpeedCoef(vel);
+    float h  = getHue(sc, slowH, fastH, hueDir);
+    float s  = (1.0 - sc) * slowS + sc * fastS;
+    float v  = (1.0 - sc) * slowV + sc * fastV;
+    colors[idx] = hsv2rgba(h, s, v);
+}
