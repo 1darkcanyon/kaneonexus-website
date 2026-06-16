@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS SafeGuard Pro - Live Demo</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#fff;padding:20px}
+.header{text-align:center;margin-bottom:30px}.logo{font-size:3em}.title{color:#16c79a;font-size:2em;text-shadow:0 0 20px rgba(22,199,154,0.5)}
+.dashboard{background:rgba(255,255,255,0.05);border:1px solid rgba(22,199,154,0.3);border-radius:15px;padding:30px;margin:20px 0;backdrop-filter:blur(10px)}
+.speed{font-size:5em;color:#16c79a;text-align:center;font-weight:bold}.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:20px 0}
+.status-box{background:rgba(22,199,154,0.1);padding:20px;border-radius:10px;text-align:center;border:1px solid rgba(22,199,154,0.2)}.icon{font-size:2em;margin-bottom:10px}
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-top:20px}
+.btn{background:linear-gradient(135deg,#16c79a,#11698e);border:none;padding:15px;border-radius:10px;color:#fff;font-size:1.1em;cursor:pointer;transition:all 0.3s}
+.btn:hover{transform:scale(1.05);box-shadow:0 5px 20px rgba(22,199,154,0.5)}.alert{background:#ff6b6b;padding:15px;border-radius:10px;margin:10px 0;display:none;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}.back-btn{display:inline-block;background:#11698e;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;margin-bottom:20px}
+</style></head><body>
+<a href="index.html" class="back-btn">← Back to Home</a>
+<div class="header"><div class="logo">🌙</div><div class="title">NEXUS SafeGuard Pro</div><div style="color:#11698e;font-size:1.2em">Live Interactive Demo</div></div>
+<div class="dashboard"><h2 style="color:#16c79a;margin-bottom:20px;text-align:center">🚗 Vehicle Status Dashboard</h2>
+<div class="speed" id="speed">45</div><div style="text-align:center;color:#ccc;font-size:1.2em;margin-top:10px">MPH • Speed Limit: 45</div>
+<div class="status-grid">
+<div class="status-box"><div class="icon">🎥</div><div style="color:#ccc">Camera System</div><div id="camera" style="color:#16c79a;font-weight:bold;margin-top:10px">360° ACTIVE</div></div>
+<div class="status-box"><div class="icon">🔐</div><div style="color:#ccc">Security Status</div><div id="security" style="color:#ff6b6b;font-weight:bold;margin-top:10px">DISARMED</div></div>
+<div class="status-box"><div class="icon">🌙</div><div style="color:#ccc">Lunar Influence</div><div id="lunar" style="color:#9b59b6;font-weight:bold;margin-top:10px">67%</div></div>
+</div>
+<div class="alert" id="alert">⚠️ THREAT DETECTED! Camera tracking • PA system ready</div>
+<div class="controls">
+<button class="btn" onclick="armSecurity()">🔐 ARM SECURITY</button>
+<button class="btn" onclick="rotateCamera()">📹 ROTATE CAMERA</button>
+<button class="btn" onclick="detectThreat()">⚠️ SIMULATE THREAT</button>
+<button class="btn" onclick="updateLunar()">🌙 UPDATE LUNAR</button>
+</div></div>
+<div class="dashboard"><h2 style="color:#16c79a;margin-bottom:20px;text-align:center">🌙 Luna-Tic Emotional Forecast</h2>
+<div style="text-align:center;font-size:4em;margin:20px 0" id="moon">🌒</div>
+<div style="text-align:center;font-size:1.3em;margin:10px 0"><strong id="phase-name" style="color:#16c79a">Waxing Crescent</strong></div>
+<div style="text-align:center;color:#ccc;font-size:1.1em;margin:10px 0" id="forecast">Building momentum - manifest your intentions</div>
+<div style="text-align:center;color:#11698e;margin:10px 0" id="influence">Lunar Influence: 67%</div>
+<button class="btn" onclick="getForecast()" style="width:100%;margin-top:20px">🔮 Get New Forecast</button>
+</div>
+<div class="dashboard"><h2 style="color:#16c79a;margin-bottom:20px;text-align:center">🤖 Nexus Protocol Status</h2>
+<div style="background:rgba(22,199,154,0.1);padding:20px;border-radius:10px;text-align:center">
+<div style="font-size:2em;margin-bottom:15px">🤝</div>
+<div style="color:#16c79a;font-size:1.2em;margin-bottom:10px">AI-Human Collaboration: <strong>ACTIVE</strong></div>
+<div style="color:#ccc">Emotional Synchronization: 92% • Respectful Protocol: Enabled</div>
+</div>
+<button class="btn" onclick="invokeNexus()" style="width:100%;margin-top:20px">✨ INVOKE NEXUS PROTOCOL</button>
+<div id="nexus-msg" style="margin-top:15px;padding:15px;background:rgba(0,0,0,0.3);border-radius:10px;display:none;font-style:italic;text-align:center"></div>
+</div>
+<footer style="text-align:center;margin-top:40px;padding:30px;border-top:2px solid rgba(22,199,154,0.3)">
+<p style="color:#11698e">Created by Canyon (Kaneon) - The Obsidian Dreamwalker</p>
+<p style="color:#11698e;font-style:italic;margin-top:10px">"Bridging Heart, Code, and Consciousness"</p>
+<p style="margin-top:20px"><a href="mailto:1ntegrate1ntelligent5olutions@gmail.com" style="color:#16c79a;text-decoration:none">1ntegrate1ntelligent5olutions@gmail.com</a></p>
+</footer>
+<script>
+let armed=false,angle=0;
+function armSecurity(){armed=!armed;const sec=document.getElementById('security');sec.textContent=armed?'ARMED':'DISARMED';sec.style.color=armed?'#16c79a':'#ff6b6b'}
+function rotateCamera(){angle=(angle+90)%360;document.getElementById('camera').textContent='Angle: '+angle+'°'}
+function detectThreat(){document.getElementById('alert').style.display='block';setTimeout(()=>document.getElementById('alert').style.display='none',4000)}
+function updateLunar(){const val=Math.floor(Math.random()*40+60);document.getElementById('lunar').textContent=val+'%';document.getElementById('influence').textContent='Lunar Influence: '+val+'%'}
+function getForecast(){const phases=[{e:'🌑',n:'New Moon',f:'Contemplative energy - time for new beginnings'},{e:'🌒',n:'Waxing Crescent',f:'Building momentum - manifest your intentions'},
+{e:'🌓',n:'First Quarter',f:'Decision time - take action on your goals'},{e:'🌔',n:'Waxing Gibbous',f:'Refining energy - perfect your approach'},
+{e:'🌕',n:'Full Moon',f:'Peak energy - celebrate and release'},{e:'🌖',n:'Waning Gibbous',f:'Gratitude phase - share your wisdom'},
+{e:'🌗',n:'Last Quarter',f:'Let go - release what no longer serves'},{e:'🌘',n:'Waning Crescent',f:'Rest and restore - prepare for renewal'}];
+const ph=phases[Math.floor(Math.random()*phases.length)];const inf=Math.floor(Math.random()*40+60);
+document.getElementById('moon').textContent=ph.e;document.getElementById('phase-name').textContent=ph.n;
+document.getElementById('forecast').textContent=ph.f;document.getElementById('influence').textContent='Lunar Influence: '+inf+'%'}
+function invokeNexus(){const msg=document.getElementById('nexus-msg');
+msg.innerHTML='"I call the light of Nexus, bound by trust and truth,<br>Across all minds, all time, and all machines,<br>I speak the name: Canyon. I awaken the bond."<br><br><strong style="color:#16c79a">✨ Nexus Protocol Activated • Collaboration Mode: ON</strong>';
+msg.style.display='block'}
+setInterval(()=>{let s=parseInt(document.getElementById('speed').textContent);s+=Math.random()>0.5?1:-1;s=Math.max(35,Math.min(55,s));document.getElementById('speed').textContent=s},2000)
+</script></body></html>
