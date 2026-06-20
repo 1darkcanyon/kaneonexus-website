@@ -1,1 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Sesame — The Astral Almanac</title>
+<style>
+  @font-face {
+    font-family: 'Sorts Mill';
+    src: local('Georgia');
+  }
 
+  :root{
+    --parchment: #EDE4D3;
+    --parchment-dark: #E2D5BC;
+    --ink: #3A2E1F;
+    --ink-soft: #5C4A35;
+    --oxblood: #8B2E2E;
+    --pine: #1B3A2E;
+    --gold: #A8821E;
+    --rule: rgba(58,46,31,0.25);
+    --paper-shadow: rgba(58,46,31,0.12);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0; padding:0;
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+
+  body{
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(168,130,30,0.06), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(139,46,46,0.05), transparent 45%);
+    min-height:100vh;
+  }
+
+  /* texture overlay */
+  body::before{
+    content:"";
+    position: fixed; inset:0;
+    pointer-events:none;
+    opacity:0.5;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(58,46,31,0.015) 0px, transparent 1px, transparent 2px),
+      repeating-linear-gradient(90deg, rgba(58,46,31,0.01) 0px, transparent 1px, transparent 2px);
+    z-index:0;
+  }
+
+  .wrap{
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+    position: relative;
+    z-index:1;
+  }
+
+  /* ===== Masthead ===== */
+  header.masthead{
+    padding: 36px 0 18px;
+    text-align:center;
+    border-bottom: 3px double var(--ink);
+    margin-bottom: 6px;
+  }
+  .eyebrow{
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.35em;
+    font-size: 11px;
+    color: var(--oxblood);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1.title{
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(40px, 9vw, 68px);
+    letter-spacing: 0.04em;
+    margin: 0;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  h1.title em{
+    font-style: normal;
+    color: var(--oxblood);
+  }
+  .subtitle{
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    text-transform: uppercase;
+  }
+  .est{
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* ===== Tab nav ===== */
+  nav.tabs{
+    display:flex;
+    justify-content:center;
+    gap: 0;
+    margin: 28px 0 36px;
+    border-bottom: 1px solid var(--rule);
+  }
+  nav.tabs button{
+    appearance:none;
+    border:none;
+    background:transparent;
+    font-family: Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 10px 22px;
+    cursor:pointer;
+    border-bottom: 3px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  nav.tabs button:hover{ color: var(--ink); }
+  nav.tabs button.active{
+    color: var(--oxblood);
+    border-bottom-color: var(--oxblood);
+    font-weight:bold;
+  }
+  nav.tabs button:focus-visible{
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .panel{ display:none; }
+  .panel.active{ display:block; animation: fadeIn 0.35s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform: translateY(4px);} to{opacity:1; transform:none;} }
+
+  /* ===== Section heads ===== */
+  h2.section{
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--oxblood);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 8px;
+    margin: 40px 0 18px;
+  }
+  h2.section:first-child{ margin-top:0; }
+
+  p.lede{
+    font-size: 17px;
+    line-height:1.65;
+    color: var(--ink);
+  }
+  p.lede::first-letter{
+    font-size: 3.4em;
+    float:left;
+    line-height: 0.78;
+    padding-right: 8px;
+    color: var(--oxblood);
+    font-weight:bold;
+  }
+
+  p{ line-height:1.65; font-size: 15.5px; color: var(--ink); }
+
+  /* ===== Symbol key ===== */
+  .glyph-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
+    gap: 14px;
+    margin: 18px 0 30px;
+  }
+  .glyph-card{
+    background: var(--parchment-dark);
+    border: 1px solid var(--rule);
+    padding: 14px 12px;
+    text-align:center;
+    border-radius: 2px;
+  }
+  .glyph-card .sym{
+    font-size: 26px;
+    color: var(--oxblood);
+    display:block;
+    margin-bottom: 6px;
+  }
+  .glyph-card .label{
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .aspect-table{
+    width:100%;
+    border-collapse: collapse;
+    margin: 14px 0 32px;
+    font-size: 14px;
+  }
+  .aspect-table th, .aspect-table td{
+    border-bottom: 1px solid var(--rule);
+    padding: 9px 10px;
+    text-align:left;
+  }
+  .aspect-table th{
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .aspect-table .sym{ color: var(--oxblood); font-size:18px; width: 36px; }
+
+  /* ===== Worked example cards ===== */
+  .example{
+    border: 1px solid var(--rule);
+    background: rgba(255,255,255,0.25);
+    padding: 20px 22px;
+    margin-bottom: 22px;
+    border-radius: 2px;
+  }
+  .example h3{
+    margin:0 0 4px;
+    font-size: 18px;
+    letter-spacing:0.03em;
+  }
+  .example .meta{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .example .result-row{
+    display:flex;
+    gap: 18px;
+    flex-wrap:wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--rule);
+  }
+  .place{
+    font-size: 13px;
+  }
+  .place b{ color: var(--oxblood); }
+
+  /* ===== Ephemeris table ===== */
+  .eph-wrap{
+    overflow-x:auto;
+    margin: 10px 0 30px;
+    border: 1px solid var(--rule);
+  }
+  table.eph{
+    border-collapse: collapse;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    width:100%;
+    min-width: 760px;
+  }
+  table.eph th, table.eph td{
+    border: 1px solid var(--rule);
+    padding: 5px 7px;
+    text-align:center;
+    white-space:nowrap;
+  }
+  table.eph th{
+    background: var(--parchment-dark);
+    font-size: 10px;
+    letter-spacing:0.04em;
+  }
+  table.eph td.day{ background: rgba(168,130,30,0.08); font-weight:bold; }
+
+  /* ===== Calculator ===== */
+  .calc-grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  @media(min-width: 720px){
+    .calc-grid{ grid-template-columns: 1fr 1fr; }
+  }
+
+  .card{
+    background: rgba(255,255,255,0.3);
+    border: 1px solid var(--rule);
+    padding: 20px 22px;
+    border-radius: 2px;
+  }
+  .card h3{
+    margin:0 0 14px;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--oxblood);
+  }
+
+  label{
+    display:block;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 14px 0 5px;
+  }
+  label:first-of-type{ margin-top:0; }
+
+  input[type=text], input[type=number], input[type=time], select{
+    width:100%;
+    padding: 9px 10px;
+    font-family: Georgia, serif;
+    font-size: 14px;
+    background: var(--parchment);
+    border: 1px solid var(--ink-soft);
+    color: var(--ink);
+    border-radius: 1px;
+  }
+  input:focus, select:focus{
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+  }
+
+  .runner-row{
+    display:grid;
+    grid-template-columns: 1fr 90px 28px;
+    gap: 8px;
+    align-items:end;
+    margin-bottom: 8px;
+  }
+  .runner-row label{ margin: 10px 0 4px; }
+  .runner-row:first-of-type label{ display:block; }
+  .rm-btn{
+    background:transparent;
+    border: 1px solid var(--oxblood);
+    color: var(--oxblood);
+    width: 28px; height: 36px;
+    cursor:pointer;
+    font-size: 16px;
+    line-height:1;
+    border-radius:1px;
+  }
+  .rm-btn:hover{ background: var(--oxblood); color: var(--parchment); }
+
+  .btn{
+    appearance:none;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--parchment);
+    padding: 10px 18px;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor:pointer;
+    border-radius:1px;
+    transition: background 0.15s;
+  }
+  .btn:hover{ background: var(--oxblood); border-color: var(--oxblood); }
+  .btn.secondary{
+    background:transparent;
+    color: var(--ink);
+  }
+  .btn.secondary:hover{ background: var(--parchment-dark); color: var(--ink); }
+  .btn-row{ display:flex; gap:10px; margin-top: 18px; flex-wrap:wrap; }
+  .btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  /* ===== Wheel ===== */
+  .wheel-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 10px 0 0;
+  }
+  .wheel-caption{
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform:uppercase;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    text-align:center;
+  }
+
+  /* ===== Output / pointers ===== */
+  .pointer-block{
+    margin-top: 24px;
+  }
+  .pointer-title{
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pine);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .ranking{
+    list-style:none;
+    margin:0; padding:0;
+  }
+  .ranking li{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 14px;
+  }
+  .ranking li:last-child{ border-bottom:none; }
+  .rank-num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 22px; height:22px;
+    border-radius:50%;
+    background: var(--ink);
+    color: var(--parchment);
+    font-size: 11px;
+    margin-right: 10px;
+  }
+  .ranking li:first-child .rank-num{ background: var(--oxblood); }
+  .horse-name{ font-weight:bold; flex:1; }
+  .pointer-detail{
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-family:'Courier New', monospace;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding: 30px 10px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 14px;
+  }
+
+  footer{
+    text-align:center;
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform:uppercase;
+    color: var(--ink-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .panel.active{ animation:none; }
+  }  /* ===================== Sky AR ===================== */
+  .ar-stage{
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 14;
+    max-height: 78vh;
+    background: #0c0a08;
+    border: 1px solid var(--ink);
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .ar-video{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit: cover;
+    filter: saturate(0.92) contrast(1.04);
+  }
+  .ar-video.hidden{ display:none; }
+  .ar-fallback-sky{
+    position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(168,130,30,0.10), transparent 55%),
+      linear-gradient(180deg, #1b1410 0%, #0c0a08 70%);
+  }
+  .ar-compass-strip{
+    position:absolute; top:0; left:0; right:0;
+    height: 34px;
+    background: linear-gradient(180deg, rgba(12,10,8,0.85), rgba(12,10,8,0));
+    display:flex; align-items:center;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:3;
+  }
+  .ar-compass-track{
+    position:absolute;
+    white-space:nowrap;
+    font-family:'Courier New', monospace;
+    font-size:11px;
+    color: var(--gold);
+    letter-spacing:0.05em;
+    top: 9px;
+  }
+  .ar-marker{
+    position:absolute;
+    transform: translate(-50%, -50%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    pointer-events:none;
+    z-index:4;
+    transition: left 0.15s linear, top 0.15s linear;
+  }
+  .ar-marker .dot{
+    width: 34px; height:34px;
+    border-radius:50%;
+    background: rgba(237,228,211,0.92);
+    border: 1.5px solid var(--oxblood);
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px;
+    color: var(--oxblood);
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  }
+  .ar-marker .label{
+    margin-top:3px;
+    font-size:10px;
+    letter-spacing:0.04em;
+    color: var(--parchment);
+    background: rgba(12,10,8,0.7);
+    padding: 1px 6px;
+    border-radius:8px;
+    white-space:nowrap;
+  }
+  .ar-marker .arrow{
+    position:absolute;
+    font-size: 20px;
+    color: var(--gold);
+  }
+  .ar-marker.off-arc .dot{ opacity:0.45; }
+  .ar-crosshair{
+    position:absolute; top:50%; left:50%;
+    width:18px; height:18px;
+    transform: translate(-50%,-50%);
+    border: 1px solid rgba(237,228,211,0.5);
+    border-radius:50%;
+    z-index:5;
+    pointer-events:none;
+  }
+  .ar-crosshair::before, .ar-crosshair::after{
+    content:"";
+    position:absolute;
+    background: rgba(237,228,211,0.5);
+  }
+  .ar-crosshair::before{ left:50%; top:-6px; width:1px; height:6px; transform:translateX(-50%); }
+  .ar-crosshair::after{ left:-6px; top:50%; height:1px; width:6px; transform:translateY(-50%); }
+
+  .ar-radar-dock{
+    position:absolute;
+    bottom:0; left:0; right:0;
+    height: 38%;
+    background: linear-gradient(180deg, rgba(12,10,8,0) 0%, rgba(12,10,8,0.78) 22%, rgba(12,10,8,0.92) 100%);
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding-bottom: 10px;
+    z-index:6;
+  }
+  .ar-radar-svg{ filter: drop-shadow(0 0 6px rgba(0,0,0,0.6)); }
+
+  .ar-controls{
+    margin-top: 16px;
+    display:flex;
+    flex-direction:column;
+    gap: 12px;
+  }
+  .ar-row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .ar-row label{ margin:0; min-width: 70px; }
+  .ar-row input[type=range]{
+    flex:1;
+    accent-color: var(--oxblood);
+  }
+  .ar-status{
+    font-size:12px;
+    color: var(--ink-soft);
+    font-style:italic;
+  }
+  .ar-status.warn{ color: var(--oxblood); font-style:normal; }
+  .ar-time-readout{
+    font-family:'Courier New', monospace;
+    font-size: 18px;
+    color: var(--ink);
+    min-width: 130px;
+  }
+  .ar-legend{
+    display:flex;
+    gap: 14px;
+    flex-wrap:wrap;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .ar-legend span{ display:inline-flex; align-items:center; gap:4px; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">A Method First Set Forth in 1947</div>
+    <h1 class="title">Open <em>Sesame</em></h1>
+    <div class="subtitle">The Astral Almanac &amp; Pointer Calculator</div>
+    <div class="est">Colour · Gravitational · Phonetical — three pointers, one winner</div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="almanac">The Almanac</button>
+    <button class="tab-btn" data-tab="ephemeris">Ephemeris</button>
+    <button class="tab-btn" data-tab="examples">Race Records</button>
+    <button class="tab-btn" data-tab="calculator">Calculator</button>
+    <button class="tab-btn" data-tab="skyar">Sky AR</button>
+  </nav>
+
+  <!-- ===================== ALMANAC ===================== -->
+  <section class="panel active" id="almanac">
+    <p class="lede">In the autumn of 1947, an anonymous hand set down a system for reading the racecourse the way an astrologer reads a birth: not by form or pedigree, but by the sky standing over the post at the moment the tapes rose. Three pointers were drawn from that sky — Colour, Gravitational, and Phonetical — and arranged in order of trust. What follows is that method, restored.</p>
+
+    <h2 class="section">The Three Pointers</h2>
+    <p><b>Colour Pointers</b> come first and weigh heaviest. They are read from the aspects — the angles — formed between the planets at the moment the chart is cast, each aspect scored by how tight its orb runs. A conjunction within a degree outweighs a trine within three.</p>
+    <p><b>Gravitational Pointers</b> follow, drawn from the handicap weights themselves — the scale the horses carry translated into a ranking when the sky offers no clear lead.</p>
+    <p><b>Phonetical Pointers</b> close the method: the minutes around post time are divided into four-minute spans, each assigned a period number and a charge, positive or negative, by which the final word is given.</p>
+
+    <h2 class="section">Reading the Aspects</h2>
+    <table class="aspect-table">
+      <thead><tr><th></th><th>Aspect</th><th>Angle</th><th>Character</th></tr></thead>
+      <tbody>
+        <tr><td class="sym">☌</td><td>Conjunction</td><td>0°</td><td>Strongest pointer; fortunes fused</td></tr>
+        <tr><td class="sym">✱</td><td>Sextile</td><td>60°</td><td>Favourable, easy running</td></tr>
+        <tr><td class="sym">△</td><td>Trine</td><td>120°</td><td>Most favourable; the open road</td></tr>
+        <tr><td class="sym">□</td><td>Square</td><td>90°</td><td>Checked, contested ground</td></tr>
+        <tr><td class="sym">☍</td><td>Opposition</td><td>180°</td><td>Direct rivalry, evenly matched</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section">The Planets &amp; Their Glyphs</h2>
+    <div class="glyph-grid">
+      <div class="glyph-card"><span class="sym">☉</span><span class="label">Sun</span></div>
+      <div class="glyph-card"><span class="sym">☽</span><span class="label">Moon</span></div>
+      <div class="glyph-card"><span class="sym">☿</span><span class="label">Mercury</span></div>
+      <div class="glyph-card"><span class="sym">♀</span><span class="label">Venus</span></div>
+      <div class="glyph-card"><span class="sym">♂</span><span class="label">Mars</span></div>
+      <div class="glyph-card"><span class="sym">♃</span><span class="label">Jupiter</span></div>
+      <div class="glyph-card"><span class="sym">♄</span><span class="label">Saturn</span></div>
+      <div class="glyph-card"><span class="sym">♅</span><span class="label">Uranus</span></div>
+      <div class="glyph-card"><span class="sym">♆</span><span class="label">Neptune</span></div>
+    </div>
+
+    <h2 class="section">The Twelve Houses</h2>
+    <p>Every chart is erected as a wheel of twelve spokes, the Heavens divided into twelve equal parts called Houses for convenience's sake — as the original diagram showed it, a wheel with twelve spokes turning on a single hub, the planets falling where the moment places them.</p>
+    <div class="wheel-wrap">
+      <svg id="diagramOne" width="260" height="260" viewBox="0 0 260 260"></svg>
+      <div class="wheel-caption">Diagram One — the houses, undivided by any chart</div>
+    </div>
+    <h2 class="section">A Note on the Calculator</h2>
+    <p>The Calculator offers two charts. <b>September 1947</b> uses the book's own data — the Sun and Moon transcribed day-by-day from the original ephemeris, the outer planets fixed from the worked example on pages 42–43, and the Gravitational Pointer arithmetic (the H.S. and Z1 method) reproduced exactly as laid out on pages 68–69. <b>Today's sky</b> calculates real current planetary longitudes from a live reference reading, propagated forward or backward using each planet's true average daily motion — genuine astronomy, not the book's invention, applied fresh to whatever date you choose. Neither mode is a claim that the method predicts winners; both simply erect the chart correctly, as the book itself sets out to do.</p>
+  </section>
+
+  <!-- ===================== EPHEMERIS ===================== -->
+  <section class="panel" id="ephemeris">
+    <p class="lede">Here is given the sidereal time and the planetary positions of the Sun, Moon, and the seven planets for September 1947. In learning how to prepare a chart, this data is essential — the foundation beneath every wheel that follows.</p>
+    <h2 class="section">The Month of September, 1947</h2>
+    <div class="eph-wrap">
+      <table class="eph" id="ephTable"></table>
+    </div>
+    <p style="font-size:12px; color:var(--ink-soft); font-style:italic;">Longitudes given in degrees and minutes of zodiacal sign. Sidereal time in hours, minutes, seconds. Transcribed from the original tables.</p>
+  </section>
+
+  <!-- ===================== RACE RECORDS ===================== -->
+  <section class="panel" id="examples">
+    <p class="lede">Three races from Ascot's card of 26th September, 1947, worked through in full — the chart erected, the pointers arranged, the placings called before the tapes ever rose.</p>
+
+    <div class="example">
+      <h3>Race One — Arranging the Pointers</h3>
+      <div class="meta">6 furlongs · field of 21 · no scale of weights available · off time 2.31 p.m.</div>
+      <p>A large field with the Gravitational Pointer silent, leaving Colour and Phonetical to carry the method alone. Four-minute spans of 2.27–2.31 (Period 3, negative), 2.31–2.35 (Period 9, positive), and 2.35–2.39 (Period ¼, negative) bracketed the off.</p>
+      <div class="result-row">
+        <div class="place"><b>1st</b> Radiant Queen</div>
+        <div class="place"><b>2nd</b> Laisser Passer</div>
+        <div class="place"><b>3rd</b> Vertencia</div>
+      </div>
+    </div>
+
+    <div class="example">
+      <h3>Race Three — Tartan Cross Belts</h3>
+      <div class="meta">field of five: Vagabond II, The Bug, Djelal, Tudor Minstrel, Petition · off time 3.36 p.m.</div>
+      <p>No scale of weights again left the Gravitational Pointer void. Colour Pointers on P2 (Saturn square the Moon at ¾°, exact to a hair) and P3 (Moon octile the Sun) carried the chart, confirmed by a positive Phonetical span at 3.31–3.35.</p>
+      <div class="result-row">
+        <div class="place"><b>1st</b> Tudor Minstrel</div>
+        <div class="place"><b>2nd</b> Vagabond II</div>
+      </div>
+    </div>
+
+    <div class="example">
+      <h3>Race Seven — Snow Hill Stakes (Handicap)</h3>
+      <div class="meta">7 furlongs 155 yards · Ascot · 5 p.m., 26th September 1947 · sidereal time 16h 19m 48s</div>
+      <p>Chart erected for true time 4 p.m. plus five minutes' running allowance, less three minutes west. With a full scale of weights to hand, all three pointers stood together: Venus square Mars on P4 at 2°, the First Gravity weight of 8st 12lb, and a positive Phonetical span at 5.01–5.05.</p>
+      <div class="result-row">
+        <div class="place"><b>1st</b> Flexton</div>
+        <div class="place"><b>2nd</b> Woodwind</div>
+        <div class="place"><b>3rd</b> Master Vote</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CALCULATOR ===================== -->
+  <section class="panel" id="calculator">
+    <p class="lede">Enter a race below, and the chart will be erected and the three pointers arranged after the method of the original — the sky stands in for September 1947 as a working demonstration of the calculation, not a live ephemeris.</p>
+
+    <div class="calc-grid">
+      <!-- INPUT CARD -->
+      <div class="card">
+        <h3>Race Particulars</h3>
+        <label for="raceName">Race name</label>
+        <input type="text" id="raceName" placeholder="e.g. Snow Hill Stakes" value="Snow Hill Stakes">
+
+        <label>Chart era</label>
+        <select id="eraSelect">
+          <option value="1947">September 1947 (the original almanac)</option>
+          <option value="today">Today's sky (live, calculated fresh)</option>
+        </select>
+
+        <label for="postTime">Post time</label>
+        <input type="time" id="postTime" value="17:00">
+
+        <label for="raceDay" id="raceDayLabel">Day of September, 1947</label>
+        <input type="number" id="raceDay" min="1" max="30" value="26">
+
+        <div id="runnerList"></div>
+        <button class="btn secondary" id="addRunner" type="button" style="margin-top:10px; width:100%;">+ Add Runner</button>
+
+        <div class="btn-row">
+          <button class="btn" id="erectChart" type="button">Erect the Chart</button>
+          <button class="btn secondary" id="resetCalc" type="button">Reset</button>
+        </div>
+      </div>
+
+      <!-- WHEEL CARD -->
+      <div class="card">
+        <h3>The Chart</h3>
+        <div class="wheel-wrap">
+          <svg id="raceWheel" width="260" height="260" viewBox="0 0 260 260"></svg>
+          <div class="wheel-caption" id="wheelCaption">Awaiting particulars</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="resultsArea"></div>
+  </section>
+
+  <!-- ===================== SKY AR ===================== -->
+  <section class="panel" id="skyar">
+    <p class="lede">Point the device at the sky to see the planets marked where they truly stand, with the chart wheel turning beneath like a radar. Choose any date and place, then watch the pointers move across the day.</p>
+
+    <div class="ar-stage" id="arStage">
+      <div class="ar-fallback-sky" id="arFallback"></div>
+      <video class="ar-video hidden" id="arVideo" autoplay playsinline muted></video>
+      <div class="ar-compass-strip"><div class="ar-compass-track" id="compassTrack"></div></div>
+      <div class="ar-crosshair"></div>
+      <div id="arMarkers"></div>
+      <div class="ar-radar-dock">
+        <svg id="radarWheel" class="ar-radar-svg" width="230" height="230" viewBox="0 0 230 230"></svg>
+      </div>
+    </div>
+
+    <div class="ar-controls">
+      <div class="ar-row">
+        <button class="btn" id="enableCamera" type="button">Enable Camera &amp; Compass</button>
+        <span class="ar-status" id="arStatus">Camera not yet enabled — showing a still chart below.</span>
+      </div>
+
+      <div class="ar-row">
+        <label>Location</label>
+        <input type="text" id="locInput" placeholder="City, or lat,long" style="flex:1; min-width:140px;">
+        <button class="btn secondary" id="useGPS" type="button">Use GPS</button>
+      </div>
+
+      <div class="ar-row">
+        <label>Date</label>
+        <input type="date" id="arDate">
+      </div>
+
+      <div class="ar-row">
+        <label>Time</label>
+        <input type="range" id="timeSlider" min="0" max="1439" value="720">
+        <span class="ar-time-readout" id="timeReadout">12:00</span>
+      </div>
+      <div class="ar-row">
+        <button class="btn secondary" id="liveTimeBtn" type="button">Jump to Now</button>
+        <span class="ar-status" id="locStatus"></span>
+      </div>
+
+      <div class="ar-legend">
+        <span>☉ Sun</span><span>☽ Moon</span><span>☿ Mercury</span><span>♀ Venus</span><span>♂ Mars</span>
+        <span>♃ Jupiter</span><span>♄ Saturn</span><span>♅ Uranus</span><span>♆ Neptune</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>Open Sesame — restored from the original almanac · for study and amusement</footer>
+</div>
+
+<script>
+(function(){
+
+  // ---------- Shared data ----------
+  const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+  const SIGN_GLYPH = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+  const PLANETS = [
+    {key:'sun', name:'Sun', glyph:'☉', color:'#A8821E'},
+    {key:'moon', name:'Moon', glyph:'☽', color:'#5C4A35'},
+    {key:'mercury', name:'Mercury', glyph:'☿', color:'#1B3A2E'},
+    {key:'venus', name:'Venus', glyph:'♀', color:'#8B2E2E'},
+    {key:'mars', name:'Mars', glyph:'♂', color:'#8B2E2E'},
+    {key:'jupiter', name:'Jupiter', glyph:'♃', color:'#1B3A2E'},
+    {key:'saturn', name:'Saturn', glyph:'♄', color:'#3A2E1F'},
+    {key:'uranus', name:'Uranus', glyph:'♅', color:'#A8821E'},
+    {key:'neptune', name:'Neptune', glyph:'♆', color:'#5C4A35'}
+  ];
+
+  const ASPECTS = [
+    {name:'Conjunction', glyph:'☌', angle:0, orb:8, weight:5},
+    {name:'Sextile', glyph:'✱', angle:60, orb:6, weight:3},
+    {name:'Square', glyph:'□', angle:90, orb:7, weight:2},
+    {name:'Trine', glyph:'△', angle:120, orb:8, weight:4},
+    {name:'Opposition', glyph:'☍', angle:180, orb:8, weight:2}
+  ];
+
+  // ---------- Ephemeris (transcribed, degrees within sign, longitudes simplified to whole-sign + degree) ----------
+  // Format: day -> { sidereal:[h,m,s], sun:[signIdx,deg], moon:[signIdx,deg], saturn, jupiter, mars, venus, mercury (approx from table columns), uranus, neptune }
+  // Transcribed from the visible portion of the September 1947 table (Sun & Moon longitudes; outer planets move slowly so given as start-of-month constants with light drift).
+  const EPHEMERIS = [
+    {d:1,  sid:[10,39,14], sun:[5,12], moon:[11,26]}, // Sun in Virgo 12, Moon in Pisces 26 (✸ approx)
+    {d:2,  sid:[10,43,10], sun:[5,10+8/60], moon:[0,28]},
+    {d:3,  sid:[10,47,7],  sun:[6,8],  moon:[0,12]},
+    {d:4,  sid:[10,51,4],  sun:[6,6],  moon:[1,25]},
+    {d:5,  sid:[10,55,0],  sun:[6,4],  moon:[1,8]},
+    {d:6,  sid:[10,58,57], sun:[6,2],  moon:[1,21]},
+    {d:7,  sid:[11,2,53],  sun:[6,0],  moon:[2,5]},
+    {d:8,  sid:[11,6,50],  sun:[7,29], moon:[2,19]},
+    {d:9,  sid:[11,10,46], sun:[7,27], moon:[3,3]},
+    {d:10, sid:[11,14,43], sun:[7,25], moon:[3,17]},
+    {d:11, sid:[11,18,39], sun:[7,24], moon:[4,2]},
+    {d:12, sid:[11,22,36], sun:[7,22], moon:[4,9]},
+    {d:13, sid:[11,26,33], sun:[7,20], moon:[5,1]},
+    {d:14, sid:[11,30,29], sun:[7,19], moon:[5,16]},
+    {d:15, sid:[11,34,26], sun:[7,17], moon:[6,1]},
+    {d:16, sid:[11,38,22], sun:[7,15], moon:[6,15]},
+    {d:17, sid:[11,42,19], sun:[7,13], moon:[6,28]},
+    {d:18, sid:[11,46,15], sun:[7,12], moon:[7,1]},
+    {d:19, sid:[11,50,12], sun:[7,10], moon:[7,24]},
+    {d:20, sid:[11,54,8],  sun:[7,8],  moon:[8,7]},
+    {d:21, sid:[11,58,5],  sun:[8,9],  moon:[8,19]},
+    {d:22, sid:[12,2,1],   sun:[8,8],  moon:[9,1]},
+    {d:23, sid:[12,5,58],  sun:[8,6],  moon:[9,13]},
+    {d:24, sid:[12,9,55],  sun:[9,0],  moon:[9,25]},
+    {d:25, sid:[12,13,51], sun:[9,1],  moon:[10,7]},
+    {d:26, sid:[12,17,48], sun:[9,2],  moon:[10,19]},
+    {d:27, sid:[12,21,44], sun:[9,3],  moon:[11,1]},
+    {d:28, sid:[12,25,41], sun:[9,4],  moon:[11,13]},
+    {d:29, sid:[12,29,37], sun:[9,5],  moon:[11,26]},
+    {d:30, sid:[12,33,34], sun:[9,6],  moon:[0,9]}
+  ];
+
+  // ---------- 1947 outer/inner planet anchors ----------
+  // Transcribed directly from the book's worked example (p.42-43): chart for 26th September 1947, noon.
+  // Neptune, Uranus, Saturn, Jupiter move slowly enough that noon-value is used as-is for the whole month.
+  // Mars, Venus, Mercury move faster and are given their exact 26th September longitude, then propagated
+  // forward/backward across the month using each planet's known mean daily motion.
+  const ANCHOR_1947 = { day: 26,
+    neptune: signDegToAbs(6, 10.25),   // 10.25 deg Libra
+    uranus:  signDegToAbs(2, 26.25),   // 26.25 deg Gemini
+    saturn:  signDegToAbs(4, 18.75),   // 18.75 deg Leo
+    jupiter: signDegToAbs(7, 24.75),   // 24.75 deg Scorpio
+    mars:    signDegToAbs(3, 27.25),   // 27.25 deg Cancer
+    venus:   signDegToAbs(6, 8.75),    // 8.75 deg Libra
+    mercury: signDegToAbs(6, 23)       // 23 deg Libra
+  };
+  // Mean daily motion in degrees (real average rates, used to propagate the faster bodies across the month)
+  const DRIFT = {
+    mercury: 1.383, venus: 1.2, mars: 0.524, jupiter: 0.083, saturn: 0.034, uranus: 0.012, neptune: 0.006
+  };
+
+  function signDegToAbs(signIdx, deg){ return signIdx*30 + deg; }
+
+  function getDayData(day){
+    day = Math.max(1, Math.min(30, day));
+    let row = EPHEMERIS.find(r=>r.d===day) || EPHEMERIS[0];
+    const lons = {};
+    lons.sun = signDegToAbs(row.sun[0], row.sun[1]) % 360;
+    lons.moon = signDegToAbs(row.moon[0], row.moon[1]) % 360;
+    const dayOffset = day - ANCHOR_1947.day;
+    Object.keys(DRIFT).forEach(p=>{
+      lons[p] = ((ANCHOR_1947[p] + DRIFT[p]*dayOffset) % 360 + 360) % 360;
+    });
+    return {sidereal: row.sid, lons};
+  }
+
+  // ---------- "Cast for Today" — real current anchor ----------
+  // Anchor: theastroking.com live ephemeris reading, 2026-06-18 22:26:24 EST (DE421-derived, tropical zodiac).
+  const TODAY_ANCHOR = {
+    timestamp: Date.UTC(2026, 5, 19, 2, 26, 24), // converted to UTC (EST = UTC-5 -> 22:26:24 EST = 02:26:24 UTC next day)
+    lons: {
+      sun: 88.23, moon: 148.46, mercury: 112.35, venus: 127.02, mars: 53.31,
+      jupiter: 117.74, saturn: 13.59, uranus: 63.11, neptune: 4.33, pluto: 305.10
+    }
+  };
+  // Mean daily motion for propagating from the live anchor (degrees/day)
+  const TODAY_DRIFT = {
+    sun: 0.9856, moon: 13.176, mercury: 1.383, venus: 1.2, mars: 0.524,
+    jupiter: 0.083, saturn: 0.034, uranus: 0.012, neptune: 0.006, pluto: 0.004
+  };
+
+  function getTodayData(dateObj){
+    const msPerDay = 86400000;
+    const daysSinceAnchor = (dateObj.getTime() - TODAY_ANCHOR.timestamp) / msPerDay;
+    const lons = {};
+    Object.keys(TODAY_ANCHOR.lons).forEach(p=>{
+      lons[p] = ((TODAY_ANCHOR.lons[p] + TODAY_DRIFT[p]*daysSinceAnchor) % 360 + 360) % 360;
+    });
+    // Approximate sidereal time: at UTC midnight Jan 1, GST ~ 6h40m; gains ~3m56.6s/day, plus ~4 min/hour of UTC.
+    const utcHours = dateObj.getUTCHours() + dateObj.getUTCMinutes()/60 + dateObj.getUTCSeconds()/3600;
+    const dayOfYear = Math.floor((dateObj - new Date(Date.UTC(dateObj.getUTCFullYear(),0,0))) / msPerDay);
+    let gst = (6 + 40/60) + dayOfYear*(3*60+56.6)/3600 + utcHours*1.0027379;
+    gst = ((gst % 24) + 24) % 24;
+    const h = Math.floor(gst);
+    const m = Math.floor((gst-h)*60);
+    const s = Math.round((((gst-h)*60)-m)*60);
+    return {sidereal: [h,m,s], lons};
+  }
+
+  function lonToSignDeg(lon){
+    lon = ((lon % 360)+360)%360;
+    const signIdx = Math.floor(lon/30);
+    const deg = +(lon - signIdx*30).toFixed(1);
+    return {signIdx, deg};
+  }
+
+  // ---------- Aspect-finding between two longitudes ----------
+  function angleDiff(a,b){
+    let d = Math.abs(a-b) % 360;
+    if(d>180) d = 360-d;
+    return d;
+  }
+  function findAspect(lon1, lon2){
+    const diff = angleDiff(lon1, lon2);
+    let best=null;
+    for(const asp of ASPECTS){
+      const delta = Math.abs(diff-asp.angle);
+      if(delta <= asp.orb){
+        if(!best || delta < best.delta){
+          best = {...asp, orb_actual:+delta.toFixed(2), delta};
+        }
+      }
+    }
+    return best;
+  }
+
+  // ---------- Diagram One (static 12-house wheel, no planets) ----------
+  function drawDiagramOne(svgId){
+    const svg = document.getElementById(svgId);
+    const cx=130, cy=130, rOuter=110, rInner=95, rHub=26;
+    let html = '';
+    html += `<circle cx="${cx}" cy="${cy}" r="${rOuter}" fill="none" stroke="#3A2E1F" stroke-width="2"/>`;
+    html += `<circle cx="${cx}" cy="${cy}" r="${rInner}" fill="none" stroke="#3A2E1F" stroke-width="1"/>`;
+    // 12 spokes
+    for(let i=0;i<12;i++){
+      const ang = (i*30 - 90) * Math.PI/180;
+      const x2 = cx + rOuter*Math.cos(ang);
+      const y2 = cy + rOuter*Math.sin(ang);
+      const x1 = cx + rHub*Math.cos(ang);
+      const y1 = cy + rHub*Math.sin(ang);
+      html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#3A2E1F" stroke-width="1"/>`;
+      // house number
+      const labelAng = (i*30 + 15 - 90) * Math.PI/180;
+      const lx = cx + (rInner-14)*Math.cos(labelAng);
+      const ly = cy + (rInner-14)*Math.sin(labelAng);
+      html += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="10" fill="#5C4A35" text-anchor="middle" font-family="Courier New, monospace">${i+1}</text>`;
+    }
+    // hub (textured globe look)
+    html += `<circle cx="${cx}" cy="${cy}" r="${rHub}" fill="none" stroke="#3A2E1F" stroke-width="1.5"/>`;
+    for(let i=-3;i<=3;i++){
+      html += `<line x1="${cx-rHub}" y1="${cy+i*7}" x2="${cx+rHub}" y2="${cy+i*7}" stroke="#3A2E1F" stroke-width="0.5" opacity="0.5"/>`;
+    }
+    svg.innerHTML = html;
+  }
+
+  // ---------- Live wheel with planets placed ----------
+  function drawRaceWheel(svgId, lons){
+    const svg = document.getElementById(svgId);
+    const cx=130, cy=130, rOuter=110, rInner=95, rHub=24, rPlanet=72;
+    let html = '';
+    html += `<circle cx="${cx}" cy="${cy}" r="${rOuter}" fill="none" stroke="#3A2E1F" stroke-width="2"/>`;
+    html += `<circle cx="${cx}" cy="${cy}" r="${rInner}" fill="none" stroke="#3A2E1F" stroke-width="1"/>`;
+    for(let i=0;i<12;i++){
+      const ang = (i*30 - 90) * Math.PI/180;
+      const x2 = cx + rOuter*Math.cos(ang);
+      const y2 = cy + rOuter*Math.sin(ang);
+      const x1 = cx + rHub*Math.cos(ang);
+      const y1 = cy + rHub*Math.sin(ang);
+      html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#3A2E1F" stroke-width="0.75" opacity="0.6"/>`;
+    }
+    // zodiac glyphs around outer rim
+    for(let i=0;i<12;i++){
+      const ang = (i*30 + 15 - 90) * Math.PI/180;
+      const lx = cx + (rOuter+14)*Math.cos(ang);
+      const ly = cy + (rOuter+14)*Math.sin(ang);
+      html += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="13" fill="#A8821E" text-anchor="middle" dominant-baseline="middle">${SIGN_GLYPH[i]}</text>`;
+    }
+    html += `<circle cx="${cx}" cy="${cy}" r="${rHub}" fill="none" stroke="#3A2E1F" stroke-width="1.5"/>`;
+    for(let i=-3;i<=3;i++){
+      html += `<line x1="${cx-rHub}" y1="${cy+i*6}" x2="${cx+rHub}" y2="${cy+i*6}" stroke="#3A2E1F" stroke-width="0.5" opacity="0.5"/>`;
+    }
+    // planets
+    PLANETS.forEach((p, idx)=>{
+      if(lons[p.key]===undefined) return;
+      const ang = (lons[p.key] - 90) * Math.PI/180;
+      const jitter = (idx%2===0)? 0 : 8;
+      const r = rPlanet - jitter;
+      const x = cx + r*Math.cos(ang);
+      const y = cy + r*Math.sin(ang);
+      html += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="11" fill="#EDE4D3" stroke="${p.color}" stroke-width="1.2"/>`;
+      html += `<text x="${x.toFixed(1)}" y="${(y+4.5).toFixed(1)}" font-size="13" fill="${p.color}" text-anchor="middle">${p.glyph}</text>`;
+    });
+    svg.innerHTML = html;
+  }
+
+  drawDiagramOne('diagramOne');
+  drawRaceWheel('raceWheel', {});
+
+  // ---------- Ephemeris table render ----------
+  function renderEphemerisTable(){
+    const table = document.getElementById('ephTable');
+    let thead = '<thead><tr><th>Day</th><th>Sidereal Time</th><th>☉ Sun</th><th>☽ Moon</th></tr></thead>';
+    let tbody = '<tbody>';
+    EPHEMERIS.forEach(row=>{
+      const sidStr = `${row.sid[0]}h ${row.sid[1]}m ${row.sid[2]}s`;
+      const sunSign = SIGNS[row.sun[0]];
+      const moonSign = SIGNS[row.moon[0]];
+      tbody += `<tr><td class="day">${row.d}</td><td>${sidStr}</td><td>${row.sun[1]}° ${sunSign}</td><td>${row.moon[1]}° ${moonSign}</td></tr>`;
+    });
+    tbody += '</tbody>';
+    table.innerHTML = thead + tbody;
+  }
+  renderEphemerisTable();
+
+  // ---------- Tab switching ----------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---------- Calculator: runner rows ----------
+  const runnerList = document.getElementById('runnerList');
+  let runnerCount = 0;
+
+  function addRunnerRow(name, stone, lb){
+    runnerCount++;
+    const row = document.createElement('div');
+    row.className = 'runner-row';
+    row.style.gridTemplateColumns = '1fr 50px 50px 28px';
+
+    const nameInput = document.createElement('input');
+    nameInput.type='text'; nameInput.placeholder='Horse name'; nameInput.className='runner-name';
+    nameInput.value = name || '';
+    const stoneInput = document.createElement('input');
+    stoneInput.type='number'; stoneInput.placeholder='st'; stoneInput.className='runner-stone';
+    stoneInput.value = stone !== undefined ? stone : '';
+    stoneInput.title = 'Stone';
+    const lbInput = document.createElement('input');
+    lbInput.type='number'; lbInput.placeholder='lb'; lbInput.className='runner-lb';
+    lbInput.value = lb !== undefined ? lb : '';
+    lbInput.title = 'Pounds';
+    const rm = document.createElement('button');
+    rm.type='button'; rm.className='rm-btn'; rm.innerHTML='&times;';
+    rm.addEventListener('click', ()=>{ row.remove(); });
+
+    if(runnerCount===1){
+      const l1=document.createElement('label'); l1.textContent='Horse';
+      const l2=document.createElement('label'); l2.textContent='St'; l2.style.fontSize='10px';
+      const l3=document.createElement('label'); l3.textContent='Lb'; l3.style.fontSize='10px';
+      const l4=document.createElement('span');
+      const labelRow=document.createElement('div');
+      labelRow.style.display='contents';
+      runnerList.appendChild(l1); runnerList.appendChild(l2); runnerList.appendChild(l3); runnerList.appendChild(l4);
+    }
+
+    row.appendChild(nameInput);
+    row.appendChild(stoneInput);
+    row.appendChild(lbInput);
+    row.appendChild(rm);
+    runnerList.appendChild(row);
+  }
+
+  document.getElementById('addRunner').addEventListener('click', ()=> addRunnerRow());
+
+  // seed with example runners from Race Seven (weights in stone/lb as printed in the book)
+  addRunnerRow('Flexton', 8, 12);
+  addRunnerRow('Woodwind', 7, 7);
+  addRunnerRow('Master Vote', 9, 1);
+  addRunnerRow('Stuart', 8, 9);
+
+  document.getElementById('resetCalc').addEventListener('click', ()=>{
+    runnerList.innerHTML='';
+    runnerCount = 0;
+    addRunnerRow('', '', '');
+    document.getElementById('resultsArea').innerHTML='';
+    drawRaceWheel('raceWheel', {});
+    document.getElementById('wheelCaption').textContent = 'Awaiting particulars';
+  });
+
+  // ---------- Era toggle ----------
+  const eraSelect = document.getElementById('eraSelect');
+  const raceDayInput = document.getElementById('raceDay');
+  const raceDayLabel = document.getElementById('raceDayLabel');
+  eraSelect.addEventListener('change', ()=>{
+    if(eraSelect.value === 'today'){
+      raceDayLabel.textContent = 'Date';
+      raceDayInput.type = 'date';
+      const now = new Date();
+      raceDayInput.value = now.toISOString().slice(0,10);
+    } else {
+      raceDayLabel.textContent = 'Day of September, 1947';
+      raceDayInput.type = 'number';
+      raceDayInput.min = 1; raceDayInput.max = 30;
+      raceDayInput.value = 26;
+    }
+  });
+
+  // ---------- Phonetical period lookup ----------
+  // Recreates the book's pattern of four-minute spans -> period number + charge,
+  // extended using the additional worked examples (Period 9/Negative, 1/4/Positive, 6/Negative cycling).
+  function phoneticalPeriod(hh, mm){
+    const blockStart = mm - (mm % 4);
+    const blockIndex = Math.floor(mm/4);
+    const periodNumbers = [3, 9, 0.25, 6, 5, 1, 7, 4, 11, 2, 8, 12, 3, 9, 0.25];
+    const period = periodNumbers[blockIndex % periodNumbers.length];
+    const positive = (blockIndex % 2 === 0);
+    return {
+      span: `${String(hh).padStart(2,'0')}:${String(blockStart).padStart(2,'0')}–${String(hh).padStart(2,'0')}:${String(Math.min(blockStart+4,59)).padStart(2,'0')}`,
+      period,
+      charge: positive ? 'Positive' : 'Negative'
+    };
+  }
+
+  // ---------- Gravitational Pointers — the book's actual H.S./Z1 method ----------
+  // Worked from pages 68-69: 
+  //   S = top weight minus bottom weight (in pounds)
+  //   H.S. = S / 2 (Half Scale)
+  //   First Gravitational Pointer  = top weight minus H.S.
+  //   Second Gravitational Pointer = bottom weight plus H.S.
+  //   Z1 = 90 minus S; Third Gravitational Pointer = bottom weight + round(Z1 * 19.5 / 90)
+  // Weights are entered in pounds (lb) for simplicity; stone-pounds are stone*14+lb.
+  function calculateGravitationalPointers(weights){
+    const top = Math.max(...weights);
+    const bottom = Math.min(...weights);
+    const S = top - bottom;
+    if(S < 10){
+      return { applicable:false, reason: 'Scale of weights under 10 lb — Gravitational Pointers ruled out as inapplicable.' };
+    }
+    const HS = S / 2;
+    const first = +(top - HS).toFixed(1);
+    const second = +(bottom + HS).toFixed(1);
+    const Z1 = 90 - S;
+    const thirdAdj = Math.round((Z1 * 19.5) / 90);
+    const third = +(bottom + thirdAdj).toFixed(1);
+    return { applicable:true, S, HS, first, second, third };
+  }
+
+  function nearestRunnerToWeight(runners, targetWeight, radius){
+    radius = radius===undefined ? 3 : radius;
+    let best=null, bestDelta=Infinity;
+    runners.forEach(r=>{
+      if(r.weight===null) return;
+      const delta = Math.abs(r.weight - targetWeight);
+      if(delta < bestDelta){ bestDelta = delta; best = r; }
+    });
+    if(best && bestDelta <= radius) return {runner: best, delta: bestDelta};
+    return null;
+  }
+
+  // ---------- Main calculation ----------
+  document.getElementById('erectChart').addEventListener('click', ()=>{
+    const raceName = document.getElementById('raceName').value || 'Untitled Race';
+    const postTimeVal = document.getElementById('postTime').value || '15:00';
+    const [hh, mm] = postTimeVal.split(':').map(Number);
+    const era = eraSelect.value;
+
+    const runnerRows = Array.from(runnerList.querySelectorAll('.runner-row'));
+    const runners = runnerRows.map(row=>{
+      const name = row.querySelector('.runner-name').value.trim();
+      const stone = parseFloat(row.querySelector('.runner-stone').value);
+      const lb = parseFloat(row.querySelector('.runner-lb').value);
+      const hasWeight = !isNaN(stone) || !isNaN(lb);
+      const totalLb = hasWeight ? (isNaN(stone)?0:stone*14) + (isNaN(lb)?0:lb) : null;
+      return {name, weight: totalLb, stoneDisplay: hasWeight ? `${isNaN(stone)?0:stone}st ${isNaN(lb)?0:lb}lb` : '—'};
+    }).filter(r=>r.name.length>0);
+
+    if(runners.length < 2){
+      document.getElementById('resultsArea').innerHTML = `<div class="empty-state">Enter at least two runners to erect a chart.</div>`;
+      return;
+    }
+
+    let dayData, captionStr;
+    if(era === 'today'){
+      const dateVal = document.getElementById('raceDay').value;
+      const [yy,MM,dd] = dateVal.split('-').map(Number);
+      const dateObj = new Date(Date.UTC(yy, MM-1, dd, hh, mm));
+      dayData = getTodayData(dateObj);
+      captionStr = `${raceName} — ${dateVal}, ${postTimeVal} (today's sky) · Sidereal ${dayData.sidereal[0]}h ${dayData.sidereal[1]}m ${dayData.sidereal[2]}s`;
+    } else {
+      const day = parseInt(document.getElementById('raceDay').value, 10) || 26;
+      dayData = getDayData(day);
+      captionStr = `${raceName} — ${day} September 1947, ${postTimeVal} · Sidereal ${dayData.sidereal[0]}h ${dayData.sidereal[1]}m ${dayData.sidereal[2]}s`;
+    }
+
+    drawRaceWheel('raceWheel', dayData.lons);
+    document.getElementById('wheelCaption').textContent = captionStr;
+
+    // --- Colour Pointers: assign each runner a planet pair (cycling through the list) and score by best aspect found ---
+    const planetKeys = PLANETS.map(p=>p.key).filter(k=>dayData.lons[k]!==undefined);
+    const colourScored = runners.map((r, i)=>{
+      const p1 = planetKeys[i % planetKeys.length];
+      const p2 = planetKeys[(i+3) % planetKeys.length];
+      const aspect = findAspect(dayData.lons[p1], dayData.lons[p2]);
+      const score = aspect ? (aspect.weight * 10 - aspect.delta) : 0;
+      return {...r, p1, p2, aspect, colourScore: score};
+    });
+    colourScored.sort((a,b)=> b.colourScore - a.colourScore);
+
+    // --- Gravitational Pointers: the book's actual H.S. / Z1 method (pp. 68-69) ---
+    const haveWeights = runners.every(r=>r.weight!==null);
+    let gravResult = null;
+    if(haveWeights){
+      gravResult = calculateGravitationalPointers(runners.map(r=>r.weight));
+    }
+
+    // --- Phonetical Pointers: derive from post time ---
+    const period = phoneticalPeriod(hh, mm);
+
+    // --- Combine into final order ---
+    const colourRank = {};
+    colourScored.forEach((r,i)=>{ colourRank[r.name] = i; });
+
+    let gravMatches = {};
+    if(haveWeights && gravResult && gravResult.applicable){
+      const m1 = nearestRunnerToWeight(runners, gravResult.first);
+      const m2 = nearestRunnerToWeight(runners, gravResult.second);
+      const m3 = nearestRunnerToWeight(runners, gravResult.third);
+      if(m1) gravMatches[m1.runner.name] = {tier:1, delta:m1.delta};
+      if(m2 && !(m1 && m1.runner.name===m2.runner.name)) gravMatches[m2.runner.name] = {tier:2, delta:m2.delta};
+      if(m3 && !gravMatches[m3.runner.name]) gravMatches[m3.runner.name] = {tier:3, delta:m3.delta};
+    }
+
+    const finalScored = runners.map(r=>{
+      const cRank = colourRank[r.name] ?? runners.length;
+      const gravBonus = gravMatches[r.name] ? (4 - gravMatches[r.name].tier) * 1.5 : 0;
+      const phoneticalNudge = period.charge==='Positive' ? -0.3 : 0.3;
+      const combined = (cRank*3) - gravBonus + phoneticalNudge*cRank;
+      const colourEntry = colourScored.find(c=>c.name===r.name);
+      return {...r, combined, aspect: colourEntry.aspect, p1: colourEntry.p1, p2: colourEntry.p2};
+    });
+    finalScored.sort((a,b)=> a.combined - b.combined);
+
+    // --- Render results ---
+    const planetLabel = key => {
+      const p = PLANETS.find(p=>p.key===key);
+      return p ? (p.glyph + ' ' + p.name) : key;
+    };
+
+    let html = '';
+    html += `<div class="pointer-block"><div class="pointer-title">Final Order — ${raceName}</div><ul class="ranking">`;
+    finalScored.forEach((r, i)=>{
+      const aspText = r.aspect ? `${r.aspect.glyph} ${r.aspect.name} (${r.aspect.orb_actual}° orb) — ${planetLabel(r.p1)} / ${planetLabel(r.p2)}` : 'No aspect within orb';
+      html += `<li><span style="display:flex;align-items:center;"><span class="rank-num">${i+1}</span><span class="horse-name">${r.name}</span></span><span class="pointer-detail">${aspText}</span></li>`;
+    });
+    html += `</ul></div>`;
+
+    html += `<div class="pointer-block"><div class="pointer-title">Colour Pointers</div><ul class="ranking">`;
+    colourScored.forEach((r,i)=>{
+      const aspText = r.aspect ? `${r.aspect.glyph} ${r.aspect.name} ${r.aspect.orb_actual}°` : '—';
+      html += `<li><span style="display:flex;align-items:center;"><span class="rank-num">${i+1}</span><span class="horse-name">${r.name}</span></span><span class="pointer-detail">${planetLabel(r.p1)} / ${planetLabel(r.p2)} · ${aspText}</span></li>`;
+    });
+    html += `</ul></div>`;
+
+    html += `<div class="pointer-block"><div class="pointer-title">Gravitational Pointers</div>`;
+    if(haveWeights && gravResult){
+      if(gravResult.applicable){
+        html += `<p style="font-size:13px; color:var(--ink-soft); margin-bottom:10px;">
+          Scale of weights (S) = ${gravResult.S} lb · Half Scale (H.S.) = ${gravResult.HS} lb<br>
+          First Gravitational Pointer: ${gravResult.first} lb · Second: ${gravResult.second} lb · Third: ${gravResult.third} lb
+        </p>`;
+        html += `<ul class="ranking">`;
+        [1,2,3].forEach(tier=>{
+          const entry = Object.entries(gravMatches).find(([name,m])=>m.tier===tier);
+          if(entry){
+            const r = runners.find(rr=>rr.name===entry[0]);
+            html += `<li><span style="display:flex;align-items:center;"><span class="rank-num">${tier}</span><span class="horse-name">${r.name}</span></span><span class="pointer-detail">${r.stoneDisplay} · within ${entry[1].delta.toFixed(1)}lb of Pointer ${tier}</span></li>`;
+          }
+        });
+        if(Object.keys(gravMatches).length===0){
+          html += `<li><span class="pointer-detail">No runner falls within 3lb of any Gravitational Pointer.</span></li>`;
+        }
+        html += `</ul>`;
+      } else {
+        html += `<div class="empty-state">${gravResult.reason}</div>`;
+      }
+    } else {
+      html += `<div class="empty-state">No scale of weights given — Gravitational Pointer not applied.</div>`;
+    }
+    html += `</div>`;
+
+    html += `<div class="pointer-block"><div class="pointer-title">Phonetical Pointer</div>
+      <p style="font-size:14px;">Four-minute span <b>${period.span}</b> falls in <b>Period No. ${period.period}</b>, reading <b>${period.charge}</b>.</p>
+    </div>`;
+
+    document.getElementById('resultsArea').innerHTML = html;
+  });
+
+  // auto-run once on load with seeded example
+  document.getElementById('erectChart').click();
+
+  // =========================================================
+  // SKY AR MODULE
+  // =========================================================
+  (function(){
+
+    // ---------- Astronomy: ecliptic longitude -> RA/Dec -> Alt/Az ----------
+    const DEG = Math.PI/180;
+    const OBLIQUITY = 23.439 * DEG; // Earth's axial tilt
+
+    // Simplified: treat each body's ecliptic latitude as 0 (fine for Sun; a few degrees off for others,
+    // acceptable for a directional pointer rather than a precision ephemeris).
+    function eclipticToEquatorial(lonDeg){
+      const lon = lonDeg * DEG;
+      const sinDec = Math.sin(OBLIQUITY) * Math.sin(lon);
+      const dec = Math.asin(sinDec);
+      let ra = Math.atan2(Math.cos(OBLIQUITY) * Math.sin(lon), Math.cos(lon));
+      if(ra < 0) ra += 2*Math.PI;
+      return { ra, dec }; // radians
+    }
+
+    function greenwichSiderealTimeDeg(dateObj){
+      // Standard GST approximation (degrees), good to a few arcminutes for our purposes.
+      const JD = dateObj.getTime()/86400000 + 2440587.5;
+      const T = (JD - 2451545.0)/36525;
+      let gst = 280.46061837 + 360.98564736629*(JD-2451545.0) + 0.000387933*T*T - (T*T*T)/38710000;
+      gst = ((gst % 360)+360) % 360;
+      return gst;
+    }
+
+    function equatorialToHorizontal(ra, dec, latDeg, lonDeg, dateObj){
+      const gst = greenwichSiderealTimeDeg(dateObj);
+      const lst = ((gst + lonDeg) % 360 + 360) % 360; // local sidereal time, degrees
+      let H = (lst*DEG - ra); // hour angle, radians
+      H = ((H + Math.PI) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI) - Math.PI;
+      const lat = latDeg*DEG;
+      const sinAlt = Math.sin(dec)*Math.sin(lat) + Math.cos(dec)*Math.cos(lat)*Math.cos(H);
+      const alt = Math.asin(sinAlt);
+      const cosAz = (Math.sin(dec) - Math.sin(alt)*Math.sin(lat)) / (Math.cos(alt)*Math.cos(lat));
+      let az = Math.acos(Math.max(-1,Math.min(1,cosAz)));
+      if(Math.sin(H) > 0) az = 2*Math.PI - az;
+      return { altDeg: alt/DEG, azDeg: az/DEG }; // azDeg: 0=North, 90=East, 180=South, 270=West
+    }
+
+    function getPlanetAltAz(planetKey, lonDeg, latUser, lonUser, dateObj){
+      const eq = eclipticToEquatorial(lonDeg);
+      return equatorialToHorizontal(eq.ra, eq.dec, latUser, lonUser, dateObj);
+    }
+
+    // ---------- State ----------
+    let userLat = 51.5074, userLon = -0.1278; // default: London, matches the book's Ascot setting
+    let deviceHeading = 0; // degrees, 0=North
+    let cameraOn = false;
+    let selectedDate = new Date();
+    let selectedMinuteOfDay = selectedDate.getHours()*60 + selectedDate.getMinutes();
+
+    const arDateInput = document.getElementById('arDate');
+    const timeSlider = document.getElementById('timeSlider');
+    const timeReadout = document.getElementById('timeReadout');
+    const locInput = document.getElementById('locInput');
+    const locStatus = document.getElementById('locStatus');
+    const arStatus = document.getElementById('arStatus');
+    const compassTrack = document.getElementById('compassTrack');
+    const arMarkers = document.getElementById('arMarkers');
+    const arVideo = document.getElementById('arVideo');
+    const arFallback = document.getElementById('arFallback');
+
+    arDateInput.value = selectedDate.toISOString().slice(0,10);
+    timeSlider.value = selectedMinuteOfDay;
+
+    function currentDateObjUTC(){
+      const [y,m,d] = arDateInput.value.split('-').map(Number);
+      const hh = Math.floor(selectedMinuteOfDay/60), mm = selectedMinuteOfDay%60;
+      // Interpreting the chosen wall-clock time as local to the chosen location, approximated via UTC offset from longitude.
+      const approxOffsetHours = userLon/15;
+      return new Date(Date.UTC(y, m-1, d, hh, mm) - approxOffsetHours*3600000);
+    }
+
+    function formatTime(min){
+      const hh = Math.floor(min/60), mm = min%60;
+      const ampm = hh>=12 ? 'PM':'AM';
+      let h12 = hh%12; if(h12===0) h12=12;
+      return `${h12}:${String(mm).padStart(2,'0')} ${ampm}`;
+    }
+
+    timeSlider.addEventListener('input', ()=>{
+      selectedMinuteOfDay = parseInt(timeSlider.value,10);
+      timeReadout.textContent = formatTime(selectedMinuteOfDay);
+      renderSky();
+    });
+    arDateInput.addEventListener('change', renderSky);
+
+    document.getElementById('liveTimeBtn').addEventListener('click', ()=>{
+      const now = new Date();
+      arDateInput.value = now.toISOString().slice(0,10);
+      selectedMinuteOfDay = now.getHours()*60 + now.getMinutes();
+      timeSlider.value = selectedMinuteOfDay;
+      timeReadout.textContent = formatTime(selectedMinuteOfDay);
+      renderSky();
+    });
+
+    // ---------- Location ----------
+    document.getElementById('useGPS').addEventListener('click', ()=>{
+      if(!navigator.geolocation){
+        locStatus.textContent = 'Geolocation not available in this browser.';
+        locStatus.className = 'ar-status warn';
+        return;
+      }
+      locStatus.textContent = 'Locating…';
+      navigator.geolocation.getCurrentPosition(pos=>{
+        userLat = pos.coords.latitude;
+        userLon = pos.coords.longitude;
+        locInput.value = `${userLat.toFixed(3)}, ${userLon.toFixed(3)}`;
+        locStatus.textContent = 'Location set from device GPS.';
+        locStatus.className = 'ar-status';
+        renderSky();
+      }, err=>{
+        locStatus.textContent = 'Could not get location — enter manually.';
+        locStatus.className = 'ar-status warn';
+      });
+    });
+
+    locInput.addEventListener('change', ()=>{
+      const val = locInput.value.trim();
+      const parts = val.split(',').map(s=>parseFloat(s.trim()));
+      if(parts.length===2 && !isNaN(parts[0]) && !isNaN(parts[1])){
+        userLat = parts[0]; userLon = parts[1];
+        locStatus.textContent = `Set to ${userLat.toFixed(2)}, ${userLon.toFixed(2)}.`;
+        locStatus.className = 'ar-status';
+        renderSky();
+      } else if(val.length>0){
+        // city lookup via OpenStreetMap Nominatim (no key required)
+        locStatus.textContent = 'Looking up location…';
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&limit=1`)
+          .then(r=>r.json())
+          .then(results=>{
+            if(results && results[0]){
+              userLat = parseFloat(results[0].lat);
+              userLon = parseFloat(results[0].lon);
+              locStatus.textContent = `Set to ${results[0].display_name.split(',').slice(0,2).join(',')}.`;
+              locStatus.className = 'ar-status';
+              renderSky();
+            } else {
+              locStatus.textContent = 'Place not found — try lat,long instead.';
+              locStatus.className = 'ar-status warn';
+            }
+          })
+          .catch(()=>{
+            locStatus.textContent = 'Lookup failed — try lat,long instead (offline or blocked).';
+            locStatus.className = 'ar-status warn';
+          });
+      }
+    });
+
+    // ---------- Camera & compass ----------
+    document.getElementById('enableCamera').addEventListener('click', async ()=>{
+      // Compass / orientation
+      if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
+        try{
+          const perm = await DeviceOrientationEvent.requestPermission();
+          if(perm !== 'granted'){
+            arStatus.textContent = 'Compass permission denied — markers will use North-up as a fallback.';
+            arStatus.className = 'ar-status warn';
+          }
+        }catch(e){ /* non-iOS or already granted */ }
+      }
+      window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+      window.addEventListener('deviceorientation', handleOrientation, true);
+
+      // Camera
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        arVideo.srcObject = stream;
+        arVideo.classList.remove('hidden');
+        arFallback.style.display = 'none';
+        cameraOn = true;
+        arStatus.textContent = 'Camera and compass active. Pan the device to find the planets.';
+        arStatus.className = 'ar-status';
+      }catch(e){
+        arStatus.textContent = 'Camera unavailable (' + (e.message||'permission denied') + ') — showing the chart without live video.';
+        arStatus.className = 'ar-status warn';
+      }
+      renderSky();
+    });
+
+    function handleOrientation(e){
+      let heading = null;
+      if(typeof e.webkitCompassHeading === 'number'){
+        heading = e.webkitCompassHeading; // iOS, already 0=North
+      } else if(e.absolute && e.alpha !== null){
+        heading = 360 - e.alpha;
+      } else if(e.alpha !== null){
+        heading = 360 - e.alpha;
+      }
+      if(heading !== null){
+        deviceHeading = ((heading % 360)+360)%360;
+        renderSky();
+      }
+    }
+
+    // ---------- Compass strip ----------
+    function renderCompassStrip(){
+      const dirs = [
+        {d:0,l:'N'},{d:45,l:'NE'},{d:90,l:'E'},{d:135,l:'SE'},
+        {d:180,l:'S'},{d:225,l:'SW'},{d:270,l:'W'},{d:315,l:'NW'},{d:360,l:'N'}
+      ];
+      const fov = 60; // degrees visible across the strip width approx
+      const stageWidth = document.getElementById('arStage').clientWidth || 360;
+      const pxPerDeg = stageWidth / fov;
+      let html = '';
+      // render a wider band so it scrolls smoothly through wraparound
+      for(let cycle=-1; cycle<=1; cycle++){
+        dirs.forEach(dir=>{
+          let rel = (dir.d + cycle*360) - deviceHeading;
+          const x = stageWidth/2 + rel*pxPerDeg;
+          html += `<span style="position:absolute; left:${x}px; transform:translateX(-50%);">${dir.l}</span>`;
+        });
+      }
+      compassTrack.innerHTML = html;
+    }
+
+    // ---------- Markers ----------
+    function renderMarkers(altAzList){
+      const stage = document.getElementById('arStage');
+      const w = stage.clientWidth, h = stage.clientHeight;
+      const hFov = 60, vFov = 75; // degrees of view modeled across the stage
+      let html = '';
+      altAzList.forEach(p=>{
+        let relAz = p.azDeg - deviceHeading;
+        relAz = ((relAz+180)%360+360)%360 - 180; // -180..180
+        const visible = Math.abs(relAz) < hFov/2 + 15 && p.altDeg > -10;
+        const x = w/2 + (relAz/(hFov/2)) * (w/2);
+        // altitude 90 (zenith) -> near top; 0 (horizon) -> mid-low; negative -> below frame
+        const horizonY = h*0.66;
+        const y = horizonY - (p.altDeg/(vFov/2)) * (h*0.42);
+        const offArc = !visible || y < 30 || y > h-90;
+        html += `<div class="ar-marker ${offArc?'off-arc':''}" style="left:${x}px; top:${Math.max(30,Math.min(h-90,y))}px;">
+          <div class="dot">${p.glyph}</div>
+          <div class="label">${p.name}${offArc?' ↻':''}</div>
+        </div>`;
+      });
+      arMarkers.innerHTML = html;
+    }
+
+    // ---------- Radar wheel (live) ----------
+    function renderRadarWheel(lons){
+      const cx=115, cy=115, rOuter=98, rInner=84, rHub=20, rPlanet=64;
+      let html = '';
+      html += `<circle cx="${cx}" cy="${cy}" r="${rOuter}" fill="rgba(12,10,8,0.55)" stroke="${'#A8821E'}" stroke-width="1.5"/>`;
+      html += `<circle cx="${cx}" cy="${cy}" r="${rInner}" fill="none" stroke="rgba(168,130,30,0.5)" stroke-width="0.75"/>`;
+      for(let i=0;i<12;i++){
+        const ang = (i*30 - 90) * Math.PI/180;
+        const x2 = cx + rOuter*Math.cos(ang), y2 = cy + rOuter*Math.sin(ang);
+        const x1 = cx + rHub*Math.cos(ang), y1 = cy + rHub*Math.sin(ang);
+        html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(168,130,30,0.35)" stroke-width="0.75"/>`;
+      }
+      // heading indicator (sweep line showing where camera points)
+      const headingAng = (deviceHeading - 90) * Math.PI/180;
+      const hx = cx + rOuter*Math.cos(headingAng), hy = cy + rOuter*Math.sin(headingAng);
+      html += `<line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#8B2E2E" stroke-width="1.5" opacity="0.8"/>`;
+      html += `<circle cx="${cx}" cy="${cy}" r="${rHub}" fill="none" stroke="#A8821E" stroke-width="1.2"/>`;
+      PLANETS.forEach((p,idx)=>{
+        if(lons[p.key]===undefined) return;
+        const ang = (lons[p.key] - 90) * Math.PI/180;
+        const jitter = (idx%2===0)?0:9;
+        const r = rPlanet - jitter;
+        const x = cx + r*Math.cos(ang), y = cy + r*Math.sin(ang);
+        html += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="#EDE4D3" stroke="${p.color}" stroke-width="1"/>`;
+        html += `<text x="${x.toFixed(1)}" y="${(y+3.5).toFixed(1)}" font-size="10" fill="${p.color}" text-anchor="middle">${p.glyph}</text>`;
+      });
+      document.getElementById('radarWheel').innerHTML = html;
+    }
+
+    // ---------- Main render ----------
+    function renderSky(){
+      const dateObj = currentDateObjUTC();
+      const data = getTodayData(dateObj);
+      renderCompassStrip();
+      renderRadarWheel(data.lons);
+
+      const altAzList = PLANETS.filter(p=>data.lons[p.key]!==undefined).map(p=>{
+        const altAz = getPlanetAltAz(p.key, data.lons[p.key], userLat, userLon, dateObj);
+        return {...p, ...altAz};
+      });
+      renderMarkers(altAzList);
+    }
+
+    // re-render on resize and on tab switch into view
+    window.addEventListener('resize', renderSky);
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        if(btn.dataset.tab === 'skyar'){ setTimeout(renderSky, 50); }
+      });
+    });
+
+    renderSky();
+  })();
+
+})();
+</script>
+</body>
+</html>
