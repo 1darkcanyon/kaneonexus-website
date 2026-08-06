@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="NEXUS Ping Test — Live Silver Acoustic Analyzer. Real-time microphone frequency analysis."/>
+<title>NEXUS — Acoustic Analyzer</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🔹</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --void:    #000000;
+  --deep:    #020408;
+  --silver:  #c0c8d8;
+  --chrome:  #e8ecf4;
+  --steel:   #8892a8;
+  --cyan:    #00e5ff;
+  --white:   rgba(255,255,255,0.92);
+  --muted:   rgba(255,255,255,0.45);
+  --dim:     rgba(255,255,255,0.12);
+  --bc:      rgba(192,200,216,0.15);
+  --fhd:    'Orbitron', monospace;
+  --fbd:    'Rajdhani', sans-serif;
+  --fmn:    'Share Tech Mono', monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  background: var(--void);
+  color: var(--white);
+  font-family: var(--fbd);
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── NAV ── */
+nav {
+  flex-shrink:0;
+  padding:0 24px;height:48px;
+  display:flex;align-items:center;gap:16px;
+  background:rgba(0,0,0,0.8);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--bc);
+  z-index:100;
+}
+.nav-logo {
+  font-family:var(--fhd);font-size:13px;font-weight:900;
+  letter-spacing:4px;color:var(--silver);
+  text-shadow:0 0 20px rgba(192,200,216,0.4);
+  text-decoration:none;
+}
+.nav-sep { width:1px;height:16px;background:var(--bc); }
+.nav-sub { font-family:var(--fmn);font-size:9px;letter-spacing:3px;color:var(--muted); }
+.nav-right { margin-left:auto;display:flex;align-items:center;gap:16px; }
+
+/* ── CONTROLS ── */
+.ctrl-btn {
+  font-family:var(--fhd);font-size:9px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;
+  padding:6px 16px;border-radius:3px;border:1px solid var(--bc);
+  background:rgba(192,200,216,0.06);color:var(--steel);
+  cursor:pointer;transition:all 0.2s;
+}
+.ctrl-btn:hover { background:rgba(192,200,216,0.12);color:var(--chrome); }
+.ctrl-btn.active {
+  background:rgba(192,200,216,0.15);color:var(--chrome);
+  border-color:var(--silver);
+  box-shadow:0 0 20px rgba(192,200,216,0.1);
+}
+.ctrl-btn.rec {
+  border-color:rgba(220,50,50,0.4);
+  color:#e05050;
+}
+.ctrl-btn.rec.active {
+  background:rgba(220,50,50,0.15);
+  border-color:#e05050;
+  animation:pulse-rec 1.5s ease-in-out infinite;
+}
+@keyframes pulse-rec {
+  0%,100%{box-shadow:0 0 10px rgba(220,50,50,0.2)}
+  50%{box-shadow:0 0 25px rgba(220,50,50,0.4)}
+}
+
+/* ── MAIN ── */
+main {
+  flex:1;display:flex;flex-direction:column;
+  padding:12px;gap:8px;overflow:hidden;
+}
+
+/* ── METERS TOP BAR ── */
+.meters {
+  display:flex;gap:16px;align-items:center;
+  flex-shrink:0;
+  padding:8px 16px;
+  border:1px solid var(--bc);border-radius:6px;
+  background:rgba(192,200,216,0.02);
+}
+.meter {
+  display:flex;flex-direction:column;gap:2px;
+}
+.meter-label {
+  font-family:var(--fmn);font-size:8px;letter-spacing:3px;color:var(--muted);
+}
+.meter-value {
+  font-family:var(--fhd);font-size:18px;font-weight:700;
+  color:var(--chrome);letter-spacing:1px;
+}
+.meter-unit {
+  font-size:10px;color:var(--steel);font-weight:400;
+}
+.meter-sep { width:1px;height:32px;background:var(--bc); }
+
+/* ── CANVAS AREA ── */
+.viz-container {
+  flex:1;display:flex;flex-direction:column;gap:8px;
+  min-height:0;
+}
+.viz-panel {
+  flex:1;position:relative;
+  border:1px solid var(--bc);border-radius:6px;
+  background:rgba(192,200,216,0.015);
+  overflow:hidden;
+  min-height:0;
+}
+.viz-panel canvas {
+  position:absolute;inset:0;width:100%;height:100%;
+}
+.viz-label {
+  position:absolute;top:8px;left:12px;
+  font-family:var(--fmn);font-size:8px;letter-spacing:3px;
+  color:var(--dim);text-transform:uppercase;z-index:2;
+}
+
+/* ── WAVEFORM (bottom) ── */
+.wave-panel {
+  height:100px;flex-shrink:0;position:relative;
+  border:1px solid var(--bc);border-radius:6px;
+  background:rgba(192,200,216,0.015);
+  overflow:hidden;
+}
+.wave-panel canvas {
+  position:absolute;inset:0;width:100%;height:100%;
+}
+
+/* ── OVERLAY: START PROMPT ── */
+.start-overlay {
+  position:fixed;inset:0;z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.92);
+  backdrop-filter:blur(20px);
+  transition:opacity 0.4s;
+}
+.start-overlay.hidden { opacity:0;pointer-events:none; }
+.start-overlay h2 {
+  font-family:var(--fhd);font-size:24px;font-weight:900;
+  letter-spacing:6px;color:var(--chrome);margin-bottom:12px;
+}
+.start-overlay p {
+  font-size:15px;font-weight:300;color:var(--muted);margin-bottom:32px;
+  text-align:center;max-width:400px;line-height:1.6;
+}
+.start-btn {
+  font-family:var(--fhd);font-size:12px;font-weight:700;
+  letter-spacing:4px;text-transform:uppercase;
+  color:var(--void);
+  background:linear-gradient(135deg, var(--silver), var(--chrome));
+  padding:14px 48px;border-radius:4px;border:none;
+  cursor:pointer;
+  box-shadow:0 0 40px rgba(192,200,216,0.2);
+  transition:all 0.3s;
+}
+.start-btn:hover {
+  box-shadow:0 0 60px rgba(192,200,216,0.35);
+  transform:translateY(-2px);
+}
+
+/* ── FFT SIZE SELECT ── */
+select.fft-select {
+  font-family:var(--fmn);font-size:9px;letter-spacing:2px;
+  padding:5px 8px;border-radius:3px;
+  border:1px solid var(--bc);
+  background:rgba(192,200,216,0.06);color:var(--steel);
+  cursor:pointer;appearance:none;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  nav{padding:0 12px;height:42px}
+  .nav-sub{display:none}
+  main{padding:8px;gap:6px}
+  .meters{flex-wrap:wrap;gap:8px;padding:6px 10px}
+  .meter-value{font-size:14px}
+  .wave-panel{height:72px}
+  .ctrl-btn{font-size:8px;padding:5px 10px;letter-spacing:2px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">NEXUS</a>
+  <div class="nav-sep"></div>
+  <span class="nav-sub">PING TEST</span>
+  <div class="nav-right">
+    <select class="fft-select" id="fftSize" title="FFT Resolution">
+      <option value="1024">FFT 1024</option>
+      <option value="2048" selected>FFT 2048</option>
+      <option value="4096">FFT 4096</option>
+      <option value="8192">FFT 8192</option>
+    </select>
+    <button class="ctrl-btn" id="scaleBtn" title="Toggle Log/Linear">LOG</button>
+    <button class="ctrl-btn" id="peakBtn" title="Toggle Peak Hold">PEAKS</button>
+    <button class="ctrl-btn" id="pauseBtn" title="Pause/Resume">PAUSE</button>
+    <button class="ctrl-btn" id="backBtn" title="Return to landing page" onclick="location.href='index.html'">EXIT</button>
+  </div>
+</nav>
+
+<main>
+  <div class="meters">
+    <div class="meter">
+      <span class="meter-label">LEVEL</span>
+      <span class="meter-value" id="mLevel">-- <span class="meter-unit">dB</span></span>
+    </div>
+    <div class="meter-sep"></div>
+    <div class="meter">
+      <span class="meter-label">PEAK FREQ</span>
+      <span class="meter-value" id="mPeak">-- <span class="meter-unit">Hz</span></span>
+    </div>
+    <div class="meter-sep"></div>
+    <div class="meter">
+      <span class="meter-label">NOTE</span>
+      <span class="meter-value" id="mNote">--</span>
+    </div>
+    <div class="meter-sep"></div>
+    <div class="meter">
+      <span class="meter-label">LOW</span>
+      <span class="meter-value" id="mLow">-- <span class="meter-unit">dB</span></span>
+    </div>
+    <div class="meter-sep"></div>
+    <div class="meter">
+      <span class="meter-label">MID</span>
+      <span class="meter-value" id="mMid">-- <span class="meter-unit">dB</span></span>
+    </div>
+    <div class="meter-sep"></div>
+    <div class="meter">
+      <span class="meter-label">HIGH</span>
+      <span class="meter-value" id="mHigh">-- <span class="meter-unit">dB</span></span>
+    </div>
+  </div>
+
+  <div class="viz-container">
+    <div class="viz-panel">
+      <span class="viz-label">FREQUENCY SPECTRUM</span>
+      <canvas id="spectrumCanvas"></canvas>
+    </div>
+    <div class="wave-panel">
+      <span class="viz-label">WAVEFORM</span>
+      <canvas id="waveCanvas"></canvas>
+    </div>
+  </div>
+</main>
+
+<!-- Start overlay -->
+<div class="start-overlay" id="startOverlay">
+  <h2>PING TEST</h2>
+  <p>Microphone access is required for real-time acoustic analysis. Tap below to begin.</p>
+  <button class="start-btn" id="startBtn">ENABLE MIC</button>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ── Elements ──
+  const specCanvas = document.getElementById('spectrumCanvas');
+  const waveCanvas = document.getElementById('waveCanvas');
+  const specCtx = specCanvas.getContext('2d');
+  const waveCtx = waveCanvas.getContext('2d');
+  const overlay = document.getElementById('startOverlay');
+  const startBtn = document.getElementById('startBtn');
+  const fftSelect = document.getElementById('fftSize');
+  const scaleBtn = document.getElementById('scaleBtn');
+  const peakBtn = document.getElementById('peakBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+
+  const mLevel = document.getElementById('mLevel');
+  const mPeak = document.getElementById('mPeak');
+  const mNote = document.getElementById('mNote');
+  const mLow = document.getElementById('mLow');
+  const mMid = document.getElementById('mMid');
+  const mHigh = document.getElementById('mHigh');
+
+  // ── State ──
+  let audioCtx, analyser, dataArray, timeArray, source, stream;
+  let logScale = true;
+  let peakHold = false;
+  let paused = false;
+  let peaks = null;
+  let animId;
+
+  // ── Note detection ──
+  const noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  function freqToNote(freq) {
+    if (freq <= 0) return '--';
+    const n = 12 * Math.log2(freq / 440);
+    const noteNum = Math.round(n) + 69;
+    const name = noteNames[((noteNum % 12) + 12) % 12];
+    const octave = Math.floor(noteNum / 12) - 1;
+    const cents = Math.round((n - Math.round(n)) * 100);
+    const sign = cents >= 0 ? '+' : '';
+    return name + octave + ' ' + sign + cents + 'c';
+  }
+
+  // ── Resize canvases ──
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+
+    const sp = specCanvas.parentElement;
+    specCanvas.width = sp.clientWidth * dpr;
+    specCanvas.height = sp.clientHeight * dpr;
+    specCtx.scale(dpr, dpr);
+
+    const wp = waveCanvas.parentElement;
+    waveCanvas.width = wp.clientWidth * dpr;
+    waveCanvas.height = wp.clientHeight * dpr;
+    waveCtx.scale(dpr, dpr);
+  }
+
+  // ── Init audio ──
+  async function init() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch(e) {
+      alert('Microphone access denied. Please allow mic access and reload.');
+      return;
+    }
+    overlay.classList.add('hidden');
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    source = audioCtx.createMediaStreamSource(stream);
+
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = parseInt(fftSelect.value);
+    analyser.smoothingTimeConstant = 0.8;
+    analyser.minDecibels = -100;
+    analyser.maxDecibels = -10;
+
+    source.connect(analyser);
+
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    timeArray = new Uint8Array(analyser.fftSize);
+    peaks = new Float32Array(analyser.frequencyBinCount);
+
+    resize();
+    draw();
+  }
+
+  // ── FFT size change ──
+  fftSelect.addEventListener('change', () => {
+    if (!analyser) return;
+    analyser.fftSize = parseInt(fftSelect.value);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    timeArray = new Uint8Array(analyser.fftSize);
+    peaks = new Float32Array(analyser.frequencyBinCount);
+  });
+
+  // ── Controls ──
+  scaleBtn.addEventListener('click', () => {
+    logScale = !logScale;
+    scaleBtn.textContent = logScale ? 'LOG' : 'LIN';
+    scaleBtn.classList.toggle('active', !logScale);
+  });
+
+  peakBtn.addEventListener('click', () => {
+    peakHold = !peakHold;
+    peakBtn.classList.toggle('active', peakHold);
+    if (!peakHold && peaks) peaks.fill(0);
+  });
+
+  pauseBtn.addEventListener('click', () => {
+    paused = !paused;
+    pauseBtn.classList.toggle('active', paused);
+    pauseBtn.textContent = paused ? 'RESUME' : 'PAUSE';
+    if (!paused) draw();
+  });
+
+  // ── Frequency to X position ──
+  function freqToX(freq, w) {
+    const nyquist = audioCtx.sampleRate / 2;
+    if (logScale) {
+      const minLog = Math.log10(20);
+      const maxLog = Math.log10(nyquist);
+      return ((Math.log10(Math.max(freq, 20)) - minLog) / (maxLog - minLog)) * w;
+    }
+    return (freq / nyquist) * w;
+  }
+
+  // ── Band power ──
+  function bandPower(low, high) {
+    const nyquist = audioCtx.sampleRate / 2;
+    const binSize = nyquist / analyser.frequencyBinCount;
+    const startBin = Math.floor(low / binSize);
+    const endBin = Math.min(Math.ceil(high / binSize), analyser.frequencyBinCount - 1);
+    let sum = 0, count = 0;
+    for (let i = startBin; i <= endBin; i++) {
+      const db = (dataArray[i] / 255) * 90 - 100;
+      sum += db;
+      count++;
+    }
+    return count > 0 ? (sum / count) : -100;
+  }
+
+  // ── Draw ──
+  function draw() {
+    if (paused) return;
+    animId = requestAnimationFrame(draw);
+
+    analyser.getByteFrequencyData(dataArray);
+    analyser.getByteTimeDomainData(timeArray);
+
+    const dpr = window.devicePixelRatio || 1;
+    const sw = specCanvas.width / dpr;
+    const sh = specCanvas.height / dpr;
+    const ww = waveCanvas.width / dpr;
+    const wh = waveCanvas.height / dpr;
+
+    // ── Spectrum ──
+    specCtx.clearRect(0, 0, sw, sh);
+
+    // Grid lines
+    const gridFreqs = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
+    specCtx.font = '9px "Share Tech Mono"';
+    specCtx.fillStyle = 'rgba(192,200,216,0.15)';
+    specCtx.strokeStyle = 'rgba(192,200,216,0.04)';
+    specCtx.lineWidth = 1;
+    gridFreqs.forEach(f => {
+      const x = freqToX(f, sw);
+      if (x > 0 && x < sw) {
+        specCtx.beginPath();
+        specCtx.moveTo(x, 0);
+        specCtx.lineTo(x, sh);
+        specCtx.stroke();
+        const label = f >= 1000 ? (f/1000) + 'k' : f + '';
+        specCtx.fillText(label, x + 3, sh - 4);
+      }
+    });
+
+    // dB grid
+    for (let db = -80; db <= 0; db += 20) {
+      const y = sh * (1 - (db + 100) / 90);
+      specCtx.beginPath();
+      specCtx.moveTo(0, y);
+      specCtx.lineTo(sw, y);
+      specCtx.stroke();
+      specCtx.fillText(db + 'dB', 4, y - 3);
+    }
+
+    // Spectrum bars
+    const nyquist = audioCtx.sampleRate / 2;
+    const binCount = analyser.frequencyBinCount;
+    const binSize = nyquist / binCount;
+
+    // Draw filled spectrum
+    specCtx.beginPath();
+    specCtx.moveTo(0, sh);
+    let peakFreq = 0, peakVal = 0;
+
+    for (let i = 0; i < binCount; i++) {
+      const freq = i * binSize;
+      if (freq < 20) continue;
+      const x = freqToX(freq, sw);
+      const val = dataArray[i] / 255;
+      const y = sh * (1 - val);
+
+      if (i === 0 || freq < 20) specCtx.moveTo(x, y);
+      else specCtx.lineTo(x, y);
+
+      if (dataArray[i] > peakVal) {
+        peakVal = dataArray[i];
+        peakFreq = freq;
+      }
+
+      // Peak hold
+      if (peakHold) {
+        if (dataArray[i] > peaks[i]) peaks[i] = dataArray[i];
+        else peaks[i] *= 0.998;
+      }
+    }
+    specCtx.lineTo(sw, sh);
+    specCtx.closePath();
+
+    // Gradient fill
+    const grad = specCtx.createLinearGradient(0, 0, 0, sh);
+    grad.addColorStop(0, 'rgba(232,236,244,0.25)');
+    grad.addColorStop(0.3, 'rgba(192,200,216,0.12)');
+    grad.addColorStop(1, 'rgba(192,200,216,0.01)');
+    specCtx.fillStyle = grad;
+    specCtx.fill();
+
+    // Spectrum line
+    specCtx.beginPath();
+    for (let i = 0; i < binCount; i++) {
+      const freq = i * binSize;
+      if (freq < 20) continue;
+      const x = freqToX(freq, sw);
+      const val = dataArray[i] / 255;
+      const y = sh * (1 - val);
+      if (freq <= 20) specCtx.moveTo(x, y);
+      else specCtx.lineTo(x, y);
+    }
+    specCtx.strokeStyle = 'rgba(192,200,216,0.6)';
+    specCtx.lineWidth = 1.5;
+    specCtx.stroke();
+
+    // Peak hold line
+    if (peakHold) {
+      specCtx.beginPath();
+      for (let i = 0; i < binCount; i++) {
+        const freq = i * binSize;
+        if (freq < 20) continue;
+        const x = freqToX(freq, sw);
+        const val = peaks[i] / 255;
+        const y = sh * (1 - val);
+        if (freq <= 20) specCtx.moveTo(x, y);
+        else specCtx.lineTo(x, y);
+      }
+      specCtx.strokeStyle = 'rgba(232,236,244,0.3)';
+      specCtx.lineWidth = 1;
+      specCtx.setLineDash([4, 4]);
+      specCtx.stroke();
+      specCtx.setLineDash([]);
+    }
+
+    // Peak frequency marker
+    if (peakFreq > 20 && peakVal > 15) {
+      const px = freqToX(peakFreq, sw);
+      const py = sh * (1 - peakVal / 255);
+      specCtx.beginPath();
+      specCtx.arc(px, py, 4, 0, Math.PI * 2);
+      specCtx.fillStyle = 'rgba(232,236,244,0.8)';
+      specCtx.fill();
+      specCtx.strokeStyle = 'rgba(232,236,244,0.3)';
+      specCtx.lineWidth = 1;
+      specCtx.beginPath();
+      specCtx.moveTo(px, py);
+      specCtx.lineTo(px, sh);
+      specCtx.stroke();
+    }
+
+    // ── Waveform ──
+    waveCtx.clearRect(0, 0, ww, wh);
+
+    // Center line
+    waveCtx.strokeStyle = 'rgba(192,200,216,0.06)';
+    waveCtx.lineWidth = 1;
+    waveCtx.beginPath();
+    waveCtx.moveTo(0, wh / 2);
+    waveCtx.lineTo(ww, wh / 2);
+    waveCtx.stroke();
+
+    // Waveform
+    waveCtx.beginPath();
+    const sliceW = ww / timeArray.length;
+    for (let i = 0; i < timeArray.length; i++) {
+      const v = timeArray[i] / 128.0;
+      const y = (v * wh) / 2;
+      if (i === 0) waveCtx.moveTo(0, y);
+      else waveCtx.lineTo(i * sliceW, y);
+    }
+    waveCtx.strokeStyle = 'rgba(192,200,216,0.5)';
+    waveCtx.lineWidth = 1.5;
+    waveCtx.stroke();
+
+    // ── Meters ──
+    // RMS level
+    let rms = 0;
+    for (let i = 0; i < timeArray.length; i++) {
+      const v = (timeArray[i] - 128) / 128;
+      rms += v * v;
+    }
+    rms = Math.sqrt(rms / timeArray.length);
+    const dbLevel = rms > 0 ? Math.max(-100, 20 * Math.log10(rms)) : -100;
+
+    mLevel.innerHTML = dbLevel.toFixed(1) + ' <span class="meter-unit">dB</span>';
+    mPeak.innerHTML = (peakVal > 15 ? peakFreq.toFixed(0) : '--') + ' <span class="meter-unit">Hz</span>';
+    mNote.textContent = peakVal > 15 ? freqToNote(peakFreq) : '--';
+    mLow.innerHTML = bandPower(20, 250).toFixed(0) + ' <span class="meter-unit">dB</span>';
+    mMid.innerHTML = bandPower(250, 4000).toFixed(0) + ' <span class="meter-unit">dB</span>';
+    mHigh.innerHTML = bandPower(4000, 20000).toFixed(0) + ' <span class="meter-unit">dB</span>';
+  }
+
+  // ── Events ──
+  startBtn.addEventListener('click', init);
+  window.addEventListener('resize', () => {
+    if (analyser) resize();
+  });
+})();
+</script>
+</body>
+</html>
