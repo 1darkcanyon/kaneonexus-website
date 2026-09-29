@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LUNA-TIC v4.0 | NEXUS Integrated Intelligence Solutions</title>
+<meta name="description" content="LUNA-TIC is a lunar and emotional forecasting companion: moon phase, numerology, daily draws and a Nexus message. Version 4.0.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🌙</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05060d; --panel:#0b0e1a; --line:#1a2036; --text:#e6ecf5; --muted:#8f9ab3;
+  --cyan:#00e5ff; --magenta:#e040fb; --teal:#16c79a; --gold:#f59e0b;
+  --disp:'Orbitron',system-ui,sans-serif; --body:'Rajdhani',system-ui,sans-serif; --mono:'Share Tech Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(900px 600px at 80% -5%,#141a33 0%,var(--bg) 60%);color:var(--text);font:500 18px/1.55 var(--body);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+a{color:var(--cyan)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-family:var(--disp);font-size:14px}
+nav a{color:var(--text);text-decoration:none}
+nav .links a{margin-left:20px;color:var(--muted)}
+nav .links a:hover{color:var(--cyan)}
+
+/* hero: the live moon is the one memorable element */
+.hero{display:grid;grid-template-columns:1fr 340px;gap:40px;align-items:center;padding:36px 0 64px}
+.moonbox{position:relative;width:100%;aspect-ratio:1;max-width:340px;justify-self:center}
+.moonbox svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 40px rgba(0,229,255,.25))}
+.halo{fill:none;stroke:var(--line)}
+.halo.b{stroke:rgba(224,64,251,.35);stroke-dasharray:2 7}
+h1{font:700 clamp(40px,8vw,72px)/1 var(--disp);letter-spacing:.02em;margin:0 0 14px;background:linear-gradient(90deg,var(--cyan),var(--magenta));-webkit-background-clip:text;background-clip:text;color:transparent}
+.ver{display:inline-block;font:400 15px var(--mono);color:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:2px 10px;margin-bottom:16px}
+.lead{font-size:22px;max-width:30ch;margin:0 0 12px}
+.tonight{font:400 15px var(--mono);color:var(--teal);margin:0 0 26px;min-height:1.5em}
+.btns{display:flex;flex-wrap:wrap;gap:12px}
+.btn{font:600 17px var(--body);padding:12px 22px;border-radius:8px;text-decoration:none;border:1px solid var(--cyan);color:var(--cyan)}
+.btn.primary{background:var(--cyan);color:#021018}
+.btn:hover{box-shadow:0 0 18px rgba(0,229,255,.4)}
+
+section{padding:52px 0;border-top:1px solid var(--line)}
+h2{font:700 26px var(--disp);margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 28px;max-width:60ch}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.feat div{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--teal);padding:16px 18px;border-radius:6px}
+.feat h3{margin:0 0 4px;font:600 20px var(--body);color:var(--text)}
+.feat p{margin:0;color:var(--muted);font-size:17px}
+
+/* version history is a real sequence, so it gets numbered markers */
+.tl{list-style:none;margin:0;padding:0;position:relative}
+.tl::before{content:"";position:absolute;left:19px;top:8px;bottom:8px;width:2px;background:linear-gradient(var(--cyan),var(--magenta))}
+.tl li{position:relative;padding:0 0 26px 62px}
+.tl .v{position:absolute;left:0;top:0;width:40px;height:40px;border-radius:50%;background:var(--bg);border:2px solid var(--cyan);display:grid;place-items:center;font:400 13px var(--mono);color:var(--cyan)}
+.tl li.now .v{border-color:var(--gold);color:var(--gold);box-shadow:0 0 16px rgba(245,158,11,.5)}
+.tl h3{margin:0 0 2px;font:600 21px var(--body)}
+.tl p{margin:0;color:var(--muted)}
+
+.next{columns:2;column-gap:32px;padding:0;margin:0;list-style:none}
+.next li{break-inside:avoid;padding:8px 0 8px 22px;position:relative;border-bottom:1px dashed var(--line)}
+.next li::before{content:"";position:absolute;left:0;top:17px;width:9px;height:9px;border-radius:50%;background:var(--magenta)}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;font:400 15px/1.6 var(--mono);color:var(--teal);margin:0 0 14px}
+.note{color:var(--muted);font-size:16px}
+footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);font-size:16px;text-align:center}
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr;padding-top:10px}
+  .moonbox{max-width:240px;order:-1}
+  .next{columns:1}
+  nav .links a:not(:last-child){display:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .moonbox svg{animation:rise 1.4s ease-out both}
+  @keyframes rise{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a href="/">NEXUS</a>
+    <div class="links"><a href="#v4">What's new</a><a href="#history">Versions</a><a href="#next">Roadmap</a><a href="#get">Get it</a></div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <span class="ver">Version 4.0</span>
+      <h1>LUNA-TIC</h1>
+      <p class="lead">Your emotional forecast, tuned to the moon.</p>
+      <p class="tonight" id="tonight">Reading the sky…</p>
+      <div class="btns">
+        <a class="btn primary" href="#get">Get LUNA-TIC 4.0</a>
+        <a class="btn" href="#history">See all versions</a>
+      </div>
+    </div>
+    <div class="moonbox" aria-label="Current moon phase, calculated live in your browser">
+      <svg viewBox="0 0 340 340" role="img" aria-labelledby="mt">
+        <title id="mt">Current moon phase</title>
+        <circle class="halo" cx="170" cy="170" r="164"/>
+        <circle class="halo b" cx="170" cy="170" r="150"/>
+        <circle cx="170" cy="170" r="120" fill="#0d1226" stroke="#26304f"/>
+        <path id="lit" fill="#e9f6ff" d=""/>
+        <circle cx="170" cy="170" r="120" fill="none" stroke="rgba(0,229,255,.35)"/>
+      </svg>
+    </div>
+  </header>
+
+  <section id="v4">
+    <h2>What LUNA-TIC 4.0 does</h2>
+    <p class="sub">Enter your name and birth date. LUNA-TIC gives you a daily read that blends the lunar cycle with your numbers and a few cards.</p>
+    <div class="feat">
+      <div><h3>Moon phase</h3><p>Real phase, percent lit and moon age for today, plus a 7-day lunar forecast.</p></div>
+      <div><h3>Numerology</h3><p>Your life path number, worked out from your birth date, with its meaning.</p></div>
+      <div><h3>Daily draws</h3><p>A tarot card, a rune and a playing card from full decks. Your draws stay the same all day.</p></div>
+      <div><h3>Nexus message</h3><p>A short spiritual note from the Nexus AI presence to end the reading.</p></div>
+      <div><h3>Runs on your phone</h3><p>Works fully offline in Termux. A wake-lock script keeps it running while your screen is off.</p></div>
+      <div><h3>Your own profile</h3><p>Create a profile and log in. Passwords are hashed, and several profiles can share one device.</p></div>
+    </div>
+  </section>
+
+  <section id="history">
+    <h2>Version history</h2>
+    <p class="sub">Four builds, each adding one layer.</p>
+    <ol class="tl">
+      <li><span class="v">1.0</span><h3>The first draw</h3><p>Daily tarot, rune and playing-card draws in a dark layout that works offline.</p></li>
+      <li><span class="v">2.0</span><h3>Personal readings</h3><p>Name and birth-date input, life path numerology with meanings, moon phase tracking and a Nexus wisdom message.</p></li>
+      <li><span class="v">3.0</span><h3>Profiles</h3><p>Create a profile, log in and get a personal dashboard. Several profiles can be saved on one device.</p></li>
+      <li class="now"><span class="v">4.0</span><h3>Full integration</h3><p>Profiles and login from 3.0 merged with the Nexus message, numerology, full decks, a real moon phase and a 7-day forecast. Includes the Termux wake-lock launcher.</p></li>
+    </ol>
+    <p class="note">Also available: the browser MVP adds a 7-day forecast, draws that stay the same all day, and profile export and import. It runs entirely on your device.</p>
+  </section>
+
+  <section id="next">
+    <h2>What's coming</h2>
+    <p class="sub">The full vision goes well beyond the daily read. These are on the roadmap.</p>
+    <ul class="next">
+      <li>Gravitational push and pull index from the Sun, Moon and Earth angle</li>
+      <li>Solar activity and coronal mass ejection awareness</li>
+      <li>Barometric pressure and weather effects on mood</li>
+      <li>Full 78-card tarot and 52-card archetype pulls</li>
+      <li>Personal journal and emotional forecast AI</li>
+      <li>Chakra cleansing prompts and energetic protection</li>
+      <li>LUNA-TIC Android app (build repo is live)</li>
+      <li>Tiered access so it is open to every income level</li>
+    </ul>
+  </section>
+
+  <section id="get">
+    <h2>Get LUNA-TIC 4.0</h2>
+    <p class="sub">The source and builds live on GitHub. To run the Python build in Termux:</p>
+    <pre>pkg update &amp;&amp; pkg install python
+pip install -r requirements.txt
+chmod +x termux_wake_lock.sh
+./termux_wake_lock.sh</pre>
+    <p class="note">Then open <code>http://127.0.0.1:5000</code> in your browser.</p>
+    <div class="btns"><a class="btn primary" href="https://github.com/1darkcanyon/luna-tic" rel="noopener">Open on GitHub</a><a class="btn" href="/">Back to NEXUS</a></div>
+  </section>
+
+  <footer>LUNA-TIC is part of the NEXUS ecosystem. Intelligence Without the Artificial.<br>&copy; NEXUS Integrated Intelligence Solutions</footer>
+</div>
+
+<script>
+(function(){
+  var SYN=29.53058867, names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
+  var now=new Date();
+  // days since the reference new moon (2000-01-06 18:14 UT)
+  var days=(now.getTime()/86400000)+2440587.5-2451550.1;
+  var f=((days/SYN)%1+1)%1;
+  var idx=Math.round(f*8)%8;
+  var lit=Math.round((1-Math.cos(2*Math.PI*f))/2*100);
+  var age=(f*SYN).toFixed(1);
+  // draw the lit part of the disc
+  var cx=170,cy=170,r=120,c=Math.cos(2*Math.PI*f),rx=r*Math.abs(c),waxing=f<0.5,d;
+  if(lit<=0){d='';}
+  else if(lit>=100){d='M'+cx+','+(cy-r)+' A'+r+','+r+' 0 1 1 '+cx+','+(cy+r)+' A'+r+','+r+' 0 1 1 '+cx+','+(cy-r)+'Z';}
+  else{
+    var s1=waxing?1:0, s2=waxing?(c>0?0:1):(c<0?0:1);
+    d='M'+cx+','+(cy-r)+' A'+r+','+r+' 0 0 '+s1+' '+cx+','+(cy+r)+' A'+rx.toFixed(2)+','+r+' 0 0 '+s2+' '+cx+','+(cy-r)+'Z';
+  }
+  document.getElementById('lit').setAttribute('d',d);
+  document.getElementById('tonight').textContent='Right now: '+names[idx]+', '+lit+'% lit, day '+age+' of 29.5';
+})();
+</script>
+</body>
+</html>
