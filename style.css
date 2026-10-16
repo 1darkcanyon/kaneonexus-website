@@ -1,0 +1,34 @@
+/* style.css - Global NEXUS Theme */
+:root {
+  --bg: #14201f;
+  --surface: #1b2b2b;
+  --ink: #e6efee;
+  --teal: #6fc0c3;
+  --accent: #2c6e72;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+
+a {
+  color: var(--teal);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Common Card Container */
+.card {
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
