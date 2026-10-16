@@ -20,7 +20,50 @@
     *{margin:0;padding:0;box-sizing:border-box;}
     html{scroll-behavior:smooth;}
     body{background:var(--void);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
+.site-index {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: system-ui, sans-serif;
+}
 
+.site-index h2 {
+  border-bottom: 2px solid #333;
+  padding-bottom: 8px;
+}
+
+.category {
+  margin-bottom: 24px;
+}
+
+.category h3 {
+  color: #008080; /* Adjust to match your theme */
+  margin-bottom: 10px;
+}
+
+.category ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.category li {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.category a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.category a:hover {
+  text-decoration: underline;
+}
     /* NAV */
     nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:rgba(2,4,8,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
     .nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
@@ -308,8 +351,52 @@
     </div>
   </div>
 </section>
+<section class="site-index">
+  <h2>NEXUS System Directory & Applications</h2>
 
-<!-- CTA -->
+  <!-- Primary Hubs & Tools -->
+  <div class="category">
+    <h3>Core Portals & Modules</h3>
+    <ul>
+      <li><a href="/probate/"><strong>Probate Guide</strong></a> — Step-by-step estate & probate assistance</li>
+      <li><a href="/eiai/"><strong>EIAI Portal</strong></a> — Environmental & Intelligence AI workspace</li>
+      <li><a href="/family/"><strong>Family Portal</strong></a> — Family resources and index</li>
+      <li><a href="/luna-tic/"><strong>Luna-Tic</strong></a> — Emotional forecasting & lunar system</li>
+    </ul>
+  </div>
+
+  <!-- Nexus App Suite -->
+  <div class="category">
+    <h3>NEXUS Infrastructure & Utilities</h3>
+    <ul>
+      <li><a href="/nexus-console.html">Nexus Console</a></li>
+      <li><a href="/nexus-sovereign-core.html">Nexus Sovereign Core</a></li>
+      <li><a href="/nexus-hero.html">Nexus Hero</a></li>
+      <li><a href="/nexus-memoria.html">Nexus Memoria</a></li>
+      <li><a href="/nexus-safeguard.html">Nexus Safeguard</a></li>
+      <li><a href="/nexus-safe-contact.html">Nexus Safe Contact</a></li>
+      <li><a href="/nexus-people-search.html">Nexus People Search</a></li>
+      <li><a href="/nexus-property-tax.html">Nexus Property Tax</a></li>
+      <li><a href="/nexus-metals-ping.html">Nexus Metals Ping</a></li>
+      <li><a href="/nexus-ping.html">Nexus Ping</a></li>
+      <li><a href="/nexus-phone.html">Nexus Phone</a></li>
+      <li><a href="/nexus-invoice.html">Nexus Invoice</a></li>
+    </ul>
+  </div>
+
+  <!-- Interactive Demos & Standalone Pages -->
+  <div class="category">
+    <h3>Demos & Interactive Tools</h3>
+    <ul>
+      <li><a href="/guardian-shield.html">Guardian Shield</a></li>
+      <li><a href="/narrative-animator.html">Narrative Animator</a></li>
+      <li><a href="/opensesame.html">OpenSesame</a></li>
+      <li><a href="/frequent-see.html">Frequent-See</a></li>
+    </ul>
+  </div>
+</section>
+
+  <!-- CTA -->
 <div class="cta-band">
   <div class="eyebrow">// JOIN THE MOVEMENT</div>
   <h2 class="cta-title">THE WORLD NEEDS<br>WHAT YOU'RE BUILDING</h2>
