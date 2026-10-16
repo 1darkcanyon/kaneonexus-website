@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Probate, one step at a time</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;600&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef3f3;--surface:#fbfdfd;--ink:#1d2b33;--muted:#53656e;--line:#cddada;--teal:#2c6e72;--teal-soft:#dcebeb;--sand:#efe3c8;--sand-ink:#5a4a1f;--focus:#8a5a00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14201f;--surface:#1b2b2b;--ink:#e6efee;--muted:#a3b7b6;--line:#2f4544;--teal:#6fc0c3;--teal-soft:#24403f;--sand:#3a3320;--sand-ink:#ecdcae;--focus:#f0c46a}}
+:root[data-theme="dark"]{--bg:#14201f;--surface:#1b2b2b;--ink:#e6efee;--muted:#a3b7b6;--line:#2f4544;--teal:#6fc0c3;--teal-soft:#24403f;--sand:#3a3320;--sand-ink:#ecdcae;--focus:#f0c46a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Nunito Sans",system-ui,sans-serif}
+main{max-width:680px;margin:0 auto;padding:28px 18px 80px}
+h1,h2{font-family:Newsreader,Georgia,serif;font-weight:600;line-height:1.2;margin:0}
+h1{font-size:2rem}
+.lead{color:var(--muted);margin:10px 0 18px}
+.note{background:var(--sand);color:var(--sand-ink);border-radius:10px;padding:12px 14px;font-size:.93rem;margin-bottom:20px}
+.progress{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:10px 0 12px;z-index:5}
+.bar{height:10px;background:var(--teal-soft);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--teal);border-radius:99px;transition:width .4s}
+.meta{display:flex;justify-content:space-between;font-size:.9rem;color:var(--muted);margin-top:6px}
+#cheer{min-height:3.2em;background:var(--teal-soft);border-radius:12px;padding:12px 14px;margin:6px 0 20px;font-family:Newsreader,Georgia,serif;font-size:1.12rem}
+details{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:12px}
+summary{cursor:pointer;padding:14px 16px;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary h2{font-size:1.2rem}
+summary small{color:var(--muted);white-space:nowrap}
+summary .why{display:block;color:var(--muted);font-size:.9rem;font-family:"Nunito Sans",sans-serif;font-weight:400;margin-top:2px}
+details[open] summary{border-bottom:1px solid var(--line)}
+ul{list-style:none;margin:0;padding:6px 8px 10px}
+li label{display:flex;gap:12px;padding:10px 8px;border-radius:10px;cursor:pointer;align-items:flex-start}
+li label:hover{background:var(--teal-soft)}
+input[type=checkbox]{width:24px;height:24px;margin:2px 0 0;accent-color:var(--teal);flex:none}
+.t{font-weight:700}
+.d{display:block;color:var(--muted);font-size:.92rem;font-weight:400}
+li.done .t{text-decoration:line-through;text-decoration-thickness:1px;opacity:.7}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.foot{margin-top:26px;font-size:.88rem;color:var(--muted)}
+button{font:inherit;background:none;border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:8px 14px;cursor:pointer}
+.court{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px}.court h2{font-size:1.2rem;margin-bottom:6px}.court h3{font-family:Newsreader,Georgia,serif;font-size:1.05rem;margin:14px 0 4px}.court p{margin:4px 0 10px;color:var(--muted);font-size:.92rem}.row{display:flex;gap:8px;flex-wrap:wrap}.row select,.row input{flex:1 1 150px;min-width:0;font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}.court a{color:var(--teal);display:block;padding:6px 0;font-weight:700}.court ol{margin:0;padding-left:1.2rem;font-size:.93rem}.court li{padding:2px 0}
+.tabs{display:flex;gap:8px;margin-bottom:8px}.tabs button{flex:1;padding:10px 12px;font-weight:700}.tabs button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:var(--bg)}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>Probate, one step at a time</h1>
+<p class="lead" id="lead">Handling an estate while grieving is a lot. This checklist breaks it into small steps. Do them in any order that fits your day. Your progress saves on this device.</p>
+<div class="note">This is a general guide based on typical U.S. probate. Rules, forms, deadlines and fees differ by state and by estate. Check with your county probate court clerk, and consider a probate attorney for anything unclear. This is not legal advice.</div>
+<section class="court" id="court"></section>
+<div class="tabs" role="group" aria-label="Choose your role"><button type="button" data-m="e" aria-pressed="true">I'm the executor</button><button type="button" data-m="h" aria-pressed="false">I'm an heir</button></div>
+<div class="progress" role="group" aria-label="Overall progress">
+<div class="bar"><i id="fill"></i></div>
+<div class="meta"><span id="count">0 of 0 steps done</span><span id="pct">0%</span></div>
+</div>
+<div id="cheer" role="status" aria-live="polite">Start with whatever feels easiest. Every checked box counts.</div>
+<div id="phases"></div>
+<div id="heirs" hidden></div>
+<p class="foot"><button id="reset" type="button">Clear all checkmarks</button></p>
+</main>
+<script>
+var PHASES=[
+{t:"First things first",w:"The first days after a death",s:[
+["Get 10 or more certified death copies","Banks, insurers and agencies each want an official copy. The funeral home can usually order them."],
+["Secure the home and valuables","Lock up, collect spare keys, and make sure pets, plants and any vehicles are cared for."],
+["Forward the mail","Ask the post office to forward mail to you so bills and notices don't get lost."],
+["Look for a will","Check the home, safe deposit box, and ask the person's attorney. Don't alter or throw away any document."],
+["Keep one notebook for everything","Write down calls, dates, names and reference numbers. It will save you later."]]},
+{t:"Gather what you need",w:"Collect the papers and facts the court will ask for",s:[
+["Find the original will and any trust documents","Courts usually need the original. Do not unstaple, mark, or alter it."],
+["Copy every page of the will in color before you file it","Scan or photocopy all pages in color, including signatures, seals, notary stamps and any handwriting. Color shows ink and marks that black and white hides, which makes a swapped or altered page much easier to spot. Keep a copy yourself and store the original safely."],
+["List assets","Bank accounts, property, vehicles, retirement accounts, investments, valuables, business interests."],
+["List debts and bills","Mortgage, credit cards, loans, medical bills, taxes, utilities."],
+["Find insurance policies and beneficiary forms","Life insurance and retirement accounts with named beneficiaries often skip probate."],
+["Collect recent tax returns and statements","The last few years of returns and the latest account statements help you build the full picture."]]},
+{t:"Open the estate",w:"Make it official with the court",s:[
+["Find the right court","Usually the probate court in the county where the person lived. The clerk's office can explain local steps."],
+["Ask whether a small estate shortcut applies","Many states have a simpler process for smaller estates. Ask the clerk or look at your state court website."],
+["File the petition and the will","This asks the court to open the estate and appoint the executor (or administrator if there is no will). Ask the clerk whether they want the original, file it, and get a dated receipt. Keep your color copy."],
+["Receive your court authority","Often called Letters Testamentary or Letters of Administration. Order several copies."],
+["Get an EIN for the estate","Free from the IRS. The estate needs its own tax ID."],
+["Open an estate bank account","Use it for all estate money in and out. Don't mix it with your own funds."]]},
+{t:"Tell the right people",w:"Notices and notifications",s:[
+["Notify heirs and beneficiaries","Many states require formal written notice. Check the deadline with the court."],
+["Publish a notice to creditors if required","This starts the clock for creditors to make claims. Rules vary by state."],
+["Notify Social Security","The funeral home often does this. Confirm it was done, and return any payment received after the date of death."],
+["Notify banks, insurers and pension providers","Bring the death certificate and your court authority."],
+["Notify the three credit bureaus","Ask them to flag the file as deceased to help prevent identity theft."],
+["Cancel what is no longer needed","Subscriptions, utilities not needed, driver's license, voter registration, memberships."]]},
+{t:"Manage the estate",w:"Take stock and keep things in order",s:[
+["Make a full inventory with values","Date-of-death values matter. Real estate and valuables may need an appraisal."],
+["Keep property insured and maintained","Home, vehicles and anything of value need coverage and care until distributed."],
+["Pay urgent, valid bills from the estate account","Keep receipts. Don't pay from your own money unless you plan to be reimbursed and have records."],
+["File the final personal income tax return","Due the usual date for the year of death. Ask a tax professional about whether an estate return is also needed."],
+["Track every dollar in and out","You may need to show the court a full accounting."]]},
+{t:"Pay debts and share the rest",w:"The final stretch of the work",s:[
+["Review creditor claims","Pay valid claims in the order your state requires. Ask the court or an attorney before rejecting one."],
+["Pay taxes owed","Final income taxes and any estate or inheritance taxes that apply."],
+["Get court approval before distributing, if required","Some states need approval first. Others allow distribution after the claim period ends."],
+["Distribute assets as the will directs","Or as state law directs if there is no will. Get a signed receipt from each beneficiary."]]},
+{t:"Close the estate",w:"Finish and file it away",s:[
+["Prepare the final accounting","Summarizes income, expenses and distributions."],
+["File to close the estate","The court reviews and then discharges you from your duties."],
+["Close the estate bank account","Only after all payments and distributions clear."],
+["Keep your records for several years","Store your notebook, receipts, receipts from beneficiaries and tax records safely."]]}
+];
+var HEIRS=[
+{t:"Know where you stand",w:"Your first weeks as a possible heir",s:[
+["Ask for a copy of the will","Heirs and beneficiaries generally have a right to see it. Ask the executor in writing, or look in the court file."],
+["Get a full color copy and compare it","Ask for a color copy of every page, then compare it with the copy in the court file. Look for missing or swapped pages, different ink or signatures, and changed wording."],
+["Find the court case","Note the county and case number. Court files are usually public and show what has been filed and who was appointed."],
+["Put every deadline on your calendar","The window to challenge a will or object can be short, sometimes 30 to 90 days after notice. Missing it can end your right to object."],
+["Hold off on signing anything","Waivers, releases, 'family agreements' and receipts can give up rights. Take time and get advice first."],
+["Start your own folder","Keep copies of letters, emails and notes of calls with dates. Confirm phone calls by email."]]},
+{t:"Warning signs to watch for",w:"Most executors are honest. These are the things worth a closer look",s:[
+["Pressure to hurry","'Sign today' or 'the deadline is tomorrow' is a red flag. Real deadlines come from the court, and you can verify them there."],
+["A will that looks different, or has missing pages","Differences in page count, paper, typeface, ink or signatures between copies are worth raising with the court or an attorney right away."],
+["A request to sign a release before you see the numbers","Never waive an accounting or release the executor without seeing what came in, what went out and what is left."],
+["Offers to buy your share, or the house, cheaply","If the executor or a friend or relative buys estate property, check for a fair appraisal and court approval where required."],
+["Vague answers about what the estate holds","A refusal to share an inventory or answer simple questions is worth raising with the court or an attorney."],
+["Estate money mixed with personal money","The estate should have its own bank account under its own tax ID. Estate funds in a personal account is a problem."],
+["Large fees or payments to the executor","Executor pay should be reasonable and is often limited or approved by the court. Ask what the fee is based on."],
+["Long delays with no explanation","Property sitting uninsured or unmaintained, bills unpaid, or no updates for months are all reasons to ask questions."],
+["Anyone asking you to pay a fee to receive your inheritance","That is a common scam. Also be wary of unexpected 'heir finders' or 'lawyers' contacting you."]]},
+{t:"Ask for information",w:"Questions you are allowed to ask",s:[
+["Request a list of assets with date-of-death values","Many states require executors to give this to beneficiaries or file it with the court."],
+["Ask for the court papers showing the executor's authority","Often called Letters Testamentary or Letters of Administration."],
+["Ask for a timeline and regular updates","Put the request in writing and note the date you asked."],
+["Ask for an accounting","A record of money in, money out, fees, and distributions. Ask what your state requires and when."],
+["Claim anything that passes to you directly","Life insurance, retirement accounts and jointly owned property with a named beneficiary usually go to you directly, outside probate."]]},
+{t:"Protect yourself",w:"Support that is on your side",s:[
+["Talk to your own attorney","The estate's lawyer works for the executor, not for you. Try your state bar's referral service or local legal aid. Many offer a free or low-cost first consult."],
+["Keep communication in writing","Email or letters make it easy to prove what was asked and answered."],
+["Learn your options early","Depending on the state, these can include asking for an accounting, objecting to a filing, or asking the court to remove an executor. Deadlines apply, so ask sooner rather than later."],
+["Report suspected theft or fraud","Contact the probate court, your attorney, and if needed law enforcement or your state attorney general."]]},
+{t:"Receiving your share",w:"Before you sign off",s:[
+["Check the final accounting before final distribution","Compare it with the will. Some states require court approval first."],
+["Get a written list of exactly what you are receiving","Only sign a receipt for what you have actually received."],
+["Ask a tax professional before cashing out inherited retirement accounts","Withdrawals can trigger taxes, and special rules apply to inherited accounts."],
+["Keep your records for several years","Hold on to the will, accounting, receipts and letters in case a question comes up later."],
+["Look after yourself too","Grief is tiring. Taking your time and asking for help is part of doing this well."]]}
+];
+var HCHEERS=["Asking questions is your right, not a burden.","Good. Understanding the process protects you.","You are taking care of yourself while you grieve.","One more thing clear. You are doing well.","You deserve clear answers, and you are getting them.","Slow and careful is a good pace for this."];
+var CHEERS=["One step done. You are handling this well.","That took effort, and you did it.","Good work. You do not have to do it all today.","You are doing right by someone you cared about.","Steady progress. Keep going at your own pace.","That is one less thing to carry.","You are more capable than this moment feels.","Nice. Rest if you need to. The list will wait.","Look at that. You are moving forward.","Thank you for taking care of this."];
+var DONECHEERS=["Whole section finished. That is real progress, and you earned a break.","Section complete. You should feel proud of that.","That whole part is behind you now. Well done."];
+var KEY="probate-guide-v1",st={},last=-1;
+try{st=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){st={}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+function pick(a){var i;do{i=Math.floor(Math.random()*a.length)}while(i===last&&a.length>1);last=i;return a[i]}
+var mode="e",tot={e:0,h:0};
+function build(LIST,pre,root){LIST.forEach(function(p,pi){
+var d=document.createElement("details");if(pi===0)d.open=true;
+var sm=document.createElement("summary");
+sm.innerHTML='<span><h2></h2><span class="why"></span></span><small></small>';
+sm.querySelector("h2").textContent=p.t;sm.querySelector(".why").textContent=p.w;
+d.appendChild(sm);var ul=document.createElement("ul");
+p.s.forEach(function(s,si){tot[pre]++;
+var id=(pre==="h"?"h":"")+pi+"-"+si,li=document.createElement("li"),lb=document.createElement("label"),cb=document.createElement("input");
+cb.type="checkbox";cb.checked=!!st[id];cb.dataset.id=id;cb.dataset.p=pi;
+var tx=document.createElement("span");tx.innerHTML='<span class="t"></span><span class="d"></span>';
+tx.querySelector(".t").textContent=s[0];tx.querySelector(".d").textContent=s[1];
+lb.appendChild(cb);lb.appendChild(tx);li.appendChild(lb);ul.appendChild(li);
+cb.addEventListener("change",function(){
+if(cb.checked)st[id]=1;else delete st[id];save();
+var cp=phaseDone(LIST,pi,pre);update();
+if(cb.checked){say(cp?pick(DONECHEERS):pick(mode==="h"?HCHEERS:CHEERS));update()}
+});});
+d.appendChild(ul);root.appendChild(d);p._d=d;})}
+build(PHASES,"e",document.getElementById("phases"));build(HEIRS,"h",document.getElementById("heirs"));
+function phaseDone(L,pi,pre){var q=pre==="h"?"h":"";return L[pi].s.every(function(_,si){return st[q+pi+"-"+si]})}
+function say(m){document.getElementById("cheer").textContent=m}
+function update(){
+var n=0,total=tot[mode];Object.keys(st).forEach(function(k){if((k.charAt(0)==="h")===(mode==="h"))n++});
+document.getElementById("fill").style.width=(total?n/total*100:0)+"%";
+document.getElementById("count").textContent=n+" of "+total+" steps done";
+document.getElementById("pct").textContent=Math.round(n/total*100)+"%";
+[[PHASES,""],[HEIRS,"h"]].forEach(function(x){var q=x[1];x[0].forEach(function(p,pi){var c=0;p.s.forEach(function(_,si){if(st[q+pi+"-"+si])c++});
+p._d.querySelector("small").textContent=c+" / "+p.s.length;
+p._d.querySelectorAll("li").forEach(function(li,si){li.classList.toggle("done",!!st[q+pi+"-"+si])});});});
+if(n===total&&total&&mode==="h")say("Every step is done. You looked after your own interests with care. Be gentle with yourself.");else if(n===total&&total)say("Every step is done. You carried a heavy responsibility with care. Be gentle with yourself now.")}
+document.getElementById("reset").addEventListener("click",function(){
+if(!confirm("Clear all checkmarks?"))return;
+st={};save();document.querySelectorAll("input[type=checkbox]").forEach(function(c){c.checked=false});update();say("Fresh start. Begin wherever feels easiest.")});
+var STATES="Alabama,Alaska,Arizona,Arkansas,California,Colorado,Connecticut,Delaware,District of Columbia,Florida,Georgia,Hawaii,Idaho,Illinois,Indiana,Iowa,Kansas,Kentucky,Louisiana,Maine,Maryland,Massachusetts,Michigan,Minnesota,Mississippi,Missouri,Montana,Nebraska,Nevada,New Hampshire,New Jersey,New Mexico,New York,North Carolina,North Dakota,Ohio,Oklahoma,Oregon,Pennsylvania,Rhode Island,South Carolina,South Dakota,Tennessee,Texas,Utah,Vermont,Virginia,Washington,West Virginia,Wisconsin,Wyoming".split(",");
+var COURT={"California":"Superior Court (probate)","New York":"Surrogate's Court","New Jersey":"Surrogate's Court","Pennsylvania":"Register of Wills","Maryland":"Register of Wills","Louisiana":"Clerk of Court"};
+var QS=["Which court handles this estate, and is the person's home county the right place to file?","Does this estate qualify for a simplified or small-estate process?","What are the filing fees, and how many copies of the court papers should I order?","Do I have to publish a notice to creditors, and where?","What deadlines apply for notifying heirs and for creditor claims?","How can I see or copy the case file, and what is the deadline to challenge a will?","Is an attorney required, or are self-help forms available?"];
+var ZR=[[5,5,"New York"],[10,27,"Massachusetts"],[28,29,"Rhode Island"],[30,38,"New Hampshire"],[39,49,"Maine"],[50,59,"Vermont"],[60,69,"Connecticut"],[70,89,"New Jersey"],[100,149,"New York"],[150,196,"Pennsylvania"],[197,199,"Delaware"],[200,200,"District of Columbia"],[201,201,"Virginia"],[202,205,"District of Columbia"],[206,212,"Maryland"],[214,219,"Maryland"],[220,246,"Virginia"],[247,268,"West Virginia"],[270,289,"North Carolina"],[290,299,"South Carolina"],[300,319,"Georgia"],[320,339,"Florida"],[341,349,"Florida"],[350,352,"Alabama"],[354,369,"Alabama"],[370,385,"Tennessee"],[386,397,"Mississippi"],[398,399,"Georgia"],[400,427,"Kentucky"],[430,459,"Ohio"],[460,479,"Indiana"],[480,499,"Michigan"],[500,528,"Iowa"],[530,549,"Wisconsin"],[550,567,"Minnesota"],[570,577,"South Dakota"],[580,588,"North Dakota"],[590,599,"Montana"],[600,629,"Illinois"],[630,658,"Missouri"],[660,679,"Kansas"],[680,693,"Nebraska"],[700,714,"Louisiana"],[716,729,"Arkansas"],[730,731,"Oklahoma"],[733,733,"Texas"],[734,749,"Oklahoma"],[750,799,"Texas"],[800,816,"Colorado"],[820,831,"Wyoming"],[832,838,"Idaho"],[840,847,"Utah"],[850,865,"Arizona"],[870,884,"New Mexico"],[885,885,"Texas"],[889,898,"Nevada"],[900,961,"California"],[967,968,"Hawaii"],[970,979,"Oregon"],[980,994,"Washington"],[995,999,"Alaska"]];
+function zipState(z){if(!/^\d{5}$/.test(z))return"";var p=+z.slice(0,3);for(var i=0;i<ZR.length;i++)if(p>=ZR[i][0]&&p<=ZR[i][1])return ZR[i][2];return""}
+var loc={s:"",c:"",z:""};
+try{loc=JSON.parse(localStorage.getItem("probate-loc")||"")||loc}catch(e){}
+function el(t,x,c){var e=document.createElement(t);if(x)e.textContent=x;if(c)e.className=c;return e}
+function lk(x,q){var a=el("a",x);a.href="https://www.google.com/search?q="+encodeURIComponent(q);a.target="_blank";a.rel="noopener noreferrer";return a}
+function renderCourt(){
+var b=document.getElementById("court");b.textContent="";
+b.appendChild(el("h2","Your court"));
+b.appendChild(el("p","Enter where the person who passed away lived: a county, a ZIP code, or both. That usually decides which court handles the estate."));
+var r=el("div","","row"),sel=el("select"),o=el("option","State");sel.setAttribute("aria-label","State");o.value="";sel.appendChild(o);
+STATES.forEach(function(s){var op=el("option",s);op.value=s;if(s===loc.s)op.selected=true;sel.appendChild(op)});
+var inp=el("input");inp.type="text";inp.placeholder="County or parish";inp.value=loc.c;inp.setAttribute("aria-label","County or parish where the person lived");
+var zp=el("input");zp.type="text";zp.inputMode="numeric";zp.maxLength=5;zp.placeholder="ZIP code";zp.value=loc.z||"";zp.setAttribute("aria-label","ZIP code where the person lived");
+var go=el("button","Show my court");go.type="button";
+go.addEventListener("click",function(){var z=zp.value.replace(/\D/g,"").slice(0,5);loc={s:sel.value||zipState(z),c:inp.value.trim().replace(/\s+(county|parish)$/i,"").slice(0,60),z:z.length===5?z:""};try{localStorage.setItem("probate-loc",JSON.stringify(loc))}catch(e){}renderCourt()});
+r.appendChild(sel);r.appendChild(inp);r.appendChild(zp);r.appendChild(go);b.appendChild(r);
+if(!loc.s){if(loc.z)b.appendChild(el("p","That ZIP code did not match a state. Pick the state above."));return}
+var ct=COURT[loc.s]||"probate court",pl=(loc.c?loc.c+(loc.s==="Louisiana"?" Parish":" County")+", ":"")+loc.s;
+b.appendChild(el("h3","Probate in "+pl));
+b.appendChild(el("p","This is usually handled by the "+ct+". Courts are named and organized differently across states, so confirm on the official court website. These links open a search; look for the official .gov or court result."));
+if(loc.z){b.appendChild(el("p","The state was filled in from ZIP "+loc.z+". Change it above if it looks wrong. One ZIP code can cover more than one county, so the county is not guessed."));if(!loc.c)b.appendChild(lk("Look up the county for ZIP "+loc.z,"what county is ZIP code "+loc.z+" in"));b.appendChild(lk("Find probate courts near ZIP "+loc.z,"probate court near "+loc.z))}else if(!loc.c)b.appendChild(el("p","Add a county or ZIP code to get links for the exact court."));
+b.appendChild(lk("Find the court clerk's page",pl+" "+ct+" clerk"));
+b.appendChild(lk("Find probate forms and filing fees",pl+" probate forms filing fees"));
+b.appendChild(lk("Check small estate rules",loc.s+" small estate affidavit limit"));
+b.appendChild(lk("Find the state's probate self-help page",loc.s+" courts probate self-help"));
+b.appendChild(lk("Find free or low-cost legal help",pl+" legal aid probate help"));
+b.appendChild(el("h3","Questions to ask the clerk"));
+var ol=el("ol");QS.forEach(function(q){ol.appendChild(el("li",q))});b.appendChild(ol)}
+renderCourt();
+var leadE=document.getElementById("lead").textContent;
+var leadH="Most executors do the job honestly. These steps keep you informed and protect your rights, because grief and time pressure make it easy to sign things too fast. You are allowed to ask questions and take your time.";
+document.querySelectorAll(".tabs button").forEach(function(b){b.addEventListener("click",function(){
+mode=b.dataset.m;
+document.querySelectorAll(".tabs button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
+document.getElementById("phases").hidden=mode==="h";document.getElementById("heirs").hidden=mode!=="h";
+document.getElementById("lead").textContent=mode==="h"?leadH:leadE;
+say(mode==="h"?"You have the right to understand what is happening with the estate.":"Start with whatever feels easiest. Every checked box counts.");
+update();window.scrollTo(0,0)})});
+update();
+</script>
+</body>
+</html>
