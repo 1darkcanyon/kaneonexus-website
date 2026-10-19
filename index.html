@@ -241,6 +241,29 @@ body.ent-lock{overflow:hidden}
 @keyframes entUp{to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes entPulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.06);opacity:.2}}
 </style>
+
+<style>
+/* NEXUS DIRECTORY TILES */
+.nx-dir{max-width:1180px;margin:0 auto;padding:70px 32px}
+.nx-group{margin-bottom:2.4rem}
+.nx-group h3{font-family:'Orbitron',monospace;font-size:.6rem;letter-spacing:4px;text-transform:uppercase;color:var(--teal);display:flex;align-items:center;gap:14px;margin-bottom:1rem}
+.nx-group h3::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent)}
+.nx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.nx-grid.core{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.nx-tile{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:110px;padding:16px;text-decoration:none;color:var(--text);background:linear-gradient(145deg,var(--card),var(--card2));border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s;-webkit-tap-highlight-color:transparent}
+.nx-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--teal);opacity:.7}
+.nx-tile:hover,.nx-tile:active{transform:translateY(-4px);border-color:var(--teal);box-shadow:0 10px 30px rgba(13,148,136,.18)}
+.nx-ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:1.15rem;background:var(--teal-dim);border:1px solid var(--border);box-shadow:0 0 14px var(--teal-glow)}
+.nx-name{display:block;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;letter-spacing:1px;color:#fff;line-height:1.2}
+.nx-desc{display:block;font-size:.82rem;line-height:1.4;color:rgba(200,216,232,.55);margin-top:4px}
+.nx-grid.core .nx-tile{flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:96px}
+.nx-grid.core .nx-ico{width:48px;height:48px;font-size:1.4rem;flex:none}
+.nx-grid.core .nx-name{font-size:1.1rem}
+.nx-grid.demos .nx-tile::before{background:var(--gold)}
+.nx-grid.demos .nx-ico{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3);box-shadow:0 0 14px var(--gold-glow)}
+.nx-grid.demos .nx-tile:hover{border-color:var(--gold);box-shadow:0 10px 30px var(--gold-glow)}
+@media(max-width:600px){.nx-dir{padding:50px 16px}.nx-grid{grid-template-columns:repeat(2,1fr)}.nx-grid.core{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div class="ent-overlay" id="entOverlay">
@@ -428,49 +451,11 @@ body.ent-lock{overflow:hidden}
     </div>
   </div>
 </section>
-<section class="site-index">
-  <h2>NEXUS System Directory & Applications</h2>
-
-  <!-- Primary Hubs & Tools -->
-  <div class="category">
-    <h3>Core Portals & Modules</h3>
-    <ul>
-      <li><a href="/probate/"><strong>Probate Guide</strong></a> — Step-by-step estate & probate assistance</li>
-      <li><a href="/eiai/"><strong>EIAI Portal</strong></a> — Environmental & Intelligence AI workspace</li>
-      <li><a href="/family/"><strong>Family Portal</strong></a> — Family resources and index</li>
-      <li><a href="/luna-tic/"><strong>Luna-Tic</strong></a> — Emotional forecasting & lunar system</li>
-    </ul>
-  </div>
-
-  <!-- Nexus App Suite -->
-  <div class="category">
-    <h3>NEXUS Infrastructure & Utilities</h3>
-    <ul>
-      <li><a href="/nexus-console.html">Nexus Console</a></li>
-      <li><a href="/nexus-sovereign-core.html">Nexus Sovereign Core</a></li>
-      <li><a href="/nexus-hero.html">Nexus Hero</a></li>
-      <li><a href="/nexus-memoria.html">Nexus Memoria</a></li>
-      <li><a href="/nexus-safeguard.html">Nexus Safeguard</a></li>
-      <li><a href="/nexus-safe-contact.html">Nexus Safe Contact</a></li>
-      <li><a href="/nexus-people-search.html">Nexus People Search</a></li>
-      <li><a href="/nexus-property-tax.html">Nexus Property Tax</a></li>
-      <li><a href="/nexus-metals-ping.html">Nexus Metals Ping</a></li>
-      <li><a href="/nexus-ping.html">Nexus Ping</a></li>
-      <li><a href="/nexus-phone.html">Nexus Phone</a></li>
-      <li><a href="/nexus-invoice.html">Nexus Invoice</a></li>
-    </ul>
-  </div>
-
-  <!-- Interactive Demos & Standalone Pages -->
-  <div class="category">
-    <h3>Demos & Interactive Tools</h3>
-    <ul>
-      <li><a href="/guardian-shield.html">Guardian Shield</a></li>
-      <li><a href="/narrative-animator.html">Narrative Animator</a></li>
-      <li><a href="/opensesame.html">OpenSesame</a></li>
-      <li><a href="/frequent-see.html">Frequent-See</a></li>
-    </ul>
-  </div>
+<section class="nx-dir" id="directory">
+  <div class="section-header"><div class="eyebrow">// SYSTEM DIRECTORY</div><h2 class="sec-title">NEXUS APPLICATIONS</h2></div>
+  <div class="nx-group"><h3>Core Portals & Modules</h3><div class="nx-grid core"><a class="nx-tile" href="/probate/"><span class="nx-ico">📜</span><span class="nx-txt"><span class="nx-name">Probate Guide</span><span class="nx-desc">Step-by-step estate & probate assistance</span></span></a><a class="nx-tile" href="/eiai/"><span class="nx-ico">🧠</span><span class="nx-txt"><span class="nx-name">EIAI Portal</span><span class="nx-desc">Environmental & Intelligence AI workspace</span></span></a><a class="nx-tile" href="/family/"><span class="nx-ico">🏡</span><span class="nx-txt"><span class="nx-name">Family Portal</span><span class="nx-desc">Family resources and index</span></span></a><a class="nx-tile" href="/luna-tic/"><span class="nx-ico">🌙</span><span class="nx-txt"><span class="nx-name">Luna-Tic</span><span class="nx-desc">Emotional forecasting & lunar system</span></span></a></div></div>
+  <div class="nx-group"><h3>Infrastructure & Utilities</h3><div class="nx-grid infra"><a class="nx-tile" href="/nexus-console.html"><span class="nx-ico">⌨️</span><span class="nx-txt"><span class="nx-name">Console</span></span></a><a class="nx-tile" href="/nexus-sovereign-core.html"><span class="nx-ico">👑</span><span class="nx-txt"><span class="nx-name">Sovereign Core</span></span></a><a class="nx-tile" href="/nexus-hero.html"><span class="nx-ico">⚡</span><span class="nx-txt"><span class="nx-name">Hero</span></span></a><a class="nx-tile" href="/nexus-memoria.html"><span class="nx-ico">🗂️</span><span class="nx-txt"><span class="nx-name">Memoria</span></span></a><a class="nx-tile" href="/nexus-safeguard.html"><span class="nx-ico">🛡️</span><span class="nx-txt"><span class="nx-name">Safeguard</span></span></a><a class="nx-tile" href="/nexus-safe-contact.html"><span class="nx-ico">🔐</span><span class="nx-txt"><span class="nx-name">Safe Contact</span></span></a><a class="nx-tile" href="/nexus-people-search.html"><span class="nx-ico">🔎</span><span class="nx-txt"><span class="nx-name">People Search</span></span></a><a class="nx-tile" href="/nexus-property-tax.html"><span class="nx-ico">🏠</span><span class="nx-txt"><span class="nx-name">Property Tax</span></span></a><a class="nx-tile" href="/nexus-metals-ping.html"><span class="nx-ico">⛏️</span><span class="nx-txt"><span class="nx-name">Metals Ping</span></span></a><a class="nx-tile" href="/nexus-ping.html"><span class="nx-ico">📡</span><span class="nx-txt"><span class="nx-name">Ping</span></span></a><a class="nx-tile" href="/nexus-phone.html"><span class="nx-ico">📞</span><span class="nx-txt"><span class="nx-name">Phone</span></span></a><a class="nx-tile" href="/nexus-invoice.html"><span class="nx-ico">🧾</span><span class="nx-txt"><span class="nx-name">Invoice</span></span></a></div></div>
+  <div class="nx-group"><h3>Demos & Interactive Tools</h3><div class="nx-grid demos"><a class="nx-tile" href="/guardian-shield.html"><span class="nx-ico">🔰</span><span class="nx-txt"><span class="nx-name">Guardian Shield</span></span></a><a class="nx-tile" href="/narrative-animator.html"><span class="nx-ico">🎬</span><span class="nx-txt"><span class="nx-name">Narrative Animator</span></span></a><a class="nx-tile" href="/opensesame.html"><span class="nx-ico">🗝️</span><span class="nx-txt"><span class="nx-name">OpenSesame</span></span></a><a class="nx-tile" href="/frequent-see.html"><span class="nx-ico">〰️</span><span class="nx-txt"><span class="nx-name">Frequent-See</span></span></a></div></div>
 </section>
 
   <!-- CTA -->
