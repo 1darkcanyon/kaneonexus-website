@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>NEXUS Boot</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--magenta:#cc00ff;--cyan:#00e5ff;--deep:#0a0010;--gold:#ffaa00;--pan:1.6s}
+html,body{height:100%;background:#000;overflow:hidden;cursor:none}
+
+/* CURSOR (same as nexus-hero) */
+.cursor{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--cyan);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s ease,background .3s ease;box-shadow:0 0 12px var(--cyan),0 0 24px var(--cyan)}
+.cursor-ring{position:fixed;width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,229,255,.4);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s ease,height .3s ease,border-color .3s ease}
+@media (hover:none){.cursor,.cursor-ring{display:none}}
+
+/* FIXED BACKGROUND (video stays put while frames pan over it) */
+.video-bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 2s ease}
+.video-bg.loaded{opacity:1}
+.vignette{position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.55) 80%,rgba(0,0,0,.85) 100%);z-index:1;pointer-events:none}
+.scanlines{position:fixed;inset:0;background:repeating-linear-gradient(to bottom,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);z-index:2;pointer-events:none}
+
+/* FRAME TRACK: two stacked frames, camera pans down between them */
+.track{position:fixed;left:0;top:0;width:100vw;height:200vh;z-index:10;transition:transform var(--pan) cubic-bezier(.77,0,.18,1)}
+.track.panned{transform:translateY(-100vh)}
+.frame{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.frame .content{transition:filter var(--pan) ease,opacity var(--pan) ease}
+.track.panned .frame.one .content{filter:blur(10px);opacity:0}
+
+.content{position:relative;z-index:10;text-align:center;display:flex;flex-direction:column;align-items:center}
+.eyebrow{font-family:'Rajdhani',sans-serif;font-weight:300;font-size:clamp(.65rem,1.5vw,.85rem);letter-spacing:.45em;color:var(--cyan);text-transform:uppercase;margin-bottom:1.2rem;opacity:0;transform:translateY(12px)}
+.wordmark{font-family:'Cinzel',serif;font-weight:900;font-size:clamp(3rem,14vw,11rem);line-height:.9;letter-spacing:.12em;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.15);background:linear-gradient(135deg,#fff 0%,var(--cyan) 30%,var(--magenta) 60%,#fff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;position:relative;opacity:0;transform:translateY(20px) scale(.96)}
+.wordmark::after{content:attr(data-text);position:absolute;inset:0;font:inherit;letter-spacing:inherit;line-height:inherit;color:transparent;-webkit-text-stroke:0;filter:blur(28px);background:linear-gradient(135deg,var(--cyan),var(--magenta));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;opacity:.5;pointer-events:none}
+.subtitle{font-family:'Rajdhani',sans-serif;font-weight:300;font-size:clamp(.7rem,1.8vw,1rem);letter-spacing:.35em;color:rgba(255,255,255,.45);text-transform:uppercase;margin-top:1rem;margin-bottom:3.5rem;opacity:0;transform:translateY(10px)}
+
+/* Reveal animations; frame one plays on load, frame two when .panned lands */
+.one .eyebrow{animation:fadeUp 1.2s ease .8s forwards}
+.one .wordmark{animation:fadeUp 1.4s cubic-bezier(.16,1,.3,1) .3s forwards}
+.one .subtitle{animation:fadeUp 1.2s ease 1.2s forwards;margin-bottom:2.5rem}
+.track.panned .two .eyebrow{animation:fadeUp 1.2s ease 1s forwards}
+.track.panned .two .wordmark{animation:fadeUp 1.4s cubic-bezier(.16,1,.3,1) .6s forwards}
+.track.panned .two .subtitle{animation:fadeUp 1.2s ease 1.4s forwards}
+.track.panned .two .enter-btn{animation:fadeUp 1.2s ease 1.8s forwards}
+
+/* Boot progress bar (replaces Enter on frame one) */
+.boot{width:min(260px,60vw);height:1px;background:rgba(0,229,255,.15);position:relative;overflow:hidden;opacity:0;animation:fadeUp 1s ease 1.6s forwards}
+.boot i{position:absolute;inset:0;background:linear-gradient(to right,var(--cyan),var(--magenta));transform:translateX(-100%);animation:load 3.2s cubic-bezier(.4,0,.2,1) 2s forwards}
+@keyframes load{to{transform:translateX(0)}}
+
+/* Enter button (frame two) */
+.enter-btn{position:relative;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:clamp(.75rem,1.6vw,.9rem);letter-spacing:.4em;text-transform:uppercase;color:var(--cyan);text-decoration:none;padding:1rem 3rem;border:1px solid rgba(0,229,255,.35);background:rgba(0,229,255,.04);cursor:none;overflow:hidden;opacity:0;transform:translateY(10px);transition:color .4s,border-color .4s,background .4s}
+.enter-btn::before,.enter-btn::after{content:'';position:absolute;width:8px;height:8px;border-color:var(--magenta);border-style:solid;transition:width .4s,height .4s,opacity .4s;opacity:.7}
+.enter-btn::before{top:-1px;left:-1px;border-width:1px 0 0 1px}
+.enter-btn::after{bottom:-1px;right:-1px;border-width:0 1px 1px 0}
+.enter-btn .fill{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,229,255,.08),rgba(204,0,255,.08));transform:translateX(-101%);transition:transform .5s cubic-bezier(.16,1,.3,1)}
+.enter-btn:hover{color:#fff;border-color:rgba(204,0,255,.6);background:transparent}
+.enter-btn:hover .fill{transform:translateX(0)}
+.enter-btn:hover::before,.enter-btn:hover::after{width:14px;height:14px;opacity:1}
+.enter-btn span{position:relative;z-index:1}
+
+/* Sigil line pinned to each frame's bottom */
+.sigil-line{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:1.2rem;opacity:0;animation:fadeUp 1s ease 2.2s forwards;z-index:10}
+.sigil-line::before,.sigil-line::after{content:'';width:60px;height:1px;background:linear-gradient(to right,transparent,rgba(0,229,255,.4))}
+.sigil-line::after{background:linear-gradient(to left,transparent,rgba(0,229,255,.4))}
+.sigil-text{font-family:'Rajdhani',sans-serif;font-size:.6rem;letter-spacing:.4em;color:rgba(0,229,255,.35);text-transform:uppercase;white-space:nowrap}
+.two .sigil-line{animation:none}
+.track.panned .two .sigil-line{animation:fadeUp 1s ease 2.2s forwards}
+
+/* Pulse rings */
+.pulse-ring{position:absolute;width:320px;height:320px;border-radius:50%;border:1px solid rgba(204,0,255,.12);animation:pulseRing 4s ease-in-out infinite;pointer-events:none;z-index:5}
+.pulse-ring:nth-child(2){animation-delay:1.3s;width:480px;height:480px;border-color:rgba(0,229,255,.07)}
+.pulse-ring:nth-child(3){animation-delay:2.6s;width:640px;height:640px;border-color:rgba(204,0,255,.05)}
+
+@keyframes fadeUp{to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes pulseRing{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.06);opacity:.2}}
+@media (max-width:600px){.pulse-ring{display:none}.subtitle{letter-spacing:.2em}.enter-btn{padding:.9rem 2.2rem}}
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- SWAP src WITH YOUR VIDEO FILE PATH -->
+<video class="video-bg" id="heroBg" src="nexus-hero/Nexusstart.mp4" autoplay muted loop playsinline preload="auto"></video>
+<div class="vignette"></div>
+<div class="scanlines"></div>
+
+<div class="track" id="track">
+
+  <!-- FRAME 1: NEXUS boot -->
+  <section class="frame one">
+    <div class="pulse-ring"></div><div class="pulse-ring"></div><div class="pulse-ring"></div>
+    <div class="content">
+      <p class="eyebrow">Integrated Intelligence Solutions</p>
+      <h1 class="wordmark" data-text="NEXUS">NEXUS</h1>
+      <p class="subtitle">Perception &nbsp;·&nbsp; Protection &nbsp;·&nbsp; Presence</p>
+      <div class="boot"><i></i></div>
+    </div>
+  </section>
+
+  <!-- FRAME 2: pan lands on kaneonexus -->
+  <section class="frame two">
+    <div class="content">
+      <p class="eyebrow">Welcome to</p>
+      <h1 class="wordmark" data-text="KANEONEXUS">KANEONEXUS</h1>
+      <p class="subtitle">Perception &nbsp;·&nbsp; Protection &nbsp;·&nbsp; Presence</p>
+      <a href="https://kaneonexus.net" class="enter-btn" id="enter">
+        <div class="fill"></div><span>Enter</span>
+      </a>
+    </div>
+    <div class="sigil-line"><span class="sigil-text">kaneonexus.net</span></div>
+  </section>
+
+</div>
+
+<script>
+// ── CONFIG ──
+const PAN_AT_MS = 5400;      // when the camera pans from NEXUS to kaneonexus
+const AUTO_OPEN_MS = 0;      // 0 = wait for Enter tap; e.g. 4000 = auto-open kaneonexus.net after pan
+const TARGET = 'https://kaneonexus.net';
+
+// ── VIDEO FADE IN ──
+const vid = document.getElementById('heroBg');
+vid.addEventListener('canplay', () => vid.classList.add('loaded'));
+if (vid.readyState >= 3) vid.classList.add('loaded');
+// if video file is missing, still show the animation over black
+vid.addEventListener('error', () => vid.classList.remove('loaded'));
+
+// ── PAN ──
+const track = document.getElementById('track');
+let panned = false;
+function pan(){
+  if (panned) return; panned = true;
+  track.classList.add('panned');
+  if (AUTO_OPEN_MS > 0) setTimeout(() => location.href = TARGET, 1600 + AUTO_OPEN_MS);
+}
+setTimeout(pan, PAN_AT_MS);
+document.addEventListener('click', e => { if (!e.target.closest('#enter')) pan(); }); // tap to skip
+
+// ── CURSOR ──
+const cursor = document.getElementById('cursor'), ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+(function animRing(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+document.querySelectorAll('a,button').forEach(el => {
+  el.addEventListener('mouseenter', () => { ring.style.width='56px'; ring.style.height='56px'; ring.style.borderColor='rgba(204,0,255,.6)'; cursor.style.background='var(--magenta)'; });
+  el.addEventListener('mouseleave', () => { ring.style.width='36px'; ring.style.height='36px'; ring.style.borderColor='rgba(0,229,255,.4)'; cursor.style.background='var(--cyan)'; });
+});
+</script>
+</body>
+</html>
