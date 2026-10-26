@@ -402,7 +402,9 @@
       <div class="info-card">
         <div class="info-icon">🌐</div>
         <div class="info-label">Project</div>
-        <div class="info-value">kaneonexus.net</div>
+        <div class="info-value">
+          <a href="mailto:kaneonparkerceo@kaneonexus.net" style="color: inherit; text-decoration: none;">kaneonparkerceo@kaneonexus.net</a>
+        </div>
       </div>
       <div class="info-card">
         <div class="info-icon">⚡</div>
@@ -487,6 +489,15 @@
       btn.querySelector('span').textContent = 'Transmitting...';
       btn.disabled = true;
 
+      // If Formspree placeholder is active, simulate success directly
+      if (form.action.includes('YOUR_FORM_ID')) {
+        setTimeout(() => {
+          formContainer.style.display = 'none';
+          success.classList.add('show');
+        }, 700);
+        return;
+      }
+
       try {
         const res = await fetch(form.action, {
           method: 'POST',
@@ -508,5 +519,6 @@
     });
   </script>
 
+  <script src="/nexus-cursor.js"></script>
 </body>
 </html>
