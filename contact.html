@@ -422,7 +422,8 @@
       <div class="form-title">// Initiate Contact</div>
 
       <div id="formContainer">
-        <form id="contactForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+        <!-- Updated Formspree Endpoint -->
+        <form id="contactForm" action="https://formspree.io/f/xpppplgl" method="POST">
           <div class="form-grid">
 
             <div class="form-group">
@@ -488,15 +489,6 @@
       const btn = form.querySelector('.submit-btn');
       btn.querySelector('span').textContent = 'Transmitting...';
       btn.disabled = true;
-
-      // If Formspree placeholder is active, simulate success directly
-      if (form.action.includes('YOUR_FORM_ID')) {
-        setTimeout(() => {
-          formContainer.style.display = 'none';
-          success.classList.add('show');
-        }, 700);
-        return;
-      }
 
       try {
         const res = await fetch(form.action, {
