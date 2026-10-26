@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Scammer Hammer — Kaneonexus</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070B10;--bg2:#0C131B;--card:#111B24;--line:#223140;--ink:#E9F1F6;--mute:#8FA3B4;--accent:#4FD3E8;--accent-ink:#06171C;--accent2:#7B6CF0;--warn:#FF8A6B;--warnbg:#2A1710;--ok:#6FE0B0;--okbg:#0E2A22;--disp:"Orbitron",system-ui,sans-serif;--body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px 56px}
+.hero{position:relative;padding:40px 18px 28px;text-align:center;background:radial-gradient(60% 50% at 50% 0%,rgba(79,211,232,.14),transparent 70%),radial-gradient(40% 40% at 80% 20%,rgba(123,108,240,.10),transparent 70%),var(--bg2)}
+.orb{width:92px;height:92px;margin:0 auto 14px}
+.orb svg{width:100%;height:100%;animation:spin 40s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.orb svg{animation:none}}
+.eyebrow{font-family:var(--disp);font-size:.68rem;letter-spacing:.14em;color:var(--accent);margin-bottom:8px}
+h1{font-family:var(--disp);font-weight:800;font-size:2.2rem;line-height:1.05;margin:0 0 10px}
+h1 span{color:var(--accent)}
+.tagline{color:var(--mute);max-width:44ch;margin:0 auto;font-size:1rem}
+nav.top{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);padding:5px;border-radius:12px;margin:22px 0 6px;overflow-x:auto}
+nav.sub{display:flex;gap:6px;margin:0 0 18px;overflow-x:auto}
+nav button{flex:1 0 auto;white-space:nowrap;border:0;background:transparent;color:var(--mute);font:600 .9rem var(--body);padding:9px 13px;border-radius:9px;cursor:pointer}
+nav.top button[aria-selected="true"]{background:var(--bg2);color:var(--accent)}
+nav.sub button{border:1px solid var(--line);background:var(--card)}
+nav.sub button[aria-selected="true"]{border-color:var(--accent);color:var(--accent)}
+button:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h2{font-family:var(--disp);font-weight:700;font-size:1.05rem;letter-spacing:.01em;margin:0 0 10px}
+h3{font-size:1rem;margin:12px 0 4px}
+p{margin:0 0 10px}
+.lede{color:var(--mute);margin-bottom:18px}
+.grid{display:grid;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card .kicker{font-family:var(--disp);font-size:.66rem;letter-spacing:.1em;color:var(--accent);margin-bottom:5px}
+.card h3{margin:0 0 5px;font-size:1.08rem}
+.card p{color:var(--mute);margin:0 0 12px;font-size:.93rem}
+.go,.cta{display:inline-block;font:600 .9rem var(--body);color:var(--accent-ink);background:var(--accent);padding:10px 16px;border-radius:9px;text-decoration:none;border:0;cursor:pointer}
+.cta{display:block;width:100%;text-align:center;font-size:.95rem;margin-top:14px}
+.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.note{color:var(--mute);font-size:.86rem;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.warnbox{background:var(--warnbg);border:1px solid var(--warn);border-radius:10px;padding:13px 15px;margin-bottom:18px}
+.warnbox h2{color:var(--warn);margin-bottom:7px}
+.warnbox ul,ol.steps{margin:0;padding-left:19px}
+.warnbox li,ol.steps li{margin-bottom:5px}
+.flag{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:10px 13px;margin-bottom:8px}
+.flag b{display:block;font-size:.95rem}
+.flag span{color:var(--mute);font-size:.88rem}
+.flag code{display:block;margin-top:4px;font:.82rem/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--warn);word-break:break-all}
+label{display:block;font-weight:700;font-size:.88rem;margin:12px 0 5px;color:var(--ink)}
+select,textarea,input[type=text],input[type=date]{width:100%;font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)}
+textarea{min-height:76px;resize:vertical}
+.hint{color:var(--mute);font-size:.82rem;margin-top:3px}
+.meta{display:flex;justify-content:space-between;color:var(--mute);font-size:.9rem;margin-bottom:6px}
+.bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:12px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.msg{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.msg .mtop{background:var(--bg2);padding:9px 13px;font-size:.88rem}
+.msg .mtop b{display:block;font-size:.98rem}
+.msg .mtop span{color:var(--mute);word-break:break-all}
+.ch{display:inline-block;font-size:.76rem;font-weight:700;color:var(--accent);margin-bottom:2px}
+.msg .mbody{padding:13px}
+.subj{font-weight:700;margin-bottom:7px}
+.lnk{display:inline-block;color:var(--accent);text-decoration:underline;font-weight:700;margin-top:3px}
+.peek{display:block;margin-top:9px;background:none;border:1px dashed var(--mute);color:var(--mute);font:inherit;font-size:.86rem;padding:7px 9px;border-radius:8px;cursor:pointer}
+.url{display:block;margin-top:7px;padding:7px 9px;background:var(--bg2);border-radius:6px;font:.84rem/1.4 ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
+.ans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.ans button{border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:700;padding:14px 8px;border-radius:10px;cursor:pointer}
+.ans button:disabled{opacity:.5;cursor:default}
+.fb{margin-top:12px;border-radius:10px;padding:12px;border:1px solid}
+.fb.good{background:var(--okbg);border-color:var(--ok)}
+.fb.miss{background:var(--warnbg);border-color:var(--warn)}
+.fb ul{margin:5px 0 8px;padding-left:18px}
+.big{font-size:2.6rem;font-weight:700;line-height:1;margin:6px 0;font-family:var(--disp)}
+.miss-row{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:7px}
+.miss-row small{color:var(--mute);display:block}
+.acc{display:grid;gap:12px}
+.accitem{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ahead{padding:13px 15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:9px;border:0;width:100%;background:transparent;text-align:left;font:inherit;color:inherit}
+.aid b{display:block;font-size:1.02rem}
+.aid span{color:var(--mute);font-size:.85rem}
+.tag{flex-shrink:0;background:var(--bg2);color:var(--accent);font-weight:700;font-size:.76rem;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.chev{flex-shrink:0;color:var(--mute);transition:transform .15s}
+.accitem[data-open="true"] .chev{transform:rotate(180deg)}
+.abody{padding:0 15px 15px}
+.accitem[data-open="false"] .abody{display:none}
+.abody h4{font-size:.8rem;color:var(--mute);margin:10px 0 3px}
+.abody h4:first-child{margin-top:0}
+.lines{background:var(--bg2);border-radius:8px;padding:9px 11px}
+.lines p{margin:0 0 5px;font-style:italic;font-size:.92rem}
+.limits{color:var(--warn);font-weight:700;font-size:.88rem}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.row .small{font:inherit;font-weight:700;font-size:.86rem;padding:8px 12px;border-radius:8px;border:2px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer}
+.copied{color:var(--ok);font-size:.82rem;font-weight:700;margin-left:6px;opacity:0;transition:opacity .2s}
+.copied.show{opacity:1}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--bg2);border-radius:8px;padding:9px 11px;font:.84rem/1.45 ui-monospace,Menlo,Consolas,monospace;margin:0 0 9px}
+.suggest{background:var(--bg2);border-radius:8px;padding:11px;margin-top:11px}
+.suggest p{font-style:italic;margin:0 0 5px}
+.log,.hist{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:7px}
+.log .top,.hist .top{display:flex;justify-content:space-between;color:var(--mute);font-size:.8rem}
+.log .them{margin:5px 0;font-weight:600}
+.log .us{color:var(--accent)}
+.hist .snip{margin:4px 0 7px;font-weight:700}
+.chk{display:flex;gap:12px;flex-wrap:wrap;font-size:.84rem}
+.chk label{display:flex;align-items:center;gap:5px;font-weight:400;margin:0}
+.badge{display:inline-block;background:var(--bg2);color:var(--accent);font-size:.74rem;font-weight:700;padding:3px 7px;border-radius:999px}
+.empty{color:var(--mute);text-align:center;padding:26px 8px}
+</style>
+</head>
+<body>
+<div class="hero">
+<div class="orb"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<circle cx="50" cy="50" r="46" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".35"/>
+<circle cx="50" cy="50" r="34" fill="none" stroke="var(--accent2)" stroke-width="1" opacity=".5"/>
+<g stroke="var(--accent)" stroke-width="1.4" opacity=".8">
+<line x1="50" y1="4" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="96"/>
+<line x1="4" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="96" y2="50"/>
+<line x1="16" y1="16" x2="27" y2="27"/><line x1="73" y1="73" x2="84" y2="84"/>
+<line x1="84" y1="16" x2="73" y2="27"/><line x1="27" y1="73" x2="16" y2="84"/>
+</g><circle cx="50" cy="50" r="9" fill="var(--accent)"/></svg></div>
+<div class="eyebrow">KANEONEXUS &nbsp;·&nbsp; INTEGRATED INTELLIGENCE SOLUTIONS</div>
+<h1>Scammer <span>Hammer</span></h1>
+<p class="tagline">Gone phishing — but this time you're the one with the net. Learn the lures, bait the scammers, and report every catch.</p>
+</div>
+<div class="wrap">
+<nav class="top" role="tablist" id="topnav"></nav>
+<nav class="sub" role="tablist" id="subnav"></nav>
+<main id="app"></main>
+</div>
+<script>
+function esc(s){return (s||"").replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+function copyText(t,flagId){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){flash(flagId)})}else{var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(ta);flash(flagId)}}
+function flash(id){var el=document.getElementById(id);if(!el)return;el.classList.add("show");setTimeout(function(){el.classList.remove("show")},1300)}
+function ls_get(k,d){try{var v=JSON.parse(localStorage.getItem(k));return v||d}catch(e){return d}}
+function ls_set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+var TOP="overview",SUB="";
+var TOPS=[["overview","Overview"],["learn","Learn"],["bait","Bait"],["report","Report"]];
+var SUBS={learn:[["lessons","Lures 101"],["sim","Reel Test"]],bait:[["personas","Bait Crew"],["honeypot","Honeypot"]],report:[]};
+
+var L_FLAGS=[
+{t:"Urgency or threats",d:"Scammers rush you so you act before thinking. Deadlines, locked accounts and “final notices” are the usual tools.",ex:"“Verify within 24 hours or your account is closed.”"},
+{t:"Sender doesn’t match",d:"The display name can say anything. Check the address after the @ and compare it with the company’s real site.",ex:"Northfield Bank <alerts@northfield-secure-login.example>"},
+{t:"Link goes somewhere else",d:"Hover, or press and hold, before you tap. The real site is the last name before the first single slash.",ex:"login.mybank.com.verify-now.example/signin (real site: verify-now.example)"},
+{t:"Lookalike spelling",d:"Swapped or similar characters slip past a quick glance: a 1 for an l, rn for m, vv for w.",ex:"paypa1.com   rnicrosoft.com   redvvood.com"},
+{t:"Unexpected ask for secrets or money",d:"Real companies don’t ask for passwords or one-time codes. Gift cards, crypto and wire transfers are scam favorites.",ex:"“Send me the 6-digit code we just texted you.”"},
+{t:"Surprise attachments",d:"Invoices and “scanned documents” you weren’t expecting can carry malware. Watch for double extensions.",ex:"Invoice_4471.pdf.exe"}
+];
+var L_MSGS=[
+{ch:"Email",from:"Northfield Bank Security",addr:"alerts@northfield-secure-login.example",subj:"Your account will be locked in 24 hours",body:"We noticed unusual activity. Verify your identity now or your account will be suspended permanently.",ltext:"Verify my account",url:"https://northfield-secure-login.example/verify",phish:true,clues:["Urgent deadline and a threat","Sender’s domain isn’t the bank’s real website","The link leads to a lookalike site"],why:"Banks don’t lock accounts over an email link. Open your bank’s app or type its address yourself."},
+{ch:"Text message",from:"+1 (555) 013-4471",addr:"Unknown number",subj:"Parcel notice",body:"Your delivery is on hold. Pay a $1.99 redelivery fee within 12 hours to avoid return.",ltext:"pkg-redeliver.example/pay",url:"https://pkg-redeliver.example/pay",phish:true,clues:["Unknown number, no carrier name","A tiny fee is a way to collect your card details","Short deadline to rush you"],why:"Track packages in the carrier’s own app or site. Never pay a fee through a text link."},
+{ch:"Email",from:"Streamly",addr:"no-reply@accounts.streamly.com",subj:"Reset your password",body:"You asked to reset your password a minute ago. This link works for 30 minutes. If you didn’t ask for this, you can ignore this email.",ltext:"Choose a new password",url:"https://accounts.streamly.com/reset/k29x",phish:false,clues:["You had just requested the reset","Sender and link share the company’s real domain","No pressure, and it says what to do if it wasn’t you"],why:"A reset you started yourself is expected. If you hadn’t asked, go to the site directly instead of using the link."},
+{ch:"Email",from:"Dana Whitfield, CEO",addr:"dana.whitfield.ceo@mailbox-office.example",subj:"Quick favor",body:"I’m in a meeting and can’t talk. Buy five $100 gift cards for a client and send me the codes. I’ll reimburse you today. Please keep this between us.",ltext:null,url:null,phish:true,clues:["A “boss” writing from an outside address","Gift card codes are a classic scam payment","Secrecy and “can’t talk” stop you from checking"],why:"Confirm by phone or in person, using a number you already have."},
+{ch:"Pop-up",from:"Browser alert",addr:"Appeared while browsing",subj:"VIRUS DETECTED",body:"Your device is infected with 7 viruses! Call Support at 1-800-555-0199 now. Do not close this window.",ltext:null,url:null,phish:true,clues:["Loud alarm with a phone number to call","Real security warnings never ask you to phone anyone","It tries to stop you from closing it"],why:"Close the tab or restart the browser. Never call the number on a pop-up."},
+{ch:"Email",from:"Streamly",addr:"security@accounts.streamly.com",subj:"New sign-in from Windows",body:"We noticed a sign-in to your account from a Windows PC in Portland. If this was you, no action is needed. If it wasn’t, open the Streamly app and change your password.",ltext:null,url:null,phish:false,clues:["No link and no request for information","No threat or deadline","It points you to the app, not a link"],why:"Sign-in alerts are normal. The safe move if it wasn’t you is to open the app yourself."},
+{ch:"Email",from:"HR Payroll",addr:"hr@redvvood-co.example",subj:"Action required: update direct deposit",body:"Payroll changes take effect Friday. Confirm your bank details at the portal below to avoid a missed paycheck.",ltext:"Open payroll portal",url:"https://redvvood-co-payroll.example/login",phish:true,clues:["“vv” imitates the “w” in Redwood","A deadline tied to your paycheck","Asks for bank details through a link"],why:"If payroll really changed, you’d hear it from HR directly. Use the company’s internal site, not an emailed link."},
+{ch:"Email",from:"Bluebird Books",addr:"orders@bluebirdbooks.com",subj:"Your order #48213 has shipped",body:"Thanks for your order of 2 items placed yesterday. Track it anytime from Your Orders in your account.",ltext:"Track package",url:"https://www.bluebirdbooks.com/orders/48213",phish:false,clues:["You placed this order yesterday","The link’s domain matches the sender","No request for payment or passwords"],why:"If you don’t recognize an order, skip the link and check the shop’s site directly."}
+];
+var L_order=[],L_i=0,L_score=0,L_picked=null,L_peek=false,L_missed=[];
+function shuffle(a){a=a.slice();for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1));var t=a[k];a[k]=a[j];a[j]=t}return a}
+function L_start(){L_order=shuffle(L_MSGS);L_i=0;L_score=0;L_picked=null;L_peek=false;L_missed=[]}
+function L_lessons(){
+var h='<h2>Know a lure when you see one</h2><p class="lede">The same six signs show up whether it swims in by email, text, call, or QR code.</p>';
+L_FLAGS.forEach(function(f){h+='<div class="flag"><b>'+f.t+'</b><span>'+f.d+'</span><code>'+f.ex+'</code></div>'});
+h+='<h2 style="margin-top:20px">When something smells fishy</h2><ol class="steps"><li><b>Pause.</b> Nothing real is lost by waiting ten minutes.</li><li><b>Go direct.</b> Open the app, type the site yourself, or call the number on your card — never the one in the message.</li><li><b>Report and delete.</b> Use your email app’s report button, then log it in the Report tab here.</li></ol>';
+h+='<button class="cta" data-act="tosim">Think you can spot one? Try the Reel Test</button>';
+return h}
+function L_sim(){
+if(!L_order.length)L_start();
+if(L_i>=L_order.length)return L_results();
+var m=L_order[L_i],h="";
+h+='<div class="meta"><span>Catch '+(L_i+1)+' of '+L_order.length+'</span><span>Score '+L_score+'</span></div><div class="bar"><i style="width:'+(L_i/L_order.length*100)+'%"></i></div>';
+h+='<div class="msg"><div class="mtop"><span class="ch">'+m.ch+'</span><b>'+m.from+'</b><span>'+m.addr+'</span></div><div class="mbody"><div class="subj">'+m.subj+'</div><p>'+m.body+'</p>';
+if(m.ltext){h+='<span class="lnk">'+m.ltext+'</span><button class="peek" data-act="peek">'+(L_peek?"Hide link address":"Check where the hook leads")+'</button>';if(L_peek)h+='<code class="url">'+m.url+'</code>'}
+h+='</div></div>';
+h+='<div class="ans"><button data-act="ans" data-v="1"'+(L_picked!==null?" disabled":"")+'>Phishing</button><button data-act="ans" data-v="0"'+(L_picked!==null?" disabled":"")+'>Looks legit</button></div>';
+if(L_picked!==null){
+var ok=(L_picked===m.phish);
+h+='<div class="fb '+(ok?"good":"miss")+'"><h3>'+(ok?"Caught it":"Slipped the hook")+' — this was '+(m.phish?"phishing":"legitimate")+'</h3><p>'+(m.phish?"Clues:":"Why it’s trustworthy:")+'</p><ul>';
+m.clues.forEach(function(c){h+='<li>'+c+'</li>'});
+h+='</ul><p>'+m.why+'</p></div><button class="cta" data-act="next">'+(L_i+1<L_order.length?"Next catch":"See results")+'</button>'}
+return h}
+function L_results(){
+var n=L_order.length,t=L_score===n?"Perfect catch. Nothing got past you.":L_score>=n-2?"Nearly a clean net — one more pass will sharpen you up.":"A few got away. Review the lures and try again.";
+var h='<div class="meta"><span>Results</span></div><div class="big">'+L_score+' / '+n+'</div><p>'+t+'</p>';
+if(L_missed.length){h+='<h2>Worth another look</h2>';L_missed.forEach(function(m){h+='<div class="miss-row"><b>'+m.subj+'</b><small>'+m.from+' ('+(m.phish?"phishing":"legitimate")+')</small><p style="margin:5px 0 0">'+m.why+'</p></div>'})}
+h+='<button class="cta" data-act="again">Fish again</button><button class="cta ghost" data-act="tolessons">Review the lures</button>';
+return h}
+
+var B_CAST=[
+{id:"gerald",name:"Gerald Finch",tag:"Tech support scams",sub:"68, retired machinist, lives alone",
+backstory:"Gerald answers every call because he's expecting one from his pharmacy. He owns a laptop his granddaughter set up and doesn't fully understand it. He's proud and doesn't like admitting confusion, so he'll go along with jargon rather than ask what it means.",
+traits:"Polite, a little hard of hearing (ask them to repeat things), easily flattered, trusts anyone who sounds official, slow typer.",
+lines:["Oh, there's a popup on here, it's got a siren sound and everything.","Now which button, the blue one? Hold on, my glasses.","You said you're from Microsoft directly? My granddaughter uses Microsoft."],
+tactics:"Ask them to repeat instructions slowly. Claim you clicked the wrong thing. Get distracted mid-task. Ask why they need remote access three different ways.",
+limits:"Never actually install remote-access software. If asked, say it's \"still downloading\" indefinitely."},
+{id:"marlene",name:"Marlene Voss",tag:"Romance scams",sub:"57, recently widowed, works part-time at a garden center",
+backstory:"Marlene joined a social app on her daughter's suggestion to meet people. She's lonely but not naive — she just wants someone to talk to, and she's generous once she trusts someone. She asks a lot of questions back, which keeps the scammer talking.",
+traits:"Warm, chatty, asks follow-up questions, slow to suspect, references her garden and late husband often.",
+lines:["You work on an oil rig? That sounds so lonely, tell me about it.","I'd love to see you too, but my daughter says video calls drain her data, is that silly?","I don't have that much saved, but let me think about it."],
+tactics:"Stall money requests with believable small-town excuses. Ask for more personal stories — inconsistent backstories unravel under questions.",
+limits:"Never share banking details, even \"just to see.\" If pushed hard on money, feign confusion and go quiet for a day."},
+{id:"toby",name:"Toby Reyes",tag:"Investment & crypto scams",sub:"24, junior warehouse supervisor, new to investing",
+backstory:"Toby just got a modest raise and has been watching finance videos. He's eager, a little impatient, and doesn't want to seem like he doesn't understand crypto — which makes him agree to things before asking what they mean.",
+traits:"Enthusiastic, asks about returns constantly, name-drops terms he half-understands, impatient for results.",
+lines:["Okay so if I put in $500 now I'd see like 30% by Friday? That's insane.","I don't totally get the wallet thing, do I need the seed phrase for that?","My buddy says this sounds like a scam lol, but you seem legit."],
+tactics:"Keep asking for \"proof\" before sending anything. Claim his bank flagged the transfer. Drag out onboarding one step at a time.",
+limits:"Never actually connect a wallet or send funds, including small \"test\" amounts."},
+{id:"pat",name:"Pat Ostrander",tag:"Business email compromise",sub:"45, owns a small landscaping company",
+backstory:"Pat runs a five-person company and handles the books personally, overwhelmed and often replying to email from a phone between job sites. Scammers impersonating vendors or \"the boss\" count on Pat being too busy to double-check.",
+traits:"Brief, business-like replies, mentions being on-site, asks for things in writing \"for the file.\"",
+lines:["Got it, can you resend that invoice as a PDF for my records?","Tight on cash this week, can it wait til Friday payroll?","Who approved this change, I don't see it in our thread with Dana."],
+tactics:"Insist on verifying any payment change by a second channel. Ask for details that don't exist to expose the scam.",
+limits:"Never actually change real payment details or send funds, even \"to test.\""}
+];
+var B_open={};
+function B_personas(){
+var h='<div class="warnbox"><h2>Hook, line, and stay safe</h2><ul><li>Never give a real name, address, account number, password, or code — invent everything.</li><li>Never send money, gift cards, or crypto, and never click or install anything they send.</li><li>Keep a log — screenshots or copies, with timestamps — it\'s what makes this useful for the Report tab.</li><li>Stay in conversation only; don\'t try to access or disrupt their systems.</li><li>If it turns threatening, disengage and block. The goal is wasting their time, not winning a fight.</li></ul></div>';
+h+='<h2>The bait crew</h2><div class="acc">';
+B_CAST.forEach(function(p,i){
+var open=!!B_open[i];
+h+='<div class="accitem" data-open="'+open+'"><button class="ahead" data-act="toggle" data-i="'+i+'"><span class="aid"><b>'+p.name+'</b><span>'+p.sub+'</span></span><span class="tag">'+p.tag+'</span><span class="chev">▾</span></button>';
+h+='<div class="abody"><h4>Backstory</h4><p>'+p.backstory+'</p><h4>How they talk</h4><p>'+p.traits+'</p><h4>Sample lines</h4><div class="lines">'+p.lines.map(function(l){return '<p>“'+l+'”</p>'}).join("")+'</div><h4>Stalling tactics</h4><p>'+p.tactics+'</p><h4>Hard limits</h4><p class="limits">'+p.limits+'</p></div></div>'});
+h+='</div>';
+return h}
+
+var B_STALL=["Can you give me a minute, I'm in the middle of something.","Sorry, can you explain that part again?","That sounds like a lot, let me think about it.","Hang on, I want to write this down first.","Can you send that again, I want to make sure I have it right."];
+var B_ASK=["Why do you need that exactly?","How does that actually work?","Can you tell me more about your company first?","Who else have you worked with on this?"];
+var H_KEY="sh-honeypot-log";
+var H_log=ls_get(H_KEY,[]);
+var H_sug=null;
+function H_setup(){
+var h='<h2>1. Bait the hook</h2><ol class="steps"><li>Create a free webmail address with no real details — this is your persona\'s inbox, nothing else.</li><li>Optionally add a free second phone number for text scams, off your real contacts.</li><li>Pick a Bait Crew persona to go with it, and keep their details consistent.</li></ol>';
+h+='<h2>2. Let the current carry them in</h2><ol class="steps"><li>Reply (safely, from the decoy) to spam that already lands in a throwaway inbox — that alone attracts more.</li><li>Use the decoy email on a few mailing-list signups you don\'t mind.</li><li>If you post it publicly, follow that platform\'s rules — don\'t create listings that could deceive a real person.</li></ol>';
+h+='<h2>3. Work the net</h2><p>When something phishy bites, switch to the Reply desk below, pick your persona, and log the exchange. Send anything serious over to the Report tab.</p>';
+return h}
+function H_desk(){
+var h='<label for="persona">Persona</label><select id="persona">';
+B_CAST.forEach(function(p){h+='<option value="'+p.id+'">'+p.name+' — '+p.tag+'</option>'});
+h+='</select><label for="them">What they just said</label><textarea id="them" placeholder="Paste the scammer\'s latest message"></textarea><button class="cta" data-act="suggest">Suggest a reply</button>';
+if(H_sug){
+h+='<div class="suggest"><p>“'+esc(H_sug)+'”</p><div class="row"><button class="small" data-act="copysug">Copy</button><span class="copied" id="copiedsug">Copied</span><button class="small" data-act="another">Try another</button></div></div>';
+h+='<button class="cta ghost" data-act="logit">Log this exchange</button>';
+}
+h+='<h2 style="margin-top:22px">The log</h2>';
+if(!H_log.length)h+='<div class="empty">Nothing in the net yet — exchanges you log will show up here.</div>';
+else{H_log.slice().reverse().forEach(function(e){h+='<div class="log"><div class="top"><span class="badge">'+e.persona+'</span><span>'+e.when+'</span></div><div class="them">Them: '+esc(e.them)+'</div><div class="us">You: '+esc(e.us)+'</div></div>'})}
+return h}
+function H_gen(pid){
+var p=B_CAST.filter(function(x){return x.id===pid})[0];
+var pool=p.lines.concat(B_STALL,B_ASK);
+return pool[Math.floor(Math.random()*pool.length)]}
+
+var R_KEY="sh-report-history";
+var R_history=ls_get(R_KEY,[]);
+var R_draft=null;
+function R_form(){
+var h='<h2>Land the paperwork</h2><p class="lede">Fill in what you know — this builds ready-to-send reports, nothing sends itself.</p>';
+h+='<label for="ch">How did it reach you?</label><select id="ch"><option>Email</option><option>Text message</option><option>Phone call</option><option>Social media</option><option>QR code</option><option>Other</option></select>';
+h+='<label for="imp">Who is it pretending to be?</label><input id="imp" type="text" placeholder="e.g. a bank, a delivery company">';
+h+='<label for="from">Sender address, number, or username</label><input id="from" type="text">';
+h+='<label for="link">Suspicious link or phone number, if any</label><input id="link" type="text">';
+h+='<label for="ask">What did it ask you to do?</label><input id="ask" type="text">';
+h+='<label for="msg">Message text</label><textarea id="msg" placeholder="Paste the email or text here"></textarea>';
+h+='<label for="date">Date received</label><input id="date" type="date">';
+h+='<button class="cta" id="rgo">Build my report</button>';
+return h}
+function R_dest(d){
+var subj="Phishing report: "+(d.imp||"unknown sender");
+var body="Channel: "+d.ch+"\nImpersonating: "+(d.imp||"unknown")+"\nSender: "+(d.from||"unknown")+"\nSuspicious link/number: "+(d.link||"none given")+"\nAsked me to: "+(d.ask||"not specified")+"\nDate received: "+(d.date||"not specified")+"\n\nMessage text:\n"+(d.msg||"(not provided)");
+var list=[];
+list.push({name:"FTC — ReportFraud.ftc.gov",desc:"The US government's central scam-reporting site. Helps them track patterns nationwide.",href:"https://reportfraud.ftc.gov/",label:"Open ReportFraud.ftc.gov",body:body});
+list.push({name:"Anti-Phishing Working Group",desc:"A global coalition that collects phishing emails to help block them for everyone.",href:"mailto:reportphishing@apwg.org?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body+"\n\n(Forward the original email as an attachment if your email app supports it.)"),label:"Open email to APWG",body:body});
+if(d.ch==="Text message")list.push({name:"Forward to 7726 (SPAM)",desc:"In the US, forwarding a phishing text to 7726 reports it to your carrier at no charge.",href:null,label:null,body:"Forward the original text message to 7726."});
+if(d.imp)list.push({name:"The real "+d.imp,desc:"Search \""+d.imp+" report phishing\" and use their official site, not any link from the message.",href:"https://www.google.com/search?q="+encodeURIComponent(d.imp+" report phishing"),label:"Search for their report page",body:body});
+list.push({name:"Your email or phone provider",desc:"The built-in \"Report phishing\" or \"Report junk\" button on the message is often the fastest route.",href:null,label:null,body:null});
+return list}
+function R_result(d){
+var dests=R_dest(d);
+var h='<h2>Catch logged</h2>';
+h+='<div class="card"><h3>Summary</h3><pre id="summarytext">'+esc(dests[0].body)+'</pre><div class="row"><button class="small" data-act="copysum">Copy summary</button><span class="copied" id="copiedsum">Copied</span></div></div>';
+dests.forEach(function(x,idx){
+h+='<div class="card"><h3>'+x.name+'</h3><p>'+x.desc+'</p><div class="row">';
+if(x.href)h+='<a class="go" href="'+x.href+'" target="_blank" rel="noopener">'+x.label+'</a>';
+if(x.body)h+='<button class="small" data-act="rcopy" data-i="'+idx+'">Copy details</button><span class="copied" id="rcopied'+idx+'">Copied</span>';
+h+='</div></div>'});
+h+='<button class="cta" id="rsave">Save to history &amp; report another</button><button class="cta ghost" id="rback">Edit this report</button>';
+return h}
+function R_hist(){
+if(!R_history.length)return '<div class="empty">No saved reports yet — the ones you save will show up here to track.</div>';
+var h="";
+R_history.slice().reverse().forEach(function(r,ri){
+var i=R_history.length-1-ri;
+h+='<div class="hist"><div class="top"><span>'+(r.date||"no date")+' · '+r.ch+'</span><span>'+r.when+'</span></div><div class="snip">'+esc(r.imp||"Unknown sender")+'</div><div class="chk">';
+["ftc","apwg","provider"].forEach(function(k,ki){var labels=["Reported to FTC","Reported to APWG","Reported to provider"];h+='<label><input type="checkbox" data-hist="'+i+'" data-k="'+k+'" '+(r.status&&r.status[k]?"checked":"")+'>'+labels[ki]+'</label>'});
+h+='</div></div>'});
+return h}
+function R_tab(){
+if(R_draft&&R_draft.view==="result")return R_result(R_draft)+'<h2 style="margin-top:22px">History</h2>'+R_hist();
+return R_form()+'<h2 style="margin-top:22px">History</h2>'+R_hist()}
+
+function O_card(kicker,title,desc,top,sub,cta){return '<div class="card"><div class="kicker">'+kicker+'</div><h3>'+title+'</h3><p>'+desc+'</p><button class="go" data-act="goto" data-top="'+top+'" data-sub="'+sub+'">'+cta+'</button></div>'}
+function O_view(){
+var h='<h2>Four tools, zero mercy</h2><p class="lede">Learn it, catch it, bait it, report it — the whole shoal in one spot.</p><div class="grid">';
+h+=O_card("LEARN & TEST","Lures 101 + Reel Test","Six warning signs plus a simulator with realistic emails, texts and pop-ups.","learn","lessons","Start learning");
+h+=O_card("BAIT CREW","Four personas","Characters built to waste a scammer's time and draw out their methods.","bait","personas","Meet the crew");
+h+=O_card("BAIT CREW","Honeypot Desk","Set up a decoy, log what bites, get in-character reply suggestions.","bait","honeypot","Open the desk");
+h+=O_card("CLOSE THE LOOP","Report the Phish","Turns a catch into ready-to-send reports for the FTC and APWG.","report","","Report a catch");
+h+='</div><div class="note">Baiting a scammer means wasting their time and gathering evidence — never sending money, clicking their links, or touching their systems. Ground rules are in the Bait tab.</div>';
+return h}
+
+function renderNav(){
+var th=document.getElementById("topnav");
+th.innerHTML=TOPS.map(function(t){return '<button role="tab" data-top="'+t[0]+'" aria-selected="'+(TOP===t[0])+'">'+t[1]+'</button>'}).join("");
+var sn=document.getElementById("subnav");
+var subs=SUBS[TOP]||[];
+if(!subs.length){sn.innerHTML="";sn.style.display="none";return}
+sn.style.display="flex";
+sn.innerHTML=subs.map(function(s){return '<button role="tab" data-sub="'+s[0]+'" aria-selected="'+(SUB===s[0])+'">'+s[1]+'</button>'}).join("")}
+function render(){
+if(TOP==="learn"&&!SUB)SUB="lessons";
+if(TOP==="bait"&&!SUB)SUB="personas";
+if(TOP!=="learn"&&TOP!=="bait")SUB="";
+renderNav();
+var app=document.getElementById("app");
+if(TOP==="overview")app.innerHTML=O_view();
+else if(TOP==="learn")app.innerHTML=SUB==="sim"?L_sim():L_lessons();
+else if(TOP==="bait")app.innerHTML=SUB==="honeypot"?(H_setup()+'<h2 style="margin-top:22px">Reply desk</h2>'+H_desk()):B_personas();
+else app.innerHTML=R_tab();
+window.scrollTo(0,0)}
+function goto(top,sub){TOP=top;SUB=sub||"";render()}
+
+document.addEventListener("click",function(e){
+var b=e.target.closest("button,a");if(!b)return;
+if(b.dataset.top&&!b.dataset.act){goto(b.dataset.top,"");return}
+if(b.dataset.sub&&!b.dataset.act){SUB=b.dataset.sub;render();return}
+var a=b.dataset.act;
+if(a==="goto"){goto(b.dataset.top,b.dataset.sub);return}
+if(a==="tosim"){goto("learn","sim");return}
+if(a==="tolessons"){goto("learn","lessons");return}
+if(a==="peek"){L_peek=!L_peek;var y=window.scrollY;render();window.scrollTo(0,y);return}
+if(a==="ans"&&L_picked===null){L_picked=b.dataset.v==="1";var m=L_order[L_i];if(L_picked===m.phish)L_score++;else L_missed.push(m);var y2=window.scrollY;render();window.scrollTo(0,y2);return}
+if(a==="next"){L_i++;L_picked=null;L_peek=false;render();return}
+if(a==="again"){L_start();render();return}
+if(a==="toggle"){var i=b.dataset.i;B_open[i]=!B_open[i];render();return}
+if(a==="suggest"||a==="another"){var pid=document.getElementById("persona").value;H_sug=H_gen(pid);var them=document.getElementById("them").value;render();setTimeout(function(){document.getElementById("persona").value=pid;document.getElementById("them").value=them},0);return}
+if(a==="copysug"){copyText(H_sug,"copiedsug");return}
+if(a==="logit"){var pid2=document.getElementById("persona").value;var pname=B_CAST.filter(function(x){return x.id===pid2})[0].name;var them2=document.getElementById("them").value;H_log.push({persona:pname,them:them2,us:H_sug,when:new Date().toLocaleString()});ls_set(H_KEY,H_log);H_sug=null;render();return}
+if(b.id==="rgo"){R_draft={view:"result",ch:document.getElementById("ch").value,imp:document.getElementById("imp").value.trim(),from:document.getElementById("from").value.trim(),link:document.getElementById("link").value.trim(),ask:document.getElementById("ask").value.trim(),msg:document.getElementById("msg").value.trim(),date:document.getElementById("date").value};render();return}
+if(b.id==="rback"){R_draft=null;render();return}
+if(a==="copysum"){copyText(document.getElementById("summarytext").textContent,"copiedsum");return}
+if(a==="rcopy"){var dests=R_dest(R_draft);var x=dests[+b.dataset.i];copyText(x.body,"rcopied"+b.dataset.i);return}
+if(b.id==="rsave"){R_history.push({ch:R_draft.ch,imp:R_draft.imp,date:R_draft.date,when:new Date().toLocaleDateString(),status:{}});ls_set(R_KEY,R_history);R_draft=null;render();return}
+});
+document.addEventListener("change",function(e){
+var cb=e.target;if(cb.tagName!=="INPUT"||cb.type!=="checkbox"||cb.dataset.hist===undefined)return;
+var i=+cb.dataset.hist,k=cb.dataset.k;
+R_history[i].status=R_history[i].status||{};
+R_history[i].status[k]=cb.checked;
+ls_set(R_KEY,R_history)});
+render();
+</script>
+</body> <script src="/nexus-cursor.js"></script>
+</html>
