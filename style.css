@@ -13,11 +13,13 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   margin: 0;
   padding: 20px;
+  cursor: none; /* Hides system cursor across the site */
 }
 
 a {
   color: var(--teal);
   text-decoration: none;
+  cursor: none;
 }
 
 a:hover {
@@ -31,4 +33,62 @@ a:hover {
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 12px;
+}
+
+/* ==========================================================================
+   GLOBAL HERO FONTS
+   ========================================================================== */
+h1, h2, h3, h4, h5, h6,
+.sec-title, .nav-wordmark, .demo-name, .nx-name, .ent-wordmark, .hero-title {
+  font-family: 'Cinzel', 'Orbitron', sans-serif !important;
+  letter-spacing: 2px;
+}
+
+/* Technical eyebrows and mono elements */
+.eyebrow, .hero-eyebrow, .footer-link, .scroll-cue {
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* ==========================================================================
+   GLOBAL CUSTOM CURSOR
+   ========================================================================== */
+button, input, select, textarea, .nx-tile, .demo-card {
+  cursor: none;
+}
+
+.ent-cur, .ent-curring {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+}
+
+.ent-cur {
+  width: 10px;
+  height: 10px;
+  background: #00e5ff;
+  box-shadow: 0 0 12px #00e5ff, 0 0 24px #00e5ff;
+  transition: background 0.2s, transform 0.1s ease;
+}
+
+.ent-curring {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  transition: width 0.25s, height 0.25s, border-color 0.25s;
+}
+
+/* Hover state glow on links, cards, and buttons */
+body.cursor-hover .ent-curring {
+  width: 56px;
+  height: 56px;
+  border-color: rgba(204, 0, 255, 0.6);
+}
+
+body.cursor-hover .ent-cur {
+  background: #cc00ff;
+  box-shadow: 0 0 12px #cc00ff, 0 0 24px #cc00ff;
 }
