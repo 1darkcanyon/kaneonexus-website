@@ -1,0 +1,1099 @@
+```html
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE DIAGNOSTIC LEXICON ENGINE & PSEUDO-MEDICAL TCG</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        med: {
+                            bg: '#080a0f',
+                            panel: '#10141d',
+                            border: '#1f293d',
+                            accent: '#00ff66',
+                            crimson: '#ff0055',
+                            gold: '#ffd700',
+                            cyan: '#00f0ff',
+                            purple: '#aa00ff',
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['Courier New', 'Courier', 'monospace'],
+                        sans: ['Inter', 'sans-serif']
+                    },
+                    keyframes: {
+                        foilGlow: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' }
+                        },
+                        shake: {
+                            '0%, 100%': { transform: 'translate(0, 0) rotate(0deg)' },
+                            '20%': { transform: 'translate(-5px, 5px) rotate(-1deg)' },
+                            '40%': { transform: 'translate(5px, -5px) rotate(1deg)' },
+                            '60%': { transform: 'translate(-3px, -3px) rotate(-0.5deg)' },
+                            '80%': { transform: 'translate(3px, 3px) rotate(0.5deg)' }
+                        },
+                        packRip: {
+                            '0%': { transform: 'scale(1) rotate(0deg)' },
+                            '50%': { transform: 'scale(1.1) rotate(3deg)' },
+                            '100%': { transform: 'scale(0) rotate(-15deg)', opacity: '0' }
+                        }
+                    },
+                    animation: {
+                        foil: 'foilGlow 4s ease infinite',
+                        shake: 'shake 0.4s ease-in-out',
+                        packRip: 'packRip 0.6s ease-in forwards'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #080a0f; }
+        ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff66; }
+
+        /* Holographic Card Foil Effect */
+        .card-foil {
+            background: linear-gradient(135deg, 
+                rgba(255,0,0,0.15) 0%, 
+                rgba(255,255,0,0.15) 20%, 
+                rgba(0,255,0,0.15) 40%, 
+                rgba(0,255,255,0.15) 60%, 
+                rgba(0,0,255,0.15) 80%, 
+                rgba(255,0,255,0.15) 100%);
+            background-size: 300% 300%;
+        }
+
+        .card-secret {
+            background: linear-gradient(135deg,
+                rgba(255,0,85,0.3) 0%,
+                rgba(170,0,255,0.3) 33%,
+                rgba(0,240,255,0.3) 66%,
+                rgba(255,215,0,0.4) 100%);
+            background-size: 400% 400%;
+        }
+
+        /* Terminal Scanlines */
+        .scanlines {
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.4));
+            background-size: 100% 4px;
+        }
+
+        /* 3D perspective helpers */
+        .perspective-1000 { perspective: 1000px; }
+    </style>
+</head>
+<body class="bg-med-bg text-gray-200 font-mono min-h-screen flex flex-col justify-between selection:bg-med-accent selection:text-black overflow-x-hidden">
+
+    <!-- CRT Scanline overlay -->
+    <div class="fixed inset-0 scanlines pointer-events-none z-40 opacity-20"></div>
+
+    <!-- MAIN DASHBOARD TOP NAVIGATION HEADER -->
+    <header class="bg-med-panel border-b border-med-border sticky top-0 z-50 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-med-accent/10 border border-med-accent flex items-center justify-center text-med-accent shadow-[0_0_15px_rgba(0,255,102,0.3)]">
+                    <i class="fa-solid fa-notes-medical text-2xl animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-med-accent via-med-cyan to-med-purple uppercase">
+                        PATHOLOGICAL SUITE V3.0
+                    </h1>
+                    <p class="text-[10px] text-gray-400 tracking-widest uppercase">Lexicon Definer & TCG Battle Engine</p>
+                </div>
+            </div>
+
+            <!-- Suite Navigation Tabs -->
+            <div class="flex items-center gap-1 bg-med-bg p-1 rounded-xl border border-med-border shadow-inner">
+                <button onclick="switchSuite('app1')" id="nav-suite-app1" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-med-accent text-black shadow-lg">
+                    <i class="fa-solid fa-microscope"></i> App 1: Lexicon & Definer
+                </button>
+                <button onclick="switchSuite('app2')" id="nav-suite-app2" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-gray-400 hover:text-white hover:bg-med-panel">
+                    <i class="fa-solid fa-swords"></i> App 2: TCG Battle Arena
+                </button>
+            </div>
+
+            <!-- Controls & Audio Toggles -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleAudio()" id="btn-audio" class="p-2 bg-med-panel border border-med-border rounded-lg text-med-accent hover:border-med-accent transition" title="Toggle Sound FX">
+                    <i class="fa-solid fa-volume-high" id="icon-audio"></i>
+                </button>
+                <button onclick="toggleVoice()" id="btn-voice" class="p-2 bg-med-panel border border-med-border rounded-lg text-med-cyan hover:border-med-cyan transition" title="Toggle Announcer Speech">
+                    <i class="fa-solid fa-headset" id="icon-voice"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN SUITE WRAPPER -->
+    <main class="max-w-7xl mx-auto px-2 sm:px-4 py-4 flex-grow w-full">
+
+        <!-- =================================================================== -->
+        <!-- APP 1: DIAGNOSTIC LEXICON ENGINE & DEFINER TOOL                     -->
+        <!-- =================================================================== -->
+        <section id="suite-app1" class="space-y-6">
+            
+            <!-- App 1 Banner -->
+            <div class="bg-med-panel border border-med-border rounded-2xl p-5 shadow-2xl flex flex-wrap justify-between items-center gap-4 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-med-accent text-9xl pointer-events-none">
+                    <i class="fa-solid fa-dna"></i>
+                </div>
+                <div>
+                    <span class="inline-block px-3 py-0.5 rounded-full text-[10px] font-bold bg-med-accent/20 text-med-accent border border-med-accent/40 uppercase mb-1">
+                        SUPPORTING APP 1: PROCEDURAL ENGINE
+                    </span>
+                    <h2 class="text-xl font-black text-white uppercase">Diagnostic Lexicon & Patient Case Generator</h2>
+                    <p class="text-xs text-gray-400">Synthesize pseudo-medical conditions, decode roots, and export findings directly to the TCG Battle Engine.</p>
+                </div>
+                <div class="flex items-center gap-2 z-10">
+                    <button onclick="generateLexiconWord()" class="px-5 py-3 bg-gradient-to-r from-med-accent to-emerald-500 hover:from-emerald-400 hover:to-med-accent text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(0,255,102,0.4)] transition flex items-center gap-2">
+                        <i class="fa-solid fa-vial-circle-check text-base"></i> Synthesize Mega-Condition
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Generator Controls & Case File Display -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Column: Controls & Intensity Dials -->
+                <div class="lg:col-span-5 bg-med-panel border border-med-border rounded-2xl p-5 space-y-5 shadow-xl">
+                    <h3 class="text-xs font-bold text-med-accent uppercase tracking-wider border-b border-med-border pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders"></i> Mutation Intensity Dials
+                    </h3>
+
+                    <!-- Custom Root Injection Input -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-300 mb-1">Custom Root / Shock Term Injector</label>
+                        <input type="text" id="lexicon-custom-root" placeholder="e.g. Butthole, Karen, Quantum, Fart..." 
+                            class="w-full bg-med-bg border border-med-border rounded-xl px-3 py-2 text-xs text-med-accent focus:outline-none focus:border-med-accent transition">
+                    </div>
+
+                    <!-- Slang Slider -->
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-gray-300">Shock Slang & Vulgarity</span>
+                            <span id="val-slang" class="text-med-crimson">High (80%)</span>
+                        </div>
+                        <input type="range" id="slider-slang" min="0" max="100" value="80" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-med-crimson">
+                    </div>
+
+                    <!-- Phobia Slider -->
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-gray-300">Phobia & Psychological Dread</span>
+                            <span id="val-phobia" class="text-med-purple">Extreme (90%)</span>
+                        </div>
+                        <input type="range" id="slider-phobia" min="0" max="100" value="90" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-med-purple">
+                    </div>
+
+                    <!-- Latin Sophistication Slider -->
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-gray-300">Medical Latin / Sophistication</span>
+                            <span id="val-latin" class="text-med-cyan">Moderate (60%)</span>
+                        </div>
+                        <input type="range" id="slider-latin" min="0" max="100" value="60" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-med-cyan">
+                    </div>
+
+                    <!-- Sci-Fi / Tech Slider -->
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-gray-300">Sci-Fi / Cybernetic Catastrophe</span>
+                            <span id="val-scifi" class="text-med-gold">High (75%)</span>
+                        </div>
+                        <input type="range" id="slider-scifi" min="0" max="100" value="75" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-med-gold">
+                    </div>
+
+                    <!-- Quick Action Buttons -->
+                    <div class="pt-3 border-t border-med-border space-y-2">
+                        <button onclick="exportCurrentToTCG()" class="w-full py-3 bg-med-panel border-2 border-med-gold hover:bg-med-gold hover:text-black text-med-gold font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-file-export text-base"></i> Export to App 2 (TCG Card)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Generated Output, Root Decoder, & Case File -->
+                <div class="lg:col-span-7 space-y-5">
+                    
+                    <!-- Mega Word Header Display -->
+                    <div class="bg-med-panel border-2 border-med-border rounded-2xl p-6 shadow-2xl space-y-4 relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Synthesized Pathology</span>
+                                <h2 id="lexicon-word-title" class="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-med-accent via-med-cyan to-med-purple font-mono uppercase tracking-tight break-all">
+                                    SYNTHESIZING...
+                                </h2>
+                            </div>
+                            <button onclick="speakCurrentWord()" class="p-3 bg-med-bg border border-med-border rounded-xl text-med-accent hover:bg-med-border transition" title="Pronounce via Text-To-Speech">
+                                <i class="fa-solid fa-volume-high text-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- Real-time Color Coded Root Breakdown -->
+                        <div class="space-y-2 border-t border-med-border/60 pt-3">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                <i class="fa-solid fa-diagram-project text-med-cyan"></i> Etymological Root Breakdown
+                            </span>
+                            <div id="lexicon-root-container" class="flex flex-wrap gap-2">
+                                <!-- Root Badges injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Victorian Asylum Patient Case File -->
+                    <div class="bg-[#120f17] border-2 border-[#2b2238] rounded-2xl p-6 shadow-2xl space-y-4 relative">
+                        <div class="flex justify-between items-center border-b border-[#2b2238] pb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-hospital-user text-med-crimson text-xl"></i>
+                                <div>
+                                    <h4 class="text-xs font-bold text-gray-200 uppercase">Victorian Asylum Case Ledger</h4>
+                                    <p id="case-patient-id" class="text-[10px] text-gray-500 font-mono">PATIENT ID: #90812-B</p>
+                                </div>
+                            </div>
+                            <span id="case-severity-badge" class="px-3 py-1 rounded-full text-[10px] font-bold bg-med-crimson/20 text-med-crimson border border-med-crimson/40 uppercase">
+                                SEVERITY: CATASTROPHIC
+                            </span>
+                        </div>
+
+                        <!-- Patient Profile Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs border-b border-[#2b2238] pb-3">
+                            <div>
+                                <span class="text-[10px] text-gray-500 block uppercase">Subject Name</span>
+                                <strong id="case-patient-name" class="text-gray-200">Lord Archibald Vance</strong>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-500 block uppercase">Assigned Ward</span>
+                                <strong id="case-patient-ward" class="text-med-purple">Quarantine Ward IX</strong>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-500 block uppercase">Biological Stability</span>
+                                <strong id="case-patient-stability" class="text-med-crimson">12% (Critical)</strong>
+                            </div>
+                        </div>
+
+                        <!-- Symptom Narrative -->
+                        <div class="space-y-1">
+                            <span class="text-[10px] text-gray-500 uppercase font-bold block">Observed Clinical Symptoms</span>
+                            <p id="case-symptoms" class="text-xs text-gray-300 leading-relaxed italic bg-black/40 p-3 rounded-xl border border-[#2b2238]">
+                                "Subject exhibits explosive vocal outbursts while involuntarily manifesting localized time-dilation fields."
+                            </p>
+                        </div>
+
+                        <!-- Recommended Treatment -->
+                        <div class="space-y-1">
+                            <span class="text-[10px] text-gray-500 uppercase font-bold block">Prescribed Absurd Treatment</span>
+                            <p id="case-treatment" class="text-xs text-med-accent font-bold bg-med-accent/10 p-2.5 rounded-xl border border-med-accent/30 flex items-center gap-2">
+                                <i class="fa-solid fa-syringe text-med-accent"></i> <span id="case-treatment-text">Apply 500mg leeches to lower forehead and administer pressurized rosewater.</span>
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- =================================================================== -->
+        <!-- APP 2: PSEUDO-MEDICAL TCG BATTLE ARENA                              -->
+        <!-- =================================================================== -->
+        <section id="suite-app2" class="hidden space-y-6">
+            
+            <!-- App 2 Navigation Sub-Tabs -->
+            <div class="bg-med-panel border border-med-border rounded-2xl p-3 flex flex-wrap justify-between items-center gap-3 shadow-xl">
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-med-purple/20 text-med-purple border border-med-purple/40 uppercase">
+                        SUPPORTING APP 2: TCG SUITE
+                    </span>
+                    <h3 class="text-sm font-black text-white uppercase hidden sm:block">Monstrous Diagnoses Arena</h3>
+                </div>
+
+                <!-- Sub Navigation -->
+                <nav class="flex items-center gap-1 bg-med-bg p-1 rounded-xl border border-med-border">
+                    <button onclick="switchApp2Tab('battle')" id="app2-tab-battle" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-med-accent text-black">
+                        <i class="fa-solid fa-swords"></i> Battle Arena
+                    </button>
+                    <button onclick="switchApp2Tab('binder')" id="app2-tab-binder" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-book-medical"></i> Collection Binder
+                    </button>
+                    <button onclick="switchApp2Tab('booster')" id="app2-tab-booster" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-med-gold hover:text-white">
+                        <i class="fa-solid fa-box-open"></i> Open Boosters
+                    </button>
+                </nav>
+            </div>
+
+            <!-- SUB-VIEW 1: TURN-BASED COMBAT ARENA -->
+            <div id="app2-view-battle" class="space-y-4">
+                
+                <!-- Battle Header HUD -->
+                <div class="bg-med-panel border border-med-border rounded-2xl p-3 flex flex-wrap justify-between items-center gap-3 shadow-xl">
+                    <!-- AI Opponent HUD -->
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-med-crimson/20 border border-med-crimson flex items-center justify-center text-med-crimson">
+                            <i class="fa-solid fa-robot text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-300">AI Chief Surgeon (BOT)</div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-32 sm:w-48 bg-gray-900 h-3 rounded-full overflow-hidden border border-med-border">
+                                    <div id="ai-hp-bar" class="bg-med-crimson h-full transition-all duration-300" style="width: 100%;"></div>
+                                </div>
+                                <span id="ai-hp-text" class="text-xs font-bold text-med-crimson">8000 / 8000 HP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Turn Badge -->
+                    <div class="text-center">
+                        <div id="turn-indicator" class="text-xs font-black text-med-gold uppercase tracking-wider">
+                            TURN 1 - PLAYER PHASE
+                        </div>
+                        <div id="phase-badge" class="inline-block px-3 py-0.5 rounded-full text-[10px] font-bold bg-med-accent/20 text-med-accent border border-med-accent/40 uppercase mt-0.5">
+                            Main Phase
+                        </div>
+                    </div>
+
+                    <!-- Player HUD -->
+                    <div class="flex items-center gap-3">
+                        <div class="text-right">
+                            <div class="text-xs font-bold text-gray-300">Player Patient Zero</div>
+                            <div class="flex items-center gap-2 justify-end">
+                                <span id="player-hp-text" class="text-xs font-bold text-med-accent">8000 / 8000 HP</span>
+                                <div class="w-32 sm:w-48 bg-gray-900 h-3 rounded-full overflow-hidden border border-med-border">
+                                    <div id="player-hp-bar" class="bg-med-accent h-full transition-all duration-300" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-med-accent/20 border border-med-accent flex items-center justify-center text-med-accent">
+                            <i class="fa-solid fa-user-doctor text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BATTLEFIELD FIELD MAT -->
+                <div class="bg-med-panel/90 border-2 border-med-border rounded-2xl p-4 shadow-2xl space-y-4 min-h-[500px] flex flex-col justify-between">
+                    
+                    <!-- AI ROW -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs text-gray-400 border-b border-med-border/50 pb-1">
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-hand-holding-medical"></i> AI Hand (<span id="ai-hand-count">4</span> cards)</span>
+                            <span>Symptom Mana: <strong id="ai-mana-text" class="text-med-cyan">3/3</strong></span>
+                        </div>
+                        <div class="flex justify-center items-center gap-4 py-2">
+                            <div id="ai-active-slot" class="w-28 sm:w-32 h-40 sm:h-44 border-2 border-dashed border-med-crimson/40 rounded-xl bg-med-bg/50 flex flex-col items-center justify-center text-gray-600">
+                                <i class="fa-solid fa-shield-virus text-2xl mb-1 opacity-40"></i>
+                                <span class="text-[9px] uppercase font-bold text-center">No Active Anomaly</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COMBAT LOG & ACTION BUTTONS -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-med-bg/90 border border-med-border p-3 rounded-xl">
+                        <div class="md:col-span-3 flex flex-col justify-between">
+                            <div id="combat-log" class="h-20 overflow-y-auto text-xs font-mono text-gray-300 space-y-1 p-2 bg-black/60 rounded-lg border border-med-border">
+                                <p class="text-med-cyan"><i class="fa-solid fa-circle-info"></i> Battle initialized! Click a card in your hand to summon it to the active field.</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 justify-center">
+                            <button onclick="executeAttack()" id="btn-attack" class="w-full py-2 bg-med-crimson hover:bg-red-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-burst"></i> Attack
+                            </button>
+                            <button onclick="endTurn()" id="btn-end-turn" class="w-full py-2 bg-med-cyan hover:bg-cyan-500 text-black font-bold text-xs uppercase tracking-wider rounded-lg shadow transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-forward"></i> End Turn
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PLAYER ROW -->
+                    <div class="space-y-2">
+                        <div class="flex justify-center items-center gap-4 py-2">
+                            <div id="player-active-slot" class="w-28 sm:w-32 h-40 sm:h-44 border-2 border-dashed border-med-accent/40 rounded-xl bg-med-bg/50 flex flex-col items-center justify-center text-gray-600">
+                                <i class="fa-solid fa-dna text-2xl mb-1 opacity-40"></i>
+                                <span class="text-[9px] uppercase font-bold text-center">Click Hand Card to Summon</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center text-xs text-gray-400 border-t border-med-border/50 pt-1">
+                            <span class="flex items-center gap-3">
+                                <span>Symptom Points (Mana): <strong id="player-mana-text" class="text-med-cyan">3/3</strong></span>
+                                <span>Deck: <strong id="player-deck-count" class="text-med-accent">20</strong></span>
+                            </span>
+                            <span class="text-med-gold font-bold">Player Hand</span>
+                        </div>
+
+                        <!-- Player Hand Cards -->
+                        <div id="player-hand-container" class="flex justify-center items-center gap-2 overflow-x-auto py-2 min-h-[160px] px-2">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SUB-VIEW 2: COLLECTION BINDER & DECK BUILDER -->
+            <div id="app2-view-binder" class="hidden space-y-4">
+                <div class="bg-med-panel border border-med-border rounded-2xl p-4 flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-med-gold flex items-center gap-2">
+                            <i class="fa-solid fa-book-medical"></i> Pathological Binder & Deck Editor
+                        </h3>
+                        <p class="text-xs text-gray-400">All conditions generated in App 1 automatically sync into your binder below!</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="autoBuildDeck()" class="px-3 py-2 bg-med-purple/20 border border-med-purple text-med-purple hover:bg-med-purple hover:text-white rounded-xl text-xs font-bold transition flex items-center gap-1">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Auto Deck
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-med-bg border border-med-border rounded-xl p-3 flex justify-between items-center text-xs">
+                    <span class="font-bold text-gray-300">Active Deck Size: <strong id="binder-deck-count" class="text-med-accent">0 / 20 Cards</strong></span>
+                    <span class="text-gray-400 italic">Click cards in binder to toggle them in your battle deck.</span>
+                </div>
+
+                <!-- Binder Grid -->
+                <div id="binder-card-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Cards injected via JS -->
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 3: BOOSTER PACK SIMULATOR -->
+            <div id="app2-view-booster" class="hidden space-y-6">
+                <div class="text-center max-w-xl mx-auto space-y-2">
+                    <span class="inline-block px-3 py-1 bg-med-gold/20 border border-med-gold text-med-gold rounded-full text-xs font-bold uppercase">
+                        <i class="fa-solid fa-star"></i> Infectious Expansion Series #1
+                    </span>
+                    <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-med-gold via-white to-med-accent uppercase">
+                        Rip Booster Packs
+                    </h3>
+                    <p class="text-xs text-gray-400">Contains 5 random procedural conditions with guaranteed Rare or higher drops!</p>
+                </div>
+
+                <div class="flex flex-col items-center justify-center min-h-[380px]">
+                    <div id="booster-pack-wrapper" class="cursor-pointer group" onclick="ripBoosterPack()">
+                        <div id="booster-pack-graphic" class="w-60 h-88 bg-gradient-to-br from-purple-950 via-med-panel to-black border-4 border-med-gold rounded-2xl shadow-2xl flex flex-col justify-between p-6 text-center transform group-hover:scale-105 transition-transform duration-300 relative overflow-hidden">
+                            <div class="absolute inset-0 card-secret opacity-30"></div>
+                            <div class="relative z-10 border-b border-med-gold/50 pb-2">
+                                <span class="text-[10px] text-med-gold uppercase font-bold tracking-widest">BOOSTER PACK</span>
+                                <h4 class="text-base font-black text-white uppercase mt-1">MONSTROUS DIAGNOSES</h4>
+                            </div>
+                            <div class="relative z-10 my-auto py-6">
+                                <i class="fa-solid fa-biohazard text-6xl text-med-gold animate-bounce"></i>
+                            </div>
+                            <div class="relative z-10 border-t border-med-gold/50 pt-2">
+                                <span class="text-xs font-bold text-med-accent uppercase">CLICK TO RIP PACK!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="booster-results-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full mt-6">
+                        <!-- Revealed cards injected here -->
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast-notification" class="fixed bottom-5 right-5 bg-med-accent text-black font-bold px-4 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50 text-xs">
+        <i class="fa-solid fa-circle-check"></i> <span id="toast-message">Notification</span>
+    </div>
+
+    <!-- JAVASCRIPT SHARED SUITE LOGIC -->
+    <script>
+        /* ==========================================================================
+           1. SHARED LEXICON DATA BANKS & SUITE STATE
+           ========================================================================== */
+        const LEXICON_BANKS = {
+            prefix: [
+                { text: "Pseudo", meaning: "Simulated/False", type: "latin" },
+                { text: "Para", meaning: "Abnormal/Near", type: "latin" },
+                { text: "Hyper", meaning: "Excessive/Overactive", type: "latin" },
+                { text: "Macro", meaning: "Gigantic Structure", type: "latin" },
+                { text: "Necro", meaning: "Dead Tissue", type: "latin" },
+                { text: "Eldritch", meaning: "Unknowable Cosmic", type: "scifi" }
+            ],
+            phobia: [
+                { text: "Hippopotomonstro", meaning: "Fear of Long Words", type: "phobia" },
+                { text: "Trypo", meaning: "Terror of Clustered Holes", type: "phobia" },
+                { text: "Anatidae", meaning: "Fear a Duck is Watching", type: "phobia" },
+                { text: "Coulro", meaning: "Phobia of Evil Clowns", type: "phobia" },
+                { text: "Claustro", meaning: "Suffocating Entrapment", type: "phobia" },
+                { text: "Phobofobico", meaning: "Fear of Being Afraid", type: "phobia" }
+            ],
+            slang: [
+                { text: "Flatuant", meaning: "Explosive Gas Leak", type: "slang" },
+                { text: "Wrectal", meaning: "Ruined Lower Cavity", type: "slang" },
+                { text: "Squiefy", meaning: "Pressure Discharge", type: "slang" },
+                { text: "Clitbutthole", meaning: "Anatomic Convergence", type: "slang" },
+                { text: "Prolapsis", meaning: "Organ Displacement", type: "slang" },
+                { text: "Fornakite", meaning: "Crusted Waste Deposit", type: "slang" }
+            ],
+            scifi: [
+                { text: "Techratic", meaning: "Cybernetic Malfunction", type: "scifi" },
+                { text: "Quantum", meaning: "Subatomic Instability", type: "scifi" },
+                { text: "Coronalmass", meaning: "Solar Radiation Flare", type: "scifi" },
+                { text: "Chrono", meaning: "Time-Warp Distort", type: "scifi" }
+            ]
+        };
+
+        const PATIENT_NAMES = [
+            "Lord Archibald Vance", "Lady Beatrix Hollow", "Doctor Barnaby Finch", 
+            "Ebenezer Croft", "Sister Cordelia Grimm", "Major Thaddeus Vance"
+        ];
+
+        const WARDS = [
+            "Quarantine Ward IX", "Asylum Basement B-4", "Isolation Chamber 12", "Eldritch Observation Unit"
+        ];
+
+        const TREATMENTS = [
+            "Apply 500mg leeches to lower forehead and administer pressurized rosewater.",
+            "Submerge patient in chilled salt-brine while reciting Victorian poetry.",
+            "Cauterize phantom lower-cavity gas vents using copper steam tubes.",
+            "Immediate quarantine and 12-hour exposure to high-frequency tuning forks."
+        ];
+
+        // Shared Global State
+        let currentGeneratedCondition = null;
+        let globalBinder = [];
+        let playerDeck = [];
+        let aiDeck = [];
+
+        // Battle Engine State
+        let battleState = {
+            playerHP: 8000,
+            aiHP: 8000,
+            playerMana: 3,
+            maxPlayerMana: 3,
+            aiMana: 3,
+            maxAiMana: 3,
+            turn: 1,
+            playerSlot: null,
+            aiSlot: null,
+            playerHand: [],
+            aiHand: [],
+            soundEnabled: true,
+            voiceEnabled: true
+        };
+
+        /* ==========================================================================
+           2. WEB AUDIO SYNTHESIZER
+           ========================================================================== */
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            if (!battleState.soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                const now = ctx.currentTime;
+
+                if (type === 'synth') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(700, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'summon') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(450, now + 0.25);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'attack') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(500, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'rip') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.linearRampToValueAtTime(90, now + 0.35);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                }
+            } catch (e) {}
+        }
+
+        function speakCurrentWord() {
+            if (!battleState.voiceEnabled || !('speechSynthesis' in window) || !currentGeneratedCondition) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(currentGeneratedCondition.name);
+            u.rate = 0.9;
+            u.pitch = 0.8;
+            window.speechSynthesis.speak(u);
+        }
+
+        /* ==========================================================================
+           3. SUITE TOP-LEVEL NAVIGATION & TAB SWITCHING
+           ========================================================================== */
+        function switchSuite(suiteId) {
+            const app1 = document.getElementById('suite-app1');
+            const app2 = document.getElementById('suite-app2');
+            const btn1 = document.getElementById('nav-suite-app1');
+            const btn2 = document.getElementById('nav-suite-app2');
+
+            if (suiteId === 'app1') {
+                app1.classList.remove('hidden');
+                app2.classList.add('hidden');
+                btn1.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-med-accent text-black shadow-lg";
+                btn2.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-gray-400 hover:text-white hover:bg-med-panel";
+            } else {
+                app2.classList.remove('hidden');
+                app1.classList.add('hidden');
+                btn2.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-med-accent text-black shadow-lg";
+                btn1.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-gray-400 hover:text-white hover:bg-med-panel";
+            }
+        }
+
+        function switchApp2Tab(tabId) {
+            ['battle', 'binder', 'booster'].forEach(id => {
+                const el = document.getElementById(`app2-view-${id}`);
+                const btn = document.getElementById(`app2-tab-${id}`);
+                if (id === tabId) {
+                    el.classList.remove('hidden');
+                    btn.classList.add('bg-med-accent', 'text-black');
+                    btn.classList.remove('text-gray-400');
+                } else {
+                    el.classList.add('hidden');
+                    btn.classList.remove('bg-med-accent', 'text-black');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+        }
+
+        /* ==========================================================================
+           4. APP 1: PROCEDURAL LEXICON ENGINE LOGIC
+           ========================================================================== */
+        function generateLexiconWord() {
+            playSound('synth');
+
+            const custom = document.getElementById('lexicon-custom-root').value.trim();
+            const slangVal = parseInt(document.getElementById('slider-slang').value);
+            const phobiaVal = parseInt(document.getElementById('slider-phobia').value);
+            const latinVal = parseInt(document.getElementById('slider-latin').value);
+            const scifiVal = parseInt(document.getElementById('slider-scifi').value);
+
+            let chosenRoots = [];
+
+            // Always pick Latin prefix
+            chosenRoots.push(LEXICON_BANKS.prefix[Math.floor(Math.random() * LEXICON_BANKS.prefix.length)]);
+
+            // Phobia pick
+            if (Math.random() * 100 < phobiaVal) {
+                chosenRoots.push(LEXICON_BANKS.phobia[Math.floor(Math.random() * LEXICON_BANKS.phobia.length)]);
+            }
+
+            // Custom injection slot
+            if (custom) {
+                chosenRoots.push({ text: custom.charAt(0).toUpperCase() + custom.slice(1), meaning: `Custom: "${custom}"`, type: "custom" });
+            }
+
+            // Slang pick
+            if (Math.random() * 100 < slangVal) {
+                chosenRoots.push(LEXICON_BANKS.slang[Math.floor(Math.random() * LEXICON_BANKS.slang.length)]);
+            }
+
+            // Sci-Fi pick
+            if (Math.random() * 100 < scifiVal) {
+                chosenRoots.push(LEXICON_BANKS.scifi[Math.floor(Math.random() * LEXICON_BANKS.scifi.length)]);
+            }
+
+            // Construct word string
+            const wordName = chosenRoots.map(r => r.text).join('') + "osis";
+            
+            // Calculate stars & stats
+            const stars = Math.min(10, Math.max(1, Math.floor((slangVal + phobiaVal + scifiVal) / 25)));
+            const atk = stars * 350 + Math.floor(Math.random() * 200);
+            const def = Math.floor(atk * 0.75);
+            const manaCost = Math.max(1, Math.min(6, Math.ceil(stars / 2)));
+
+            currentGeneratedCondition = {
+                id: 'cond_' + Date.now(),
+                name: wordName,
+                roots: chosenRoots,
+                stars: stars,
+                atk: atk,
+                def: def,
+                manaCost: manaCost,
+                rarity: stars >= 8 ? 'Eldritch Secret' : (stars >= 5 ? 'Ultra Rare' : 'Rare'),
+                patientName: PATIENT_NAMES[Math.floor(Math.random() * PATIENT_NAMES.length)],
+                ward: WARDS[Math.floor(Math.random() * WARDS.length)],
+                treatment: TREATMENTS[Math.floor(Math.random() * TREATMENTS.length)],
+                symptoms: `Subject exhibits severe clinical ${wordName}, characterized by sudden physical and psychological distress.`
+            };
+
+            // Update DOM
+            document.getElementById('lexicon-word-title').innerText = wordName;
+            
+            // Render Root Badges
+            const rootBox = document.getElementById('lexicon-root-container');
+            rootBox.innerHTML = "";
+            chosenRoots.forEach(r => {
+                let badgeColor = "border-med-cyan text-med-cyan";
+                if (r.type === 'slang') badgeColor = "border-med-crimson text-med-crimson";
+                if (r.type === 'phobia') badgeColor = "border-med-purple text-med-purple";
+                if (r.type === 'scifi') badgeColor = "border-med-gold text-med-gold";
+                
+                const span = document.createElement('span');
+                span.className = `px-2.5 py-1 rounded-lg bg-med-bg border ${badgeColor} text-xs font-bold`;
+                span.innerText = `${r.text} (${r.meaning})`;
+                rootBox.appendChild(span);
+            });
+
+            // Update Case File
+            document.getElementById('case-patient-name').innerText = currentGeneratedCondition.patientName;
+            document.getElementById('case-patient-ward').innerText = currentGeneratedCondition.ward;
+            document.getElementById('case-symptoms').innerText = `"${currentGeneratedCondition.symptoms}"`;
+            document.getElementById('case-treatment-text').innerText = currentGeneratedCondition.treatment;
+
+            showToast("✨ Mega-Condition Synthesized!");
+        }
+
+        function exportCurrentToTCG() {
+            if (!currentGeneratedCondition) return;
+            globalBinder.push(currentGeneratedCondition);
+            renderBinderGrid();
+            showToast("📦 Condition Exported directly to App 2 TCG Binder!");
+        }
+
+        /* ==========================================================================
+           5. APP 2: TCG BINDER & CARD RENDER ENGINE
+           ========================================================================== */
+        function createSVGAvatar(card) {
+            return `
+                <svg viewBox="0 0 100 100" class="w-full h-full rounded bg-black/60 border border-med-border">
+                    <circle cx="50" cy="50" r="40" fill="#00ff66" fill-opacity="0.1" stroke="#00ff66" stroke-width="1.5" />
+                    <polygon points="50,15 80,75 20,75" fill="#aa00ff" fill-opacity="0.2" stroke="#aa00ff" stroke-width="1.5"/>
+                    <circle cx="50" cy="50" r="${(card.stars * 2.5)}" fill="none" stroke="#00f0ff" stroke-dasharray="4,2" />
+                    <circle cx="50" cy="50" r="6" fill="#ffd700" />
+                </svg>
+            `;
+        }
+
+        function renderCardHTML(card, isSmall = true) {
+            const foilClass = card.rarity === 'Eldritch Secret' ? 'card-secret animate-foil' : 'card-foil animate-foil';
+            return `
+                <div class="w-28 sm:w-32 h-40 sm:h-44 bg-med-panel border border-med-border rounded-xl p-2 flex flex-col justify-between shadow-lg relative ${foilClass} cursor-pointer hover:border-med-accent transition select-none">
+                    <div class="flex justify-between items-center text-[9px] font-bold">
+                        <span class="text-med-cyan"><i class="fa-solid fa-droplet"></i> ${card.manaCost}</span>
+                        <span class="text-med-gold">${card.stars}★</span>
+                    </div>
+                    <div class="h-16 my-1">
+                        ${createSVGAvatar(card)}
+                    </div>
+                    <div class="text-[9px] font-bold text-white truncate text-center font-mono">${card.name}</div>
+                    <div class="flex justify-between text-[8px] font-bold border-t border-med-border pt-0.5">
+                        <span class="text-med-crimson">A:${card.atk}</span>
+                        <span class="text-med-accent">D:${card.def}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderBinderGrid() {
+            const grid = document.getElementById('binder-card-grid');
+            grid.innerHTML = "";
+
+            if (globalBinder.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-8">Your binder is empty! Synthesize conditions in App 1 or open Booster Packs.</p>`;
+                return;
+            }
+
+            globalBinder.forEach(card => {
+                const inDeck = playerDeck.some(d => d.id === card.id);
+                const div = document.createElement('div');
+                div.className = "flex flex-col items-center gap-2";
+                div.innerHTML = `
+                    ${renderCardHTML(card)}
+                    <button onclick="toggleCardInDeck('${card.id}')" class="px-3 py-1 rounded text-[10px] font-bold uppercase transition ${inDeck ? 'bg-med-crimson text-white' : 'bg-med-accent text-black'}">
+                        ${inDeck ? 'Remove' : 'Add to Deck'}
+                    </button>
+                `;
+                grid.appendChild(div);
+            });
+
+            document.getElementById('binder-deck-count').innerText = `${playerDeck.length} / 20 Cards`;
+        }
+
+        function toggleCardInDeck(id) {
+            const idx = playerDeck.findIndex(c => c.id === id);
+            if (idx > -1) {
+                playerDeck.splice(idx, 1);
+            } else {
+                if (playerDeck.length >= 20) {
+                    showToast("⚠️ Deck limit reached (Max 20 cards)!");
+                    return;
+                }
+                const card = globalBinder.find(c => c.id === id);
+                if (card) playerDeck.push(card);
+            }
+            renderBinderGrid();
+        }
+
+        function autoBuildDeck() {
+            playerDeck = [...globalBinder].slice(0, 20);
+            while (playerDeck.length < 20) {
+                generateLexiconWord();
+                globalBinder.push(currentGeneratedCondition);
+                playerDeck.push(currentGeneratedCondition);
+            }
+            renderBinderGrid();
+            showToast("⚡ 20-Card Battle Deck Auto-Assembled!");
+        }
+
+        function ripBoosterPack() {
+            playSound('rip');
+            document.getElementById('booster-pack-graphic').classList.add('animate-packRip');
+
+            setTimeout(() => {
+                document.getElementById('booster-pack-wrapper').classList.add('hidden');
+                const grid = document.getElementById('booster-results-grid');
+                grid.classList.remove('hidden');
+                grid.innerHTML = "";
+
+                for (let i = 0; i < 5; i++) {
+                    generateLexiconWord();
+                    const card = currentGeneratedCondition;
+                    globalBinder.push(card);
+
+                    const div = document.createElement('div');
+                    div.className = "flex flex-col items-center";
+                    div.innerHTML = renderCardHTML(card);
+                    grid.appendChild(div);
+                }
+
+                renderBinderGrid();
+                showToast("🎉 5 New Cards Exported to Binder!");
+            }, 500);
+        }
+
+        /* ==========================================================================
+           6. APP 2: TURN-BASED ARENA BATTLE LOGIC
+           ========================================================================== */
+        function initBattle() {
+            if (playerDeck.length < 4) autoBuildDeck();
+
+            aiDeck = [];
+            for (let i = 0; i < 20; i++) {
+                generateLexiconWord();
+                aiDeck.push(currentGeneratedCondition);
+            }
+
+            battleState.playerHand = playerDeck.splice(0, 4);
+            battleState.aiHand = aiDeck.splice(0, 4);
+
+            updateBattleUI();
+        }
+
+        function updateBattleUI() {
+            document.getElementById('player-hp-bar').style.width = `${Math.max(0, (battleState.playerHP / 8000) * 100)}%`;
+            document.getElementById('player-hp-text').innerText = `${battleState.playerHP} / 8000 HP`;
+            document.getElementById('player-mana-text').innerText = `${battleState.playerMana}/${battleState.maxPlayerMana}`;
+
+            document.getElementById('ai-hp-bar').style.width = `${Math.max(0, (battleState.aiHP / 8000) * 100)}%`;
+            document.getElementById('ai-hp-text').innerText = `${battleState.aiHP} / 8000 HP`;
+            document.getElementById('ai-mana-text').innerText = `${battleState.aiMana}/${battleState.maxAiMana}`;
+
+            // Player Hand
+            const handBox = document.getElementById('player-hand-container');
+            handBox.innerHTML = "";
+            battleState.playerHand.forEach((card, idx) => {
+                const div = document.createElement('div');
+                div.onclick = () => summonCard(idx);
+                div.innerHTML = renderCardHTML(card);
+                handBox.appendChild(div);
+            });
+
+            // Player Field Slot
+            const pSlot = document.getElementById('player-active-slot');
+            if (battleState.playerSlot) {
+                pSlot.innerHTML = renderCardHTML(battleState.playerSlot);
+                pSlot.classList.remove('border-dashed');
+            } else {
+                pSlot.innerHTML = `<i class="fa-solid fa-dna text-2xl mb-1 opacity-40"></i><span class="text-[9px] uppercase font-bold text-center">Click Hand Card to Summon</span>`;
+                pSlot.classList.add('border-dashed');
+            }
+
+            // AI Field Slot
+            const aSlot = document.getElementById('ai-active-slot');
+            if (battleState.aiSlot) {
+                aSlot.innerHTML = renderCardHTML(battleState.aiSlot);
+                aSlot.classList.remove('border-dashed');
+            } else {
+                aSlot.innerHTML = `<i class="fa-solid fa-shield-virus text-2xl mb-1 opacity-40"></i><span class="text-[9px] uppercase font-bold text-center">No Active Anomaly</span>`;
+                aSlot.classList.add('border-dashed');
+            }
+        }
+
+        function summonCard(handIdx) {
+            const card = battleState.playerHand[handIdx];
+            if (battleState.playerMana < card.manaCost) {
+                showToast("⚠️ Not enough Symptom Mana!");
+                return;
+            }
+
+            battleState.playerMana -= card.manaCost;
+            battleState.playerSlot = card;
+            battleState.playerHand.splice(handIdx, 1);
+
+            playSound('summon');
+            logCombat(`Player summoned [${card.name}]!`);
+            updateBattleUI();
+        }
+
+        function executeAttack() {
+            if (!battleState.playerSlot) {
+                showToast("⚠️ Summon a condition card first!");
+                return;
+            }
+
+            playSound('attack');
+
+            if (battleState.aiSlot) {
+                const dmg = Math.max(100, battleState.playerSlot.atk - battleState.aiSlot.def);
+                battleState.aiSlot = null;
+                battleState.aiHP -= dmg;
+                logCombat(`AI Monster Destroyed! AI took ${dmg} direct damage!`);
+            } else {
+                const dmg = battleState.playerSlot.atk;
+                battleState.aiHP -= dmg;
+                logCombat(`Direct Attack! AI Chief Surgeon took ${dmg} damage!`);
+            }
+
+            checkWinCondition();
+            updateBattleUI();
+        }
+
+        function endTurn() {
+            logCombat("Player ended turn. AI turn starting...");
+            
+            setTimeout(() => {
+                battleState.maxAiMana = Math.min(10, battleState.maxAiMana + 1);
+                battleState.aiMana = battleState.maxAiMana;
+
+                if (!battleState.aiSlot && battleState.aiHand.length > 0) {
+                    battleState.aiSlot = battleState.aiHand.shift();
+                    logCombat(`AI Chief Surgeon summoned [${battleState.aiSlot.name}]!`);
+                }
+
+                if (battleState.aiSlot) {
+                    if (battleState.playerSlot) {
+                        const dmg = Math.max(100, battleState.aiSlot.atk - battleState.playerSlot.def);
+                        battleState.playerSlot = null;
+                        battleState.playerHP -= dmg;
+                        logCombat(`AI attacked! Your monster was destroyed and you took ${dmg} damage!`);
+                    } else {
+                        const dmg = battleState.aiSlot.atk;
+                        battleState.playerHP -= dmg;
+                        logCombat(`AI direct attack dealt ${dmg} damage!`);
+                    }
+                }
+
+                battleState.maxPlayerMana = Math.min(10, battleState.maxPlayerMana + 1);
+                battleState.playerMana = battleState.maxPlayerMana;
+                if (playerDeck.length > 0 && battleState.playerHand.length < 5) {
+                    battleState.playerHand.push(playerDeck.pop());
+                }
+
+                battleState.turn++;
+                document.getElementById('turn-indicator').innerText = `TURN ${battleState.turn} - PLAYER PHASE`;
+                checkWinCondition();
+                updateBattleUI();
+            }, 800);
+        }
+
+        function checkWinCondition() {
+            if (battleState.aiHP <= 0) {
+                alert("🎉 VICTORY! You defeated the AI Chief Surgeon!");
+                initBattle();
+            } else if (battleState.playerHP <= 0) {
+                alert("☠️ DEFEAT! Your medical deck was destroyed!");
+                initBattle();
+            }
+        }
+
+        function logCombat(msg) {
+            const log = document.getElementById('combat-log');
+            const p = document.createElement('p');
+            p.innerHTML = `<span class="text-med-accent font-bold">></span> ${msg}`;
+            log.appendChild(p);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        /* ==========================================================================
+           7. UTILITIES
+           ========================================================================== */
+        function showToast(msg) {
+            const toast = document.getElementById('toast-notification');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        function toggleAudio() {
+            battleState.soundEnabled = !battleState.soundEnabled;
+            document.getElementById('icon-audio').className = battleState.soundEnabled ? "fa-solid fa-volume-high text-med-accent" : "fa-solid fa-volume-xmark text-med-crimson";
+        }
+
+        function toggleVoice() {
+            battleState.voiceEnabled = !battleState.voiceEnabled;
+            document.getElementById('icon-voice').className = battleState.voiceEnabled ? "fa-solid fa-headset text-med-cyan" : "fa-solid fa-headset-slash text-med-crimson";
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            // Slider listeners
+            ['slang', 'phobia', 'latin', 'scifi'].forEach(id => {
+                document.getElementById(`slider-${id}`).addEventListener('input', (e) => {
+                    document.getElementById(`val-${id}`).innerText = `${e.target.value}%`;
+                });
+            });
+
+            generateLexiconWord();
+            exportCurrentToTCG();
+            initBattle();
+        };
+    </script>
+</body>
+</html>
+```
