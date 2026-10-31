@@ -137,6 +137,7 @@ footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--
 .f-link:hover{color:var(--cyan)}
 .f-runes{font-size:13px;letter-spacing:8px;color:var(--gold);opacity:.35}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@twilio/voice-sdk@2/dist/twilio.min.js"></script>
 </head>
 <body>
 <canvas id="cosmos"></canvas>
@@ -159,6 +160,13 @@ footer{position:relative;z-index:2;padding:24px 32px;border-top:1px solid var(--
     <!-- DIALPAD -->
     <div class="dialpad-panel">
       <div class="panel-label">Dialpad</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+        <select id="fromSel" class="sms-to-input" style="flex:1 1 100%">
+          <option value="">Calling from: phone default</option>
+        </select>
+        <button class="call-btn call-green" onclick="buyNumber()">+ GET NUMBER</button>
+        <button class="call-btn call-red" onclick="releaseNumber()">RELEASE</button>
+      </div>
       <div class="display-screen">
         <div class="display-number" id="dialDisplay"></div>
         <div class="display-status" id="dialStatus">READY</div>
@@ -306,7 +314,7 @@ function backspace(){dialStr=dialStr.slice(0,-1);document.getElementById('dialDi
 function dialDirect(num){dialStr=num;document.getElementById('dialDisplay').textContent=num;initiateCall();}
 
 let calling=false;
-function initiateCall(){
+function legacyCall(){
   if(!dialStr){return;}
   const clean=dialStr.replace(/[^+\d]/g,'');
   // On touch devices, open the native phone dialer
@@ -366,5 +374,6 @@ function sendSMS(){
   }).catch(()=>addSystemBubble('Message queued (offline mode).'));
 }
 </script>
+<script src="nexus-phone-add.js"></script>
 </body>
 </html>
