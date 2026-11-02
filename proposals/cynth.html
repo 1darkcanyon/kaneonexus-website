@@ -1,9 +1,8 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Integrated Intelligence Solutions - Client Proposal Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,8 +16,8 @@
             --accent-cyan: #00f0ff;
             --accent-glow: rgba(0, 240, 255, 0.25);
             --accent-secondary: #7000ff;
-            --border-glow: rgba(0, 240, 255, 0.3);
-            --text-main: #f1f5f9;
+            --border-glow: rgba(0, 240, 255, 0.33);
+            --text-main: #f8fafc;
         }
 
         /* Theme Variants */
@@ -27,7 +26,7 @@
             --bg-secondary: #0b132b;
             --bg-card: rgba(15, 23, 42, 0.85);
             --accent-cyan: #00f0ff;
-            --accent-glow: rgba(0, 240, 255, 0.3);
+            --accent-glow: rgba(0, 240, 255, 0.33);
             --accent-secondary: #7000ff;
             --border-glow: rgba(0, 240, 255, 0.4);
             --text-main: #f8fafc;
@@ -46,7 +45,7 @@
 
         .theme-matrix {
             --bg-primary: #020b05;
-            --bg-secondary: #051b0d;
+            --bg-secondary: #05160d;
             --bg-card: rgba(6, 30, 15, 0.85);
             --accent-cyan: #00ff66;
             --accent-glow: rgba(0, 255, 102, 0.25);
@@ -66,19 +65,35 @@
             --text-main: #fafaf9;
         }
 
+        /* --- UNIVERSAL SCROLLING FIX --- */
+        html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-y: scroll !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
         body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-main);
             overflow-x: hidden;
+            overflow-y: visible !important;
             transition: background-color 0.4s ease, color 0.4s ease;
+            touch-action: pan-y;
         }
 
         .code-font {
             font-family: 'Fira Code', monospace;
         }
 
-        /* Cyberpunk Grid Background */
+        /* Ambient Glow & Grid */
         .bg-cyber-grid {
             background-size: 40px 40px;
             background-image: 
@@ -86,515 +101,279 @@
                 linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
         }
 
-        /* Scanline Effect */
-        .scanline {
-            position: relative;
-            overflow: hidden;
-        }
-        .scanline::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px;
-            z-index: 10;
-            pointer-events: none;
-            opacity: 0.6;
-        }
-
-        /* Custom Glowing Card Frame */
-        .cyber-card {
+        .glow-card {
             background: var(--bg-card);
             backdrop-filter: blur(16px);
             border: 1px solid var(--border-glow);
             box-shadow: 0 0 25px -5px var(--accent-glow);
-            position: relative;
             transition: all 0.3s ease;
         }
 
-        .cyber-card::before {
-            content: '';
-            position: absolute;
-            top: -1px; left: -1px; width: 12px; height: 12px;
-            border-top: 2px solid var(--accent-cyan);
-            border-left: 2px solid var(--accent-cyan);
-        }
-        .cyber-card::after {
-            content: '';
-            position: absolute;
-            bottom: -1px; right: -1px; width: 12px; height: 12px;
-            border-bottom: 2px solid var(--accent-cyan);
-            border-right: 2px solid var(--accent-cyan);
+        .glow-card:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 35px 0px var(--accent-glow);
         }
 
-        .cyan-glow-text {
+        .neon-text {
             color: var(--accent-cyan);
             text-shadow: 0 0 10px var(--accent-glow);
         }
 
-        .cyan-glow-border {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 12px var(--accent-glow);
-        }
-
-        /* Interactive Switch/Checkboxes */
-        .tech-checkbox:checked + label {
-            background-color: rgba(0, 240, 255, 0.15);
-            border-color: var(--accent-cyan);
-            color: #fff;
+        .neon-button {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(112, 0, 255, 0.25));
+            border: 1px solid var(--accent-cyan);
             box-shadow: 0 0 15px var(--accent-glow);
-        }
-        
-        .tech-checkbox:checked + label .check-icon {
-            opacity: 1;
-            transform: scale(1);
+            transition: all 0.2s ease;
         }
 
-        /* Glowing Pulse Animation */
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 0.8; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.03); }
+        .neon-button:hover {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-secondary));
+            color: #000;
+            box-shadow: 0 0 25px var(--accent-cyan);
         }
 
-        .glow-pulse {
-            animation: pulse-glow 3s infinite ease-in-out;
-        }
-
-        /* Custom Scrollbar */
+        /* Custom Scrollbar for Inner Elements */
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
         }
         ::-webkit-scrollbar-track {
             background: var(--bg-primary);
         }
         ::-webkit-scrollbar-thumb {
-            background: var(--border-glow);
-            border-radius: 3px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-glow);
+            border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: var(--accent-cyan);
         }
-
-        /* Toast notification */
-        #toast {
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        #toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
     </style>
 </head>
-<body class="bg-cyber-grid min-h-screen theme-cyber text-slate-100 flex flex-col justify-between scanline pb-12">
+<body class="bg-cyber-grid theme-cyber py-8 px-4 sm:px-6 lg:px-8">
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-slate-900 border border-cyan-400/50 text-cyan-300 px-5 py-3 rounded-xl shadow-2xl backdrop-blur-md">
-        <i class="fa-solid fa-circle-check text-cyan-400 text-xl"></i>
-        <span id="toast-message" class="font-medium text-sm">Copied to clipboard!</span>
-    </div>
-
-    <!-- Header Section -->
-    <header class="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-lg sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 via-indigo-600 to-purple-600 flex items-center justify-center p-0.5 shadow-lg shadow-cyan-500/20">
-                    <div class="w-full h-full bg-slate-950 rounded-[7px] flex items-center justify-center">
-                        <i class="fa-solid fa-terminal cyan-glow-text text-lg"></i>
-                    </div>
-                </div>
-                <div>
-                    <h1 class="font-extrabold text-lg sm:text-xl tracking-wider code-font">INTEGRATED<span class="cyan-glow-text">_INTELLIGENCE</span></h1>
-                    <p class="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest code-font">Client Communication System // Protocol 2026</p>
-                </div>
+    <!-- Header Navigation Bar -->
+    <header class="max-w-6xl mx-auto mb-8 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-cyan-500/20 pb-6">
+        <div class="flex items-center space-x-3">
+            <div class="h-10 w-10 rounded-lg bg-cyan-500/10 border border-cyan-400/40 flex items-center justify-center text-cyan-400 font-bold text-xl glow-card">
+                IIS
             </div>
-
-            <!-- Tone Selector Controls -->
-            <div class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl">
-                <span class="text-xs text-slate-400 font-mono px-2 hidden sm:inline"><i class="fa-solid fa-palette mr-1"></i> Theme:</span>
-                <button onclick="setTheme('cyber')" class="px-2.5 py-1 text-xs rounded-lg code-font font-semibold transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400" title="Cyberpunk Cyan">CYBER</button>
-                <button onclick="setTheme('matrix')" class="px-2.5 py-1 text-xs rounded-lg code-font font-semibold transition-all text-emerald-400 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/30" title="Matrix Green">MATRIX</button>
-                <button onclick="setTheme('minimal')" class="px-2.5 py-1 text-xs rounded-lg code-font font-semibold transition-all text-sky-300 hover:bg-sky-500/10 border border-transparent hover:border-sky-500/30" title="Sleek Minimal">MINIMAL</button>
-                <button onclick="setTheme('gold')" class="px-2.5 py-1 text-xs rounded-lg code-font font-semibold transition-all text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/30" title="Matrix Gold">GOLD</button>
+            <div>
+                <h1 class="text-xl font-bold tracking-wider text-white">INTEGRATED INTELLIGENCE</h1>
+                <p class="text-xs text-cyan-400/80 code-font">PORTAL // CLIENT RESPONSE TERMINAL</p>
             </div>
+        </div>
+
+        <!-- Dynamic Theme Selector -->
+        <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-700/50 p-1.5 rounded-xl">
+            <span class="text-xs text-slate-400 px-2 code-font">THEME:</span>
+            <button onclick="setTheme('cyber')" class="px-2.5 py-1 text-xs rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30">Cyber</button>
+            <button onclick="setTheme('matrix')" class="px-2.5 py-1 text-xs rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30">Matrix</button>
+            <button onclick="setTheme('gold')" class="px-2.5 py-1 text-xs rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30">Gold</button>
+            <button onclick="setTheme('minimal')" class="px-2.5 py-1 text-xs rounded-md bg-slate-700/50 text-slate-200 border border-slate-600 hover:bg-slate-700">Minimal</button>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
-        
-        <!-- Status Bar -->
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-4 bg-slate-900/60 border border-slate-800/80 p-3.5 rounded-xl backdrop-blur-md">
-            <div class="flex items-center gap-3 text-xs sm:text-sm code-font">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 animate-ping"></span>
-                    SECURE TRANSMISSION
-                </span>
-                <span class="text-slate-500">|</span>
-                <span class="text-slate-400">RECIPIENT: <strong class="text-slate-200">Cynth</strong></span>
-                <span class="text-slate-500 hidden md:inline">|</span>
-                <span class="text-slate-400 hidden md:inline">AUTHOR: <strong class="text-slate-200">Kaneon Parker</strong></span>
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- Left Column: Primary Client Response Preview -->
+        <section class="lg:col-span-8 space-y-6">
+
+            <!-- Terminal Status Card -->
+            <div class="glow-card rounded-2xl p-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 px-4 py-1 bg-cyan-500/10 border-b border-l border-cyan-500/30 rounded-bl-xl text-xs code-font text-cyan-400">
+                    STATUS: READY TO SEND
+                </div>
+
+                <div class="flex items-center space-x-2 text-xs text-cyan-400 code-font mb-4">
+                    <span class="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                    <span>CLIENT RECIPIENT: CYNTH</span>
+                </div>
+
+                <div class="space-y-4 text-slate-200 leading-relaxed">
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-3 code-font text-xs text-slate-400">
+                        <span class="text-cyan-400 font-semibold">SUBJECT:</span> Moving Forward: Your Website Design, Hosting & Service Trade Agreement
+                    </div>
+
+                    <p class="text-lg text-white font-medium">Hi Cynth,</p>
+
+                    <p>
+                        Thank you for reaching out and for your thoughtful response. I completely understand your concerns regarding security and website control—having experienced domain hijacking issues myself in the past, I know firsthand how critical it is to ensure proper safeguards are in place and to hold the responsible providers accountable.
+                    </p>
+
+                    <!-- Technical Security Callout -->
+                    <div class="bg-cyan-950/30 border-l-4 border-cyan-400 p-4 rounded-r-xl my-4 space-y-1">
+                        <div class="text-xs text-cyan-400 font-bold code-font tracking-wide">SYSTEM INFRASTRUCTURE SECURED</div>
+                        <p class="text-sm text-cyan-100">
+                            My primary domain infrastructure is secured with <strong>PremiumDNS</strong>, and active hosting is set up for the coming year to ensure your site is completely stable, customized, and protected.
+                        </p>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-2 mt-6 flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-cyan-400 text-sm"></i> Defining Your Vision & Site Requirements
+                    </h3>
+
+                    <ul class="space-y-2 text-sm text-slate-300">
+                        <li class="flex items-start gap-2">
+                            <span class="text-cyan-400 mt-1">•</span>
+                            <span><strong>Style & Inspiration:</strong> Are there any specific websites you like, or preferred color schemes/branding guidelines you'd like me to follow?</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-cyan-400 mt-1">•</span>
+                            <span><strong>Core Functionality:</strong> What features do you require for launch? (e.g., custom contact forms, image galleries, booking/scheduling features, or e-commerce capabilities)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-cyan-400 mt-1">•</span>
+                            <span><strong>Ongoing Support:</strong> What level of routine maintenance, updates, or technical support do you envision needing once the site is live?</span>
+                        </li>
+                    </ul>
+
+                    <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-2 mt-6 flex items-center gap-2">
+                        <i class="fa-solid fa-handshake-angle text-cyan-400 text-sm"></i> Service Trade & Pricing Structure
+                    </h3>
+
+                    <p>
+                        I am excited about our service trade and open to structuring a clear, mutually beneficial agreement. Because you will be my first official client under this service structure, <strong class="text-cyan-300">I am happy to offer a substantial discount on any additional custom features or scope that exceeds our base trade value.</strong>
+                    </p>
+
+                    <p>
+                        Once you let me know your preferred features and site layout ideas, I’ll outline a transparent proposal that covers the project scope, trade terms, and discounted rates so we have total clarity before getting started.
+                    </p>
+
+                    <p class="pt-2">Looking forward to your feedback so we can take the next steps!</p>
+
+                    <div class="pt-4 border-t border-slate-800/80">
+                        <p class="text-slate-400 text-sm">Best regards,</p>
+                        <p class="text-white font-bold text-base mt-1">Kaneon Parker</p>
+                        <p class="text-cyan-400 text-xs code-font">Founder & CEO, Integrated Intelligence Solutions</p>
+                    </div>
+                </div>
+
+                <!-- Action Toolbar -->
+                <div class="mt-8 pt-6 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                    <button onclick="copyResponseText()" class="neon-button px-5 py-2.5 rounded-xl font-bold text-sm text-cyan-300 flex items-center gap-2">
+                        <i class="fa-regular fa-copy"></i> Copy Full Email Text
+                    </button>
+                    <button onclick="copySubject()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-heading"></i> Copy Subject Line
+                    </button>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <button onclick="copyEmailText()" class="cyber-card px-4 py-2 rounded-lg text-xs font-semibold code-font flex items-center gap-2 hover:bg-cyan-500/20 text-cyan-300 transition-all cursor-pointer">
-                    <i class="fa-solid fa-copy"></i>
-                    <span>COPY EMAIL TEXT</span>
+        </section>
+
+        <!-- Right Column: Interactive Scope & Proposal Tools -->
+        <aside class="lg:col-span-4 space-y-6">
+
+            <!-- Interactive Scope Estimator -->
+            <div class="glow-card rounded-2xl p-6">
+                <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-cyan-400"></i> Trade Scope Estimator
+                </h2>
+                <p class="text-xs text-slate-400 mb-4">Toggle desired client features to calculate covered scope vs. discounted add-ons:</p>
+
+                <div class="space-y-3">
+                    <label class="flex items-center justify-between p-3 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                        <span class="text-sm text-slate-300">Custom Responsive Site</span>
+                        <input type="checkbox" checked disabled class="accent-cyan-400 h-4 w-4">
+                    </label>
+
+                    <label class="flex items-center justify-between p-3 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                        <span class="text-sm text-slate-300">1 Year Premium Hosting</span>
+                        <input type="checkbox" checked disabled class="accent-cyan-400 h-4 w-4">
+                    </label>
+
+                    <label class="flex items-center justify-between p-3 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer" onclick="updateCalculator()">
+                        <span class="text-sm text-slate-300">Dynamic Image Gallery</span>
+                        <input type="checkbox" id="feat-gallery" class="accent-cyan-400 h-4 w-4">
+                    </label>
+
+                    <label class="flex items-center justify-between p-3 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer" onclick="updateCalculator()">
+                        <span class="text-sm text-slate-300">E-Commerce Setup</span>
+                        <input type="checkbox" id="feat-ecom" class="accent-cyan-400 h-4 w-4">
+                    </label>
+
+                    <label class="flex items-center justify-between p-3 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer" onclick="updateCalculator()">
+                        <span class="text-sm text-slate-300">Monthly Support Plan</span>
+                        <input type="checkbox" id="feat-maint" class="accent-cyan-400 h-4 w-4">
+                    </label>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-800 space-y-2">
+                    <div class="flex justify-between text-xs text-slate-400">
+                        <span>Trade Value Credit:</span>
+                        <span class="text-emerald-400 font-bold">100% Covered</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-400">
+                        <span>First-Client Discount:</span>
+                        <span class="text-cyan-400 font-bold" id="discount-val">Applied</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shareable Link Box -->
+            <div class="glow-card rounded-2xl p-6 space-y-3">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-link text-cyan-400"></i> Direct Proposal URL
+                </h3>
+                <input type="text" readonly value="https://kaneonexus.net/proposals/cynth.html" id="share-link" class="w-full bg-slate-950 border border-slate-800 text-xs text-cyan-400 code-font p-2.5 rounded-lg focus:outline-none">
+                <button onclick="copyLink()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 rounded-lg border border-slate-700 font-medium">
+                    Copy Proposal Link
                 </button>
             </div>
-        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- Left Panel: Email Preview Card (8 Cols) -->
-            <section class="lg:col-span-7 flex flex-col gap-6">
-                
-                <div class="cyber-card rounded-2xl p-6 sm:p-8">
-                    <!-- Email Card Header -->
-                    <div class="border-b border-slate-800 pb-6 mb-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="text-xs uppercase tracking-widest text-cyan-400 font-bold code-font">// DRAFT RESPONSE PREVIEW</span>
-                            <span class="text-xs text-slate-500 code-font">STATION_ID: IIS-2026-CYNTH</span>
-                        </div>
-                        <h2 class="text-xl sm:text-2xl font-bold text-slate-100 tracking-tight">
-                            Moving Forward: Your Website Design, Hosting & Service Trade Agreement
-                        </h2>
-                    </div>
-
-                    <!-- Email Main Body Content -->
-                    <div id="email-body-content" class="space-y-6 text-sm sm:text-base leading-relaxed text-slate-300">
-                        <p>Hi <span class="cyan-glow-text font-semibold">Cynth</span>,</p>
-
-                        <p>
-                            Thank you for reaching out and for your thoughtful response. I completely understand your concerns regarding security and website control—having experienced domain hijacking issues myself in the past, I know firsthand how critical it is to ensure proper safeguards are in place and to hold the responsible providers accountable.
-                        </p>
-
-                        <!-- Tech Specs Card / Code Blockquote -->
-                        <div class="my-6 bg-slate-950/90 border border-cyan-500/30 rounded-xl p-4 sm:p-5 code-font text-xs sm:text-sm relative overflow-hidden">
-                            <div class="absolute top-0 right-0 bg-cyan-500/10 border-l border-b border-cyan-500/30 px-3 py-1 text-[10px] text-cyan-400 font-mono">
-                                SECURITY_MANIFEST
-                            </div>
-                            <div class="text-slate-400 mb-2">// SECURITY & INFRASTRUCTURE STATUS</div>
-                            <div class="space-y-1.5 text-slate-200">
-                                <p><span class="text-cyan-400">► DOMAIN_PROTECTION:</span> PremiumDNS Active (Zero-Trust Guard)</p>
-                                <p><span class="text-cyan-400">► HOSTING_SERVERS:</span> Active (Pre-allocated 12-Month Tier)</p>
-                                <p><span class="text-cyan-400">► DEPLOYMENT:</span> 100% Fully Customized, Isolated & Secure</p>
-                            </div>
-                        </div>
-
-                        <p>
-                            I take security, full ownership, and reliable hosting very seriously. My domain infrastructure is secured with PremiumDNS, and active hosting is set up for the coming year to ensure your site is completely stable, customized, and protected.
-                        </p>
-
-                        <div class="border-l-2 border-cyan-400 pl-4 my-6">
-                            <h3 class="text-base font-bold text-slate-100 mb-3 code-font flex items-center gap-2">
-                                <i class="fa-solid fa-list-check text-cyan-400"></i> Defining Your Vision & Site Requirements
-                            </h3>
-                            <p class="text-xs sm:text-sm text-slate-400 mb-3">To help me tailor the best possible solution for your business, could you please share a few details on what you’re looking for?</p>
-                            
-                            <ul class="space-y-2.5 text-sm">
-                                <li class="flex items-start gap-2.5">
-                                    <i class="fa-solid fa-angle-right text-cyan-400 mt-1 text-xs"></i>
-                                    <div><strong class="text-slate-200">Style & Inspiration:</strong> Are there any specific websites you like, or preferred color schemes/branding guidelines you'd like me to follow?</div>
-                                </li>
-                                <li class="flex items-start gap-2.5">
-                                    <i class="fa-solid fa-angle-right text-cyan-400 mt-1 text-xs"></i>
-                                    <div><strong class="text-slate-200">Core Functionality:</strong> What features do you require for launch? (e.g., custom contact forms, image galleries, booking/scheduling features, or e-commerce capabilities)</div>
-                                </li>
-                                <li class="flex items-start gap-2.5">
-                                    <i class="fa-solid fa-angle-right text-cyan-400 mt-1 text-xs"></i>
-                                    <div><strong class="text-slate-200">Ongoing Support:</strong> What level of routine maintenance, updates, or technical support do you envision needing once the site is live?</div>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <!-- Trade Callout Box -->
-                        <div class="bg-gradient-to-r from-purple-900/30 via-slate-900 to-cyan-900/30 border border-cyan-500/40 rounded-xl p-5 my-6">
-                            <h4 class="text-sm font-bold text-cyan-300 uppercase tracking-wider code-font mb-2 flex items-center gap-2">
-                                <i class="fa-solid fa-handshake text-purple-400"></i> Service Trade & Pricing Structure
-                            </h4>
-                            <p class="text-sm text-slate-300">
-                                I am excited about our service trade and open to structuring a clear, mutually beneficial agreement. Because you will be my first official client under this service structure, <strong class="text-cyan-300 underline decoration-cyan-500/50 underline-offset-4">I am happy to offer a substantial discount on any additional custom features or scope that exceeds our base trade value.</strong>
-                            </p>
-                        </div>
-
-                        <p>
-                            Once you let me know your preferred features and site layout ideas, I’ll outline a transparent proposal that covers the project scope, trade terms, and discounted rates so we have total clarity before getting started.
-                        </p>
-
-                        <p>Looking forward to your feedback so we can take the next steps!</p>
-
-                        <!-- Signature -->
-                        <div class="pt-6 border-t border-slate-800/80 mt-8">
-                            <p class="text-slate-400 text-sm">Best regards,</p>
-                            <p class="text-slate-100 font-bold text-lg mt-1 tracking-wide">Kaneon Parker</p>
-                            <p class="text-xs text-cyan-400 code-font font-medium">Founder & CEO, Integrated Intelligence Solutions</p>
-                        </div>
-                    </div>
-                </div>
-
-            </section>
-
-            <!-- Right Panel: Interactive Scope Builder & Technical Controls (5 Cols) -->
-            <section class="lg:col-span-5 flex flex-col gap-6">
-                
-                <!-- Scope Estimator Card -->
-                <div class="cyber-card rounded-2xl p-6">
-                    <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
-                        <div>
-                            <h3 class="font-bold text-slate-100 code-font text-base flex items-center gap-2">
-                                <i class="fa-solid fa-sliders text-cyan-400"></i> SCOPE BUILDER
-                            </h3>
-                            <p class="text-xs text-slate-400">Select modules for initial build proposal</p>
-                        </div>
-                        <span class="px-2 py-1 bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-[10px] rounded code-font">INTERACTIVE</span>
-                    </div>
-
-                    <!-- Module Checkboxes -->
-                    <div class="space-y-3 mb-6">
-                        
-                        <div>
-                            <input type="checkbox" id="mod-form" class="hidden tech-checkbox" checked onchange="calculateScope()">
-                            <label for="mod-form" class="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-5 h-5 rounded border border-slate-700 flex items-center justify-center bg-slate-950">
-                                        <i class="fa-solid fa-check text-xs text-cyan-400 opacity-0 check-icon transition-all"></i>
-                                    </div>
-                                    <span class="text-xs font-semibold text-slate-200">Custom Contact & Lead Form</span>
-                                </div>
-                                <span class="text-xs font-mono text-cyan-400">TRADE COVERED</span>
-                            </label>
-                        </div>
-
-                        <div>
-                            <input type="checkbox" id="mod-portfolio" class="hidden tech-checkbox" checked onchange="calculateScope()">
-                            <label for="mod-portfolio" class="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-5 h-5 rounded border border-slate-700 flex items-center justify-center bg-slate-950">
-                                        <i class="fa-solid fa-check text-xs text-cyan-400 opacity-0 check-icon transition-all"></i>
-                                    </div>
-                                    <span class="text-xs font-semibold text-slate-200">Dynamic Media Gallery / Showcase</span>
-                                </div>
-                                <span class="text-xs font-mono text-cyan-400">TRADE COVERED</span>
-                            </label>
-                        </div>
-
-                        <div>
-                            <input type="checkbox" id="mod-security" class="hidden tech-checkbox" checked onchange="calculateScope()">
-                            <label for="mod-security" class="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-5 h-5 rounded border border-slate-700 flex items-center justify-center bg-slate-950">
-                                        <i class="fa-solid fa-check text-xs text-cyan-400 opacity-0 check-icon transition-all"></i>
-                                    </div>
-                                    <span class="text-xs font-semibold text-slate-200">PremiumDNS & Hosting Setup (1 yr)</span>
-                                </div>
-                                <span class="text-xs font-mono text-cyan-400">INCLUDED</span>
-                            </label>
-                        </div>
-
-                        <div>
-                            <input type="checkbox" id="mod-ecom" class="hidden tech-checkbox" onchange="calculateScope()">
-                            <label for="mod-ecom" class="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-5 h-5 rounded border border-slate-700 flex items-center justify-center bg-slate-950">
-                                        <i class="fa-solid fa-check text-xs text-cyan-400 opacity-0 check-icon transition-all"></i>
-                                    </div>
-                                    <span class="text-xs font-semibold text-slate-200">E-Commerce & Payment Integration</span>
-                                </div>
-                                <span class="text-xs font-mono text-purple-400">+ DISCOUNTED</span>
-                            </label>
-                        </div>
-
-                        <div>
-                            <input type="checkbox" id="mod-maint" class="hidden tech-checkbox" onchange="calculateScope()">
-                            <label for="mod-maint" class="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-5 h-5 rounded border border-slate-700 flex items-center justify-center bg-slate-950">
-                                        <i class="fa-solid fa-check text-xs text-cyan-400 opacity-0 check-icon transition-all"></i>
-                                    </div>
-                                    <span class="text-xs font-semibold text-slate-200">Monthly Support & Maintenance</span>
-                                </div>
-                                <span class="text-xs font-mono text-purple-400">+ DISCOUNTED</span>
-                            </label>
-                        </div>
-
-                    </div>
-
-                    <!-- Scope Calculation Summary -->
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 font-mono text-xs">
-                        <div class="flex justify-between text-slate-400">
-                            <span>Base Trade Allocation:</span>
-                            <span class="text-slate-200">100% Covered</span>
-                        </div>
-                        <div class="flex justify-between text-slate-400">
-                            <span>Estimated Additional Features:</span>
-                            <span id="extra-features-count" class="text-cyan-400">0 Selected</span>
-                        </div>
-                        <div class="flex justify-between text-slate-400">
-                            <span>Applied Client Discount Rate:</span>
-                            <span class="text-emerald-400 font-bold">SUBSTANTIAL (-40%)</span>
-                        </div>
-                        <div class="border-t border-slate-800 pt-2 flex justify-between items-center text-sm">
-                            <span class="font-bold text-slate-200">ESTIMATED STATUS:</span>
-                            <span id="scope-status" class="text-cyan-400 font-bold">EVEN TRADE</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Action Toolkit Card -->
-                <div class="cyber-card rounded-2xl p-6">
-                    <h3 class="font-bold text-slate-100 code-font text-base mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-bolt text-cyan-400"></i> TRANSMISSION ACTIONS
-                    </h3>
-                    <p class="text-xs text-slate-400 mb-4">Quick utility tools for sending this response to Cynth.</p>
-
-                    <div class="space-y-3">
-                        <button onclick="copyEmailText()" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-xs tracking-wider code-font transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer">
-                            <i class="fa-solid fa-paper-plane"></i>
-                            <span>COPY FULL RESPONSE BODY</span>
-                        </button>
-                        
-                        <button onclick="generateSubjectLine()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-medium rounded-xl text-xs code-font transition-all flex items-center justify-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-heading text-cyan-400"></i>
-                            <span>COPY SUBJECT LINE ONLY</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Technical Specs Card -->
-                <div class="cyber-card rounded-2xl p-6 code-font text-xs">
-                    <div class="flex items-center justify-between mb-3 text-slate-400">
-                        <span class="uppercase tracking-widest text-[10px] text-cyan-400">// INTEGRATION STACK</span>
-                        <i class="fa-solid fa-microchip text-slate-500"></i>
-                    </div>
-                    <div class="space-y-2 text-slate-300">
-                        <div class="flex items-center justify-between">
-                            <span class="text-slate-400">DNS Security:</span>
-                            <span class="text-emerald-400">DNSSEC + PremiumDNS</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-slate-400">Hosting Period:</span>
-                            <span class="text-slate-200">Active (365 Days)</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-slate-400">Architecture:</span>
-                            <span class="text-slate-200">Custom Responsive Web App</span>
-                        </div>
-                    </div>
-                </div>
-
-            </section>
-        </div>
+        </aside>
     </main>
 
-    <!-- Footer -->
-    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 border-t border-slate-900 w-full text-center text-xs text-slate-500 code-font">
-        <p>© 2026 Integrated Intelligence Solutions | Engineered for Kaneon Parker</p>
-    </footer>
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-cyan-500 text-slate-950 font-bold text-sm px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 flex items-center gap-2 pointer-events-none">
+        <i class="fa-solid fa-circle-check"></i> <span id="toast-msg">Copied to clipboard!</span>
+    </div>
 
-    <!-- JavaScript Logic -->
     <script>
-        // Set visual theme
-        function setTheme(theme) {
-            document.body.className = document.body.className.replace(/theme-\w+/g, '');
-            document.body.classList.add('theme-' + theme);
-            showToast('Theme updated to ' + theme.toUpperCase());
+        function setTheme(themeName) {
+            document.body.className = `bg-cyber-grid theme-${themeName} py-8 px-4 sm:px-6 lg:px-8`;
         }
 
-        // Calculate scope dynamically based on checkboxes
-        function calculateScope() {
-            const ecom = document.getElementById('mod-ecom').checked;
-            const maint = document.getElementById('mod-maint').checked;
-            
-            let extraCount = 0;
-            if (ecom) extraCount++;
-            if (maint) extraCount++;
-
-            const countEl = document.getElementById('extra-features-count');
-            const statusEl = document.getElementById('scope-status');
-
-            countEl.innerText = extraCount + ' Additional Feature' + (extraCount === 1 ? '' : 's');
-
-            if (extraCount === 0) {
-                statusEl.innerText = 'EVEN TRADE COVERAGE';
-                statusEl.className = 'text-cyan-400 font-bold';
-            } else if (extraCount === 1) {
-                statusEl.innerText = 'TRADE + DISCOUNTED ADD-ON';
-                statusEl.className = 'text-purple-400 font-bold';
-            } else {
-                statusEl.innerText = 'TRADE + CUSTOM PACKAGE';
-                statusEl.className = 'text-amber-400 font-bold';
-            }
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toast-msg');
+            msg.innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
         }
 
-        // Copy raw email text to clipboard
-        function copyEmailText() {
-            const emailText = `Subject: Moving Forward: Your Website Design, Hosting & Service Trade Agreement
-
-Hi Cynth,
-
-Thank you for reaching out and for your thoughtful response. I completely understand your concerns regarding security and website control—having experienced domain hijacking issues myself in the past, I know firsthand how critical it is to ensure proper safeguards are in place and to hold the responsible providers accountable. 
-
-I take security, full ownership, and reliable hosting very seriously. My domain infrastructure is secured with PremiumDNS, and active hosting is set up for the coming year to ensure your site is completely stable, customized, and protected.
-
-### Defining Your Vision & Site Requirements
-To help me tailor the best possible solution for your business, could you please share a few details on what you’re looking for?
-
-* Style & Inspiration: Are there any specific websites you like, or preferred color schemes/branding guidelines you'd like me to follow?
-* Core Functionality: What features do you require for launch? (e.g., custom contact forms, image galleries, booking/scheduling features, or e-commerce capabilities)
-* Ongoing Support: What level of routine maintenance, updates, or technical support do you envision needing once the site is live?
-
-### Service Trade & Pricing Structure
-I am excited about our service trade and open to structuring a clear, mutually beneficial agreement. Because you will be my first official client under this service structure, I am happy to offer a substantial discount on any additional custom features or scope that exceeds our base trade value. 
-
-Once you let me know your preferred features and site layout ideas, I’ll outline a transparent proposal that covers the project scope, trade terms, and discounted rates so we have total clarity before getting started.
-
-Looking forward to your feedback so we can take the next steps!
-
-Best regards,
-
-Kaneon Parker
-Founder & CEO, Integrated Intelligence Solutions`;
-
-            copyToClipboard(emailText);
-            showToast('Full email copied to clipboard!');
+        function copyResponseText() {
+            const text = `Hi Cynth,\n\nThank you for reaching out and for your thoughtful response. I completely understand your concerns regarding security and website control—having experienced domain hijacking issues myself in the past, I know firsthand how critical it is to ensure proper safeguards are in place and to hold the responsible providers accountable.\n\nI take security, full ownership, and reliable hosting very seriously. My domain infrastructure is secured with PremiumDNS, and active hosting is set up for the coming year to ensure your site is completely stable, customized, and protected.\n\nDefining Your Vision & Site Requirements:\n• Style & Inspiration: Are there any specific websites you like, or preferred color schemes/branding guidelines you'd like me to follow?\n• Core Functionality: What features do you require for launch? (e.g., custom contact forms, image galleries, booking/scheduling features, or e-commerce capabilities)\n• Ongoing Support: What level of routine maintenance, updates, or technical support do you envision needing once the site is live?\n\nService Trade & Pricing Structure:\nI am excited about our service trade and open to structuring a clear, mutually beneficial agreement. Because you will be my first official client under this service structure, I am happy to offer a substantial discount on any additional custom features or scope that exceeds our base trade value.\n\nOnce you let me know your preferred features and site layout ideas, I’ll outline a transparent proposal that covers the project scope, trade terms, and discounted rates so we have total clarity before getting started.\n\nLooking forward to your feedback so we can take the next steps!\n\nBest regards,\nKaneon Parker\nFounder & CEO, Integrated Intelligence Solutions`;
+            navigator.clipboard.writeText(text);
+            showToast('Full email text copied!');
         }
 
-        // Copy subject line only
-        function generateSubjectLine() {
-            const subject = "Moving Forward: Your Website Design, Hosting & Service Trade Agreement";
-            copyToClipboard(subject);
+        function copySubject() {
+            navigator.clipboard.writeText('Moving Forward: Your Website Design, Hosting & Service Trade Agreement');
             showToast('Subject line copied!');
         }
 
-        // Reliable Copy Function using execCommand fallback
-        function copyToClipboard(text) {
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = text;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
+        function copyLink() {
+            const linkInput = document.getElementById('share-link');
+            navigator.clipboard.writeText(linkInput.value);
+            showToast('Proposal link copied!');
         }
 
-        // Toast display logic
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toast-message');
-            toastMessage.innerText = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+        function updateCalculator() {
+            const gallery = document.getElementById('feat-gallery').checked;
+            const ecom = document.getElementById('feat-ecom').checked;
+            const maint = document.getElementById('feat-maint').checked;
+            
+            const discVal = document.getElementById('discount-val');
+            if (gallery || ecom || maint) {
+                discVal.innerText = 'Max Discount Active';
+            } else {
+                discVal.innerText = 'Applied';
+            }
         }
-
-        // Initialize calculation on load
-        window.onload = function() {
-            calculateScope();
-        };
     </script>
 </body>
 </html>
-```
