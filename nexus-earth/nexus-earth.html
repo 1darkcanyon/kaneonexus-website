@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>NEXUS Earth</title>
+<style>
+  html, body { margin:0; padding:0; overflow:hidden; background:#000; height:100%; width:100%; touch-action:none; }
+  #canvas-wrap { position:absolute; inset:0; }
+  #hud { position:absolute; top:env(safe-area-inset-top,10px); left:0; right:0; display:flex; justify-content:center; gap:6px; z-index:10; padding:0 6px; flex-wrap:wrap; }
+  #hud2 { position:absolute; top:calc(env(safe-area-inset-top,10px) + 40px); left:0; right:0; display:flex; justify-content:center; gap:6px; z-index:10; padding:0 6px; flex-wrap:wrap; }
+  .layer-btn, .mode-btn {
+    background:rgba(20,20,30,0.65); color:#dfe8ff; border:1px solid rgba(150,180,255,0.35);
+    border-radius:20px; padding:7px 12px; font-family:sans-serif; font-size:12px;
+    backdrop-filter: blur(6px); user-select:none;
+  }
+  .layer-btn.active, .mode-btn.active { background:rgba(80,140,255,0.85); border-color:#fff; color:#fff; }
+  #playBtn { background:rgba(30,160,90,0.75); border-color:#9f9; }
+  #playBtn.active { background:rgba(220,80,60,0.85); border-color:#fff; }
+  #info { position:absolute; bottom:env(safe-area-inset-bottom,50px); left:0; right:0; text-align:center;
+    color:#cfe0ff; font-family:sans-serif; font-size:12px; z-index:10; text-shadow:0 1px 3px #000; pointer-events:none; }
+  #forecastBar { position:absolute; bottom:env(safe-area-inset-bottom,14px); left:10px; right:10px; z-index:10;
+    color:#dfe8ff; font-family:sans-serif; font-size:11px; text-align:center; display:none; }
+  #loading { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; justify-content:center;
+    color:#9fc; font-family:sans-serif; font-size:12px; z-index:20; background:rgba(0,0,0,0.55);
+    padding:8px; pointer-events:none; }
+  #panel { position:absolute; left:12px; right:12px; bottom:70px; max-height:55%; overflow-y:auto;
+    background:rgba(10,12,20,0.9); border:1px solid rgba(150,180,255,0.35); border-radius:12px;
+    color:#e8eeff; font-family:sans-serif; font-size:13px; padding:14px; z-index:30; display:none;
+    backdrop-filter: blur(8px); }
+  #panel h3 { margin:0 0 8px 0; color:#9fd0ff; }
+  #panel .close { position:absolute; top:8px; right:12px; color:#aaa; font-size:18px; }
+  #panel .note { color:#8fa; font-size:11px; margin-top:8px; }
+  #panel .cme { border-top:1px solid rgba(255,255,255,0.15); padding-top:6px; margin-top:6px; }
+</style>
+</head>
+<body>
+<div id="loading">Loading Earth textures… (globe is spinning underneath already)</div>
+<div id="canvas-wrap"></div>
+<div id="hud">
+  <div class="mode-btn active" data-mode="earth">Earth</div>
+  <div class="mode-btn" data-mode="solar">Solar System</div>
+  <div class="mode-btn" id="gravityToggle">Clear Gravity Fields</div>
+</div>
+<div id="hud2">
+  <div class="layer-btn" id="clearLayers">Globe</div>
+  <div class="layer-btn" data-layer="temp">Temp</div>
+  <div class="layer-btn" data-layer="precip">Precip</div>
+  <div class="layer-btn" data-layer="clouds">Clouds</div>
+  <div class="layer-btn" data-layer="pressure">Pressure</div>
+  <div class="layer-btn" data-layer="wind">Wind</div>
+  <div class="layer-btn" data-layer="radar">Radar</div>
+  <div class="layer-btn" id="playBtn">▶ Forecast</div>
+</div>
+<div id="hud3" style="position:absolute; top:calc(env(safe-area-inset-top,10px) + 112px); left:0; right:0; display:flex; justify-content:center; gap:6px; z-index:10; padding:0 6px; flex-wrap:wrap;">
+  <div class="layer-btn" data-layer="quakes">&#128308; Quakes</div>
+  <div class="layer-btn" data-layer="storms">&#127786; Storms</div>
+  <div class="layer-btn" data-layer="cyclones">&#127744; Hurricanes</div>
+  <div class="layer-btn" data-layer="volcanoes">&#127755; Volcanoes</div>
+  <div class="layer-btn" data-layer="buoys">&#9875; Buoys</div>
+  <div class="layer-btn" data-layer="wildfires">&#128293; Wildfires</div>
+  <div class="layer-btn" data-layer="lightning">&#9889; Lightning</div>
+</div>
+<div id="info">Drag to rotate • Pinch to zoom • Tap Sun for info, or anywhere else for that spot's forecast</div>
+<div id="liveUpdated" style="position:absolute; bottom:env(safe-area-inset-bottom,68px); left:0; right:0; text-align:center; color:#8fdca0; font-family:sans-serif; font-size:10px; z-index:10; pointer-events:none;"></div>
+<div id="forecastBar"></div>
+<div id="panel"><span class="close">✕</span><div id="panelBody"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  var scene, camera, renderer;
+  var earthGroup, globe, cloudMesh, atmosphere, moonMesh, sunLight, sunSprite;
+  var rotateSpeed = 0.0008;
+  var autoRotate = true;
+  var activeLayers = {}; // layer -> true if currently toggled on
+  var overlayMeshes = {}; // layer -> THREE.Points mesh
+  var LIVE_REFRESH_MS = 10 * 60 * 1000; // Open-Meteo's underlying models update roughly hourly;
+                                          // 10 min keeps things current without hammering the API.
+  var liveRefreshTimer = null;
+  var mode = "earth"; // "earth" | "solar"
+  var solarGroup = null;
+  var planetMeshes = {}; // key -> {mesh, data}
+  var gravityMeshes = [];
+  var raycaster = new THREE.Raycaster();
+  var clickableObjects = [];
+
+  // Forecast playback state
+  var forecastPlaying = false;
+  var forecastData = null; // {times:[], gridPoints:[{lat,lon,values:{layer:[...]}}]}
+  var forecastIndex = 0;
+  var forecastTimer = null;
+
+  // --- Real orbital reference data (approximate mean elements, J2000 epoch) ---
+  // a = semi-major axis (AU), period = sidereal orbital period (days),
+  // L0 = approximate mean longitude at J2000 epoch (degrees) — circular-orbit approximation for visualization.
+  // massEarth = mass relative to Earth (real values) — used for Hill sphere gravity-influence radius.
+  var PLANETS = [
+    {name:"Mercury", a:0.387, period:87.97,   L0:252.25, massEarth:0.055,  radius:0.010, color:0x9a8f86, moons:[]},
+    {name:"Venus",   a:0.723, period:224.70,  L0:181.98, massEarth:0.815,  radius:0.024, color:0xd9c48a, moons:[]},
+    {name:"Earth",   a:1.000, period:365.256, L0:100.46, massEarth:1.0,    radius:0.025, color:0x2f6fd0, moons:[{name:"Moon", dist:0.045, period:27.3, radius:0.007, color:0xbbbbbb}]},
+    {name:"Mars",    a:1.524, period:686.98,  L0:355.45, massEarth:0.107,  radius:0.014, color:0xc1531f, moons:[{name:"Phobos",dist:0.035,period:0.32,radius:0.003,color:0x998877},{name:"Deimos",dist:0.05,period:1.26,radius:0.003,color:0x998877}]},
+    {name:"Jupiter", a:5.203, period:4332.59, L0:34.40,  massEarth:317.8,  radius:0.11,  color:0xd8ae7e, moons:[
+      {name:"Io",dist:0.16,period:1.77,radius:0.006,color:0xe8d060},
+      {name:"Europa",dist:0.19,period:3.55,radius:0.006,color:0xd8d8c8},
+      {name:"Ganymede",dist:0.24,period:7.15,radius:0.008,color:0xa89888},
+      {name:"Callisto",dist:0.30,period:16.7,radius:0.008,color:0x807060}]},
+    {name:"Saturn",  a:9.537, period:10759.22,L0:49.94,  massEarth:95.2,   radius:0.095, color:0xe3d4a3, moons:[
+      {name:"Titan",dist:0.20,period:15.9,radius:0.007,color:0xd8a94f},
+      {name:"Rhea",dist:0.15,period:4.5,radius:0.004,color:0xaaaaaa}], hasRing:true},
+    {name:"Uranus",  a:19.191,period:30688.5, L0:313.23, massEarth:14.5,   radius:0.05,  color:0x9fd8dd, moons:[
+      {name:"Titania",dist:0.13,period:8.7,radius:0.004,color:0xaaaaaa},
+      {name:"Oberon",dist:0.17,period:13.5,radius:0.004,color:0x999999}]},
+    {name:"Neptune", a:30.069,period:60182,   L0:304.88, massEarth:17.1,   radius:0.048, color:0x4a6fdd, moons:[
+      {name:"Triton",dist:0.14,period:5.9,radius:0.005,color:0xb8c8d8}]},
+    {name:"Pluto",   a:39.482,period:90560,   L0:238.93, massEarth:0.0022, radius:0.006, color:0xcbb8a0, moons:[
+      {name:"Charon",dist:0.03,period:6.4,radius:0.003,color:0x998f88}]}
+  ];
+  var AU_SCALE = 9; // 1 AU -> this many scene units in solar view
+  var SUN_MASS_EARTH = 333000;
+
+  function init(){
+    var wrap = document.getElementById('canvas-wrap');
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.01, 5000);
+    camera.position.z = 2.6;
+
+    renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    wrap.appendChild(renderer.domElement);
+
+    addStarfield();
+
+    sunLight = new THREE.DirectionalLight(0xffffff, 1.3);
+    sunLight.position.set(5,3,5);
+    scene.add(sunLight);
+    scene.add(new THREE.AmbientLight(0x30304a, 1.0));
+
+    buildEarthGroup();
+    buildSolarGroup();
+    solarGroup.visible = false;
+
+    setupTouch(renderer.domElement);
+    setupHUD();
+    window.addEventListener('resize', onResize);
+    animate();
+  }
+
+  function addStarfield(){
+    var starGeo = new THREE.BufferGeometry();
+    var starCount = 3000;
+    var starPositions = new Float32Array(starCount*3);
+    for(var i=0;i<starCount;i++){
+      var r = 400 + Math.random()*600;
+      var theta = Math.random()*Math.PI*2;
+      var phi = Math.acos(2*Math.random()-1);
+      starPositions[i*3]   = r*Math.sin(phi)*Math.cos(theta);
+      starPositions[i*3+1] = r*Math.sin(phi)*Math.sin(theta);
+      starPositions[i*3+2] = r*Math.cos(phi);
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions,3));
+    var starMat = new THREE.PointsMaterial({color:0xffffff, size:0.5, sizeAttenuation:true});
+    scene.add(new THREE.Points(starGeo, starMat));
+  }
+
+  // ---------------- EARTH VIEW ----------------
+  function buildEarthGroup(){
+    earthGroup = new THREE.Group();
+    scene.add(earthGroup);
+
+    var loader = new THREE.TextureLoader();
+    loader.crossOrigin = "anonymous";
+
+    // Using threejs.org's own example texture CDN instead of unpkg — smaller files
+    // (2048px vs unpkg's larger blue-marble source) and generally faster/more reliable
+    // to fetch on mobile connections.
+    var earthTex = loader.load(
+      "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+      onFirstTextureLoaded,
+      undefined,
+      function(err){ console.error('Earth texture failed to load', err); onFirstTextureLoaded(true); }
+    );
+    var bumpTex = loader.load("https://threejs.org/examples/textures/planets/earth_normal_2048.jpg", undefined, undefined,
+      function(err){ console.error('Bump texture failed to load', err); });
+    var specTex = loader.load("https://threejs.org/examples/textures/planets/earth_specular_2048.jpg", undefined, undefined,
+      function(err){ console.error('Specular texture failed to load', err); });
+
+    var geo = new THREE.SphereGeometry(1, 64, 64);
+    var mat = new THREE.MeshPhongMaterial({
+      color: 0x3366aa, // visible placeholder color immediately, replaced once earthTex actually loads
+      map: earthTex, bumpMap: bumpTex, bumpScale: 0.03,
+      specularMap: specTex, specular: new THREE.Color(0x333333), shininess: 6
+    });
+    globe = new THREE.Mesh(geo, mat);
+    earthGroup.add(globe);
+
+    var cloudTex = loader.load(
+      "https://threejs.org/examples/textures/planets/earth_clouds_1024.png",
+      function(){ cloudMesh.visible = true; },
+      undefined,
+      function(err){ console.error('Cloud texture failed to load', err); cloudMesh.visible = false; setInfoWarning('Cloud texture failed to load — check connection'); }
+    );
+    var cloudGeo = new THREE.SphereGeometry(1.006, 64, 64);
+    var cloudMat = new THREE.MeshLambertMaterial({map:cloudTex, transparent:true, opacity:0.5, depthWrite:false});
+    cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
+    cloudMesh.visible = false; // shown once the texture actually loads, so a failed load doesn't render a flat gray shell
+    earthGroup.add(cloudMesh);
+
+    // Safety net: never let the loading screen hang forever. If nothing has resolved this
+    // within 12s (slow/stalled connection with no proper error), drop the loading screen and
+    // let the person use the app anyway — worst case they see the placeholder color instead
+    // of the real texture until it finishes loading in the background.
+    setTimeout(function(){
+      var el = document.getElementById('loading');
+      if(el.style.display !== 'none'){
+        el.style.display = 'none';
+        setInfoWarning('Earth texture still loading in the background — slow connection?');
+      }
+    }, 6000);
+
+    var atmoGeo = new THREE.SphereGeometry(1.06, 48, 48);
+    var atmoMat = new THREE.ShaderMaterial({
+      vertexShader: `varying vec3 vNormal; void main(){ vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+      fragmentShader: `varying vec3 vNormal; void main(){ float intensity = pow(0.65 - dot(vNormal, vec3(0,0,1.0)), 3.0); gl_FragColor = vec4(0.3,0.6,1.0,1.0) * intensity; }`,
+      blending: THREE.AdditiveBlending, side: THREE.BackSide, transparent: true
+    });
+    atmosphere = new THREE.Mesh(atmoGeo, atmoMat);
+    earthGroup.add(atmosphere);
+
+    // Moon — real phase comes naturally from Phong shading + directional light,
+    // positioned using the actual current lunar phase angle.
+    var moonGeo = new THREE.SphereGeometry(0.27, 32, 32);
+    var moonMat = new THREE.MeshPhongMaterial({color:0xbbbbbb, shininess:1});
+    moonMesh = new THREE.Mesh(moonGeo, moonMat);
+    earthGroup.add(moonMesh);
+    positionMoon();
+    clickableObjects.push({obj:moonMesh, type:'moon'});
+
+    // Sun indicator — small glowing sprite along the light direction, clickable for CME data.
+    var sunGeo = new THREE.SphereGeometry(0.12, 24, 24);
+    var sunMat = new THREE.MeshBasicMaterial({color:0xffdd66});
+    sunSprite = new THREE.Mesh(sunGeo, sunMat);
+    var sunGlowGeo = new THREE.SphereGeometry(0.18, 24, 24);
+    var sunGlowMat = new THREE.MeshBasicMaterial({color:0xffaa33, transparent:true, opacity:0.35});
+    sunSprite.add(new THREE.Mesh(sunGlowGeo, sunGlowMat));
+    sunSprite.position.copy(sunLight.position).normalize().multiplyScalar(4.2);
+    earthGroup.add(sunSprite);
+    clickableObjects.push({obj:sunSprite, type:'sun'});
+  }
+
+  function positionMoon(){
+    // Real synodic lunar phase calculation.
+    // Reference new moon: 2000-01-06 18:14 UTC. Synodic month: 29.530588853 days.
+    var refNewMoon = Date.UTC(2000,0,6,18,14,0);
+    var now = Date.now();
+    var daysSince = (now - refNewMoon) / 86400000;
+    var synodic = 29.530588853;
+    var phaseFrac = (daysSince % synodic) / synodic; // 0 = new, 0.5 = full
+    if(phaseFrac < 0) phaseFrac += 1;
+    var angle = phaseFrac * Math.PI * 2;
+    var dist = 2.6;
+    moonMesh.position.set(Math.cos(angle)*dist, 0.15*Math.sin(angle*0.3), Math.sin(angle)*dist);
+    window._moonPhaseFrac = phaseFrac;
+  }
+
+  function onFirstTextureLoaded(failed){
+    document.getElementById('loading').style.display = 'none';
+    if(failed){
+      setInfoWarning('Earth texture failed to load — check connection, then reopen the app');
+    } else if(globe){
+      globe.material.color.set(0xffffff); // clear the placeholder tint now that the real texture is in
+      globe.material.needsUpdate = true;
+    }
+  }
+
+  // Shows a temporary message in the info line, then reverts to the normal instructions after a few seconds.
+  var infoWarningTimer = null;
+  function setInfoWarning(msg, ms){
+    var el = document.getElementById('info');
+    if(infoWarningTimer) clearTimeout(infoWarningTimer);
+    el.textContent = msg;
+    infoWarningTimer = setTimeout(function(){
+      el.textContent = mode==='earth'
+        ? 'Drag to rotate • Pinch to zoom • Tap Sun/Moon for info, or anywhere else for that spot\'s forecast'
+        : 'Drag to orbit • Pinch to zoom • Tap Sun or a planet for info';
+    }, ms || 6000);
+  }
+
+  // ---------------- SOLAR SYSTEM VIEW ----------------
+  function buildSolarGroup(){
+    solarGroup = new THREE.Group();
+    scene.add(solarGroup);
+
+    var sunGeo = new THREE.SphereGeometry(0.4, 32, 32);
+    var sunMat = new THREE.MeshBasicMaterial({color:0xffcc44});
+    var sunMesh = new THREE.Mesh(sunGeo, sunMat);
+    solarGroup.add(sunMesh);
+    var glowGeo = new THREE.SphereGeometry(0.55, 32, 32);
+    var glowMat = new THREE.MeshBasicMaterial({color:0xff9922, transparent:true, opacity:0.3});
+    sunMesh.add(new THREE.Mesh(glowGeo, glowMat));
+    clickableObjects.push({obj:sunMesh, type:'sun'});
+    planetMeshes['Sun'] = {mesh:sunMesh, data:{name:'Sun', massEarth:SUN_MASS_EARTH, a:0}};
+
+    var jd = daysSinceJ2000();
+
+    PLANETS.forEach(function(p){
+      var orbitGeo = new THREE.RingGeometry(p.a*AU_SCALE-0.005, p.a*AU_SCALE+0.005, 128);
+      var orbitMat = new THREE.MeshBasicMaterial({color:0x445577, side:THREE.DoubleSide, transparent:true, opacity:0.35});
+      var orbitRing = new THREE.Mesh(orbitGeo, orbitMat);
+      orbitRing.rotation.x = Math.PI/2;
+      solarGroup.add(orbitRing);
+
+      var angleDeg = (p.L0 + 360*(jd/p.period)) % 360;
+      var angle = angleDeg * Math.PI/180;
+      var x = Math.cos(angle)*p.a*AU_SCALE;
+      var z = Math.sin(angle)*p.a*AU_SCALE;
+
+      var pGeo = new THREE.SphereGeometry(p.radius*AU_SCALE*4, 24, 24);
+      var pMat = new THREE.MeshPhongMaterial({color:p.color, shininess:5});
+      var pMesh = new THREE.Mesh(pGeo, pMat);
+      pMesh.position.set(x, 0, z);
+      solarGroup.add(pMesh);
+      clickableObjects.push({obj:pMesh, type:'planet', key:p.name});
+      planetMeshes[p.name] = {mesh:pMesh, data:p};
+
+      if(p.hasRing){
+        var ringGeo = new THREE.RingGeometry(p.radius*AU_SCALE*4*1.3, p.radius*AU_SCALE*4*2.1, 48);
+        var ringMat = new THREE.MeshBasicMaterial({color:0xcbb98a, side:THREE.DoubleSide, transparent:true, opacity:0.6});
+        var ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI/2.3;
+        pMesh.add(ring);
+      }
+
+      p.moons.forEach(function(m, idx){
+        var mGeo = new THREE.SphereGeometry(m.radius*AU_SCALE*6, 12, 12);
+        var mMat = new THREE.MeshPhongMaterial({color:m.color});
+        var mMesh = new THREE.Mesh(mGeo, mMat);
+        var mAngle = (idx*70) * Math.PI/180; // spread starting angles; fast simplified orbit, not phase-accurate
+        mMesh.position.set(Math.cos(mAngle)*m.dist*AU_SCALE*2.2, 0, Math.sin(mAngle)*m.dist*AU_SCALE*2.2);
+        pMesh.add(mMesh);
+        m._mesh = mMesh; m._angle = mAngle;
+      });
+
+      // Hill sphere (gravitational sphere of influence) — real formula, radius exaggerated for visibility.
+      var rHillAU = p.a * Math.pow(p.massEarth/(3*SUN_MASS_EARTH), 1/3);
+      var exaggeration = 12;
+      var gGeo = new THREE.SphereGeometry(Math.max(rHillAU*AU_SCALE*exaggeration, p.radius*AU_SCALE*5), 20, 20);
+      var gMat = new THREE.MeshBasicMaterial({color:0x66ffcc, transparent:true, opacity:0.12, depthWrite:false});
+      var gMesh = new THREE.Mesh(gGeo, gMat);
+      gMesh.position.copy(pMesh.position);
+      gMesh.visible = false;
+      solarGroup.add(gMesh);
+      gravityMeshes.push(gMesh);
+      p._gravMesh = gMesh;
+      p._hillAU = rHillAU;
+    });
+  }
+
+  function daysSinceJ2000(){
+    var j2000 = Date.UTC(2000,0,1,12,0,0);
+    return (Date.now() - j2000) / 86400000;
+  }
+
+  function animateSolarMoons(){
+    PLANETS.forEach(function(p){
+      p.moons.forEach(function(m){
+        if(!m._mesh) return;
+        m._angle += 0.01 / Math.max(m.period,0.5);
+        m._mesh.position.set(Math.cos(m._angle)*m.dist*AU_SCALE*2.2, 0, Math.sin(m._angle)*m.dist*AU_SCALE*2.2);
+      });
+    });
+  }
+
+  // ---------------- Touch / drag / pinch (shared) ----------------
+  function setupTouch(el){
+    var dragging = false;
+    var lastX=0, lastY=0;
+    var lon=0, lat=0;
+    var pinchStartDist = null;
+    var startZoom = camera.position.z;
+    var tapStart = null;
+
+    function rotFromDelta(dx,dy){
+      if(mode === 'earth'){
+        lon += dx*0.005; lat += dy*0.005;
+        lat = Math.max(-1.3, Math.min(1.3, lat));
+        globe.rotation.y = lon; globe.rotation.x = lat;
+        cloudMesh.rotation.y = lon; cloudMesh.rotation.x = lat;
+        Object.keys(overlayMeshes).forEach(function(k){
+          overlayMeshes[k].rotation.y = lon; overlayMeshes[k].rotation.x = lat;
+        });
+      } else {
+        solarGroup.rotation.y += dx*0.004;
+        solarGroup.rotation.x += dy*0.004;
+        solarGroup.rotation.x = Math.max(-1.4, Math.min(1.4, solarGroup.rotation.x));
+      }
+    }
+
+    function handleTap(x,y){
+      var rect = renderer.domElement.getBoundingClientRect();
+      var mouse = new THREE.Vector2(
+        ((x-rect.left)/rect.width)*2-1,
+        -((y-rect.top)/rect.height)*2+1
+      );
+      raycaster.setFromCamera(mouse, camera);
+      var objs = clickableObjects.filter(function(c){
+        return mode === 'earth' ? earthGroup.visible && (c.type==='sun'||c.type==='moon') && c.obj.parent
+          : solarGroup.visible && (c.type==='sun'||c.type==='planet') && c.obj.parent;
+      }).map(function(c){return c.obj;});
+      var hits = raycaster.intersectObjects(objs, false);
+      if(hits.length){
+        var hitObj = hits[0].object;
+        var found = clickableObjects.find(function(c){return c.obj===hitObj;});
+        if(found) onObjectTapped(found);
+        return;
+      }
+      // Nothing special was tapped — if it's the globe itself, pull a real forecast for that spot.
+      if(mode === 'earth' && globe){
+        var globeHits = raycaster.intersectObject(globe, false);
+        if(globeHits.length){
+          var localPt = globe.worldToLocal(globeHits[0].point.clone());
+          var ll = latLonFromLocalPosition(localPt);
+          if(!hazardTapped(ll.lat, ll.lon)){ showLocationForecastPanel(ll.lat, ll.lon); }
+        }
+      }
+    }
+
+    el.addEventListener('touchstart', function(e){
+      autoRotate = false;
+      if(e.touches.length === 1){
+        dragging = true;
+        lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+        tapStart = {x:lastX, y:lastY, t:Date.now()};
+      } else if(e.touches.length === 2){
+        dragging = false;
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        pinchStartDist = Math.sqrt(dx*dx+dy*dy);
+        startZoom = camera.position.z;
+      }
+    }, {passive:true});
+
+    el.addEventListener('touchmove', function(e){
+      if(e.touches.length === 1 && dragging){
+        var dx = e.touches[0].clientX - lastX;
+        var dy = e.touches[0].clientY - lastY;
+        lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+        rotFromDelta(dx,dy);
+      } else if(e.touches.length === 2 && pinchStartDist){
+        var dx2 = e.touches[0].clientX - e.touches[1].clientX;
+        var dy2 = e.touches[0].clientY - e.touches[1].clientY;
+        var dist = Math.sqrt(dx2*dx2+dy2*dy2);
+        var scale = pinchStartDist/dist;
+        var z = startZoom*scale;
+        var min = mode==='earth' ? 1.4 : 3;
+        var max = mode==='earth' ? 6 : 500;
+        camera.position.z = Math.max(min, Math.min(max, z));
+      }
+    }, {passive:true});
+
+    el.addEventListener('touchend', function(e){
+      if(tapStart && Date.now()-tapStart.t < 300){
+        var dx = (e.changedTouches[0].clientX - tapStart.x);
+        var dy = (e.changedTouches[0].clientY - tapStart.y);
+        if(Math.sqrt(dx*dx+dy*dy) < 8){ handleTap(tapStart.x, tapStart.y); }
+      }
+      tapStart = null;
+      if(e.touches.length === 0){ dragging = false; pinchStartDist = null; }
+    }, {passive:true});
+
+    var mouseDown=false, mouseStart=null;
+    el.addEventListener('mousedown', function(e){ mouseDown=true; autoRotate=false; lastX=e.clientX; lastY=e.clientY; mouseStart={x:e.clientX,y:e.clientY,t:Date.now()}; });
+    window.addEventListener('mouseup', function(e){
+      mouseDown=false;
+      if(mouseStart && Date.now()-mouseStart.t<300){
+        var dx=e.clientX-mouseStart.x, dy=e.clientY-mouseStart.y;
+        if(Math.sqrt(dx*dx+dy*dy)<6){ handleTap(e.clientX,e.clientY); }
+      }
+    });
+    window.addEventListener('mousemove', function(e){
+      if(!mouseDown) return;
+      var dx = e.clientX-lastX, dy = e.clientY-lastY;
+      lastX = e.clientX; lastY = e.clientY;
+      rotFromDelta(dx,dy);
+    });
+    el.addEventListener('wheel', function(e){
+      var min = mode==='earth' ? 1.4 : 3;
+      var max = mode==='earth' ? 6 : 500;
+      camera.position.z = Math.max(min, Math.min(max, camera.position.z + e.deltaY*(mode==='earth'?0.002:0.4)));
+    });
+
+    document.querySelector('#panel .close').addEventListener('click', function(){
+      document.getElementById('panel').style.display = 'none';
+    });
+  }
+
+  function onResize(){
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  function animate(){
+    requestAnimationFrame(animate);
+    if(mode === 'earth'){
+      if(autoRotate){
+        globe.rotation.y += rotateSpeed;
+        cloudMesh.rotation.y += rotateSpeed;
+        Object.keys(overlayMeshes).forEach(function(k){ overlayMeshes[k].rotation.y += rotateSpeed; });
+      }
+      cloudMesh.rotation.y += 0.00006;
+      if(windAnimHandleActive){ stepWindParticles(); }
+      if(overlayMeshes['pressure']){
+        // "Breathing" pulse — pressure systems aren't static, so give the layer a slow
+        // sine-wave pulse in size/opacity rather than sitting as flat dots.
+        var t = performance.now() * 0.001;
+        var breathe = 0.5 + 0.5*Math.sin(t * 0.5); // ~12.5s full cycle
+        overlayMeshes['pressure'].material.size = 0.028 + breathe*0.022;
+        overlayMeshes['pressure'].material.opacity = 0.55 + breathe*0.4;
+      }
+    } else {
+      animateSolarMoons();
+    }
+    renderer.render(scene, camera);
+  }
+
+  // ---------------- HUD ----------------
+  function setupHUD(){
+    document.querySelectorAll('.layer-btn[data-layer]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var layer = b.getAttribute('data-layer');
+        var turningOn = !activeLayers[layer];
+        activeLayers[layer] = turningOn;
+        b.classList.toggle('active', turningOn);
+        if(turningOn){ enableLayer(layer); } else { disableLayer(layer); }
+      });
+    });
+
+    document.getElementById('clearLayers').addEventListener('click', function(){
+      Object.keys(activeLayers).forEach(function(layer){
+        if(activeLayers[layer]) disableLayer(layer);
+      });
+      document.querySelectorAll('.layer-btn[data-layer]').forEach(function(x){x.classList.remove('active');});
+      stopForecast();
+    });
+
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(function(b){
+      b.addEventListener('click', function(){
+        document.querySelectorAll('.mode-btn[data-mode]').forEach(function(x){x.classList.remove('active');});
+        b.classList.add('active');
+        mode = b.getAttribute('data-mode');
+        earthGroup.visible = (mode==='earth');
+        solarGroup.visible = (mode==='solar');
+        Object.keys(overlayMeshes).forEach(function(k){ overlayMeshes[k].visible = (mode==='earth'); });
+        camera.position.set(0,0, mode==='earth'?2.6:120);
+        document.getElementById('info').textContent = mode==='earth'
+          ? 'Drag to rotate • Pinch to zoom • Tap Sun/Moon for info, or anywhere else for that spot\'s forecast'
+          : 'Drag to orbit • Pinch to zoom • Tap Sun or a planet for info';
+        document.getElementById('panel').style.display = 'none';
+      });
+    });
+
+    document.getElementById('gravityToggle').addEventListener('click', function(){
+      PLANETS.forEach(function(p){ if(p._gravMesh){ p._gravMesh.visible = false; } });
+      document.getElementById('info').textContent = mode==='earth'
+        ? 'Drag to rotate • Pinch to zoom • Tap Sun/Moon for info, or anywhere else for that spot\'s forecast'
+        : 'Drag to orbit • Pinch to zoom • Tap a planet to toggle its gravity field';
+    });
+
+    document.getElementById('playBtn').addEventListener('click', function(){
+      if(forecastPlaying){ stopForecast(); }
+      else { startForecast(); }
+    });
+  }
+
+  function onObjectTapped(found){
+    if(found.type === 'sun'){ showSunPanel(); }
+    else if(found.type === 'moon'){ moonTapped(); }
+    else if(found.type === 'planet'){ showPlanetPanel(found.key); }
+  }
+
+  function showMoonPanel(){
+    var frac = window._moonPhaseFrac || 0;
+    var names = ["New Moon","Waxing Crescent","First Quarter","Waxing Gibbous","Full Moon","Waning Gibbous","Last Quarter","Waning Crescent"];
+    var idx = Math.round(frac*8) % 8;
+    var pct = Math.round((frac<=0.5 ? frac*2 : (1-frac)*2) * 100);
+    document.getElementById('panelBody').innerHTML =
+      '<h3>The Moon</h3>' +
+      '<div>Current phase: <b>' + names[idx] + '</b></div>' +
+      '<div>Illumination: ~' + pct + '%</div>' +
+      '<div class="note">Phase computed from the real synodic lunar cycle (29.53 days) as of right now. Shading on the model comes from actual directional lighting matching this phase.</div>' +
+      '<div id="lunaticLink" style="margin-top:12px; text-align:center; padding:10px; border-radius:10px; background:rgba(120,80,200,0.25); border:1px solid rgba(200,160,255,0.4); cursor:pointer;">' +
+        '🌙 <b>Feeling the tide?</b><br><span style="color:#d8b8ff;">Open your LUNA-TIC Emotional Forecast →</span>' +
+      '</div>';
+    document.getElementById('lunaticLink').addEventListener('click', function(){
+      window.location.href = 'https://kaneonexus.net/demos/luna-tic.html';
+    });
+    document.getElementById('panel').style.display = 'block';
+  }
+
+  // Easter egg: double-tap the Moon jumps straight to LUNA-TIC without opening the panel first.
+  var lastMoonTap = 0;
+  function moonTapped(){
+    var now = Date.now();
+    if(now - lastMoonTap < 600){
+      lastMoonTap = 0;
+      window.location.href = 'https://kaneonexus.net/demos/luna-tic.html';
+      return;
+    }
+    lastMoonTap = now;
+    showMoonPanel();
+  }
+
+  async function showSunPanel(){
+    document.getElementById('panelBody').innerHTML = '<h3>The Sun</h3><div>Loading recent solar activity…</div>';
+    document.getElementById('panel').style.display = 'block';
+    try{
+      var end = new Date();
+      var start = new Date(end.getTime() - 7*86400000);
+      var fmt = function(d){ return d.toISOString().slice(0,10); };
+      var url = 'https://api.nasa.gov/DONKI/CME?startDate=' + fmt(start) + '&endDate=' + fmt(end) + '&api_key=DEMO_KEY';
+      var res = await fetch(url);
+      var events = await res.json();
+      var html = '<h3>The Sun — Solar Activity (last 7 days)</h3>';
+      if(!events || !events.length){
+        html += '<div>No coronal mass ejections reported by NASA DONKI in the last 7 days.</div>';
+      } else {
+        events.slice(-6).reverse().forEach(function(ev){
+          var speed = (ev.cmeAnalyses && ev.cmeAnalyses[0] && ev.cmeAnalyses[0].speed) ? ev.cmeAnalyses[0].speed + ' km/s' : 'unknown speed';
+          html += '<div class="cme"><b>' + (ev.startTime||'').replace('T',' ').slice(0,16) + ' UTC</b><br>' +
+                  'Source: ' + (ev.sourceLocation || 'n/a') + ' • Speed: ' + speed + '<br>' +
+                  (ev.note ? ev.note.slice(0,140) : '') + '</div>';
+        });
+      }
+      html += '<div class="note">Live data from NASA\'s DONKI space-weather API (Coronal Mass Ejection catalog). Uses the public DEMO_KEY, which is rate-limited — swap in your own free api.nasa.gov key for heavier use.</div>';
+      document.getElementById('panelBody').innerHTML = html;
+    } catch(err){
+      document.getElementById('panelBody').innerHTML = '<h3>The Sun</h3><div>Could not reach NASA DONKI (offline?).</div>';
+    }
+  }
+
+  function showPlanetPanel(key){
+    var p = PLANETS.find(function(x){return x.name===key;});
+    if(!p) return;
+
+    // Tapping a planet toggles ONLY its own gravity field — others stay however they were left.
+    if(p._gravMesh){ p._gravMesh.visible = !p._gravMesh.visible; }
+
+    var html = '<h3>' + p.name + '</h3>';
+    html += '<div>Distance from Sun: ' + p.a.toFixed(2) + ' AU</div>';
+    html += '<div>Orbital period: ' + Math.round(p.period) + ' days</div>';
+    html += '<div>Mass: ' + p.massEarth + '× Earth</div>';
+    html += '<div>Known moons shown: ' + (p.moons.length ? p.moons.map(function(m){return m.name;}).join(', ') : 'none') + '</div>';
+    html += '<div>Hill sphere (gravity of influence) radius: ~' + (p._hillAU*1000).toFixed(1) + ' million km — <b>' + (p._gravMesh.visible ? 'shown' : 'hidden') + '</b> (tap ' + p.name + ' again to toggle)</div>';
+    html += '<div class="note">Position is a simplified circular-orbit approximation from real orbital period and epoch angle — accurate for "roughly where is it," not precision ephemeris. Gravity field sphere shown at 12× true scale so it\'s visible. Tap any planet to independently show/hide its own field — multiple can be on at once.</div>';
+    document.getElementById('panelBody').innerHTML = html;
+    document.getElementById('panel').style.display = 'block';
+  }
+
+  // ---------------- Tap-anywhere real forecast (Open-Meteo, single point, 7 days) ----------------
+  var WEATHER_CODES = { // WMO weather codes, abbreviated
+    0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',
+    51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',
+    71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Rain showers',82:'Violent showers',
+    95:'Thunderstorm',96:'Thunderstorm w/ hail',99:'Severe thunderstorm w/ hail'
+  };
+
+  async function showLocationForecastPanel(lat, lon){
+    document.getElementById('panelBody').innerHTML =
+      '<h3>Forecast — ' + lat.toFixed(1) + '°, ' + lon.toFixed(1) + '°</h3><div>Loading 7-day forecast…</div>';
+    document.getElementById('panel').style.display = 'block';
+    try{
+      var url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat.toFixed(3) + "&longitude=" + lon.toFixed(3) +
+                "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max" +
+                "&current=temperature_2m,weather_code&timezone=auto&forecast_days=7";
+      var data = await throttledFetchJson(url, 9000);
+      var d = data.daily;
+      var html = '<h3>Forecast — ' + lat.toFixed(1) + '°, ' + lon.toFixed(1) + '°</h3>';
+      if(data.current){
+        html += '<div>Right now: <b>' + Math.round(data.current.temperature_2m) + '°C</b>, ' +
+                (WEATHER_CODES[data.current.weather_code] || 'n/a') + '</div><br>';
+      }
+      for(var i=0;i<d.time.length;i++){
+        var dayLabel = i===0 ? 'Today' : new Date(d.time[i]+'T00:00:00').toLocaleDateString(undefined,{weekday:'short'});
+        html += '<div>' + dayLabel + ': ' + Math.round(d.temperature_2m_min[i]) + '–' + Math.round(d.temperature_2m_max[i]) + '°C, ' +
+                (WEATHER_CODES[d.weather_code[i]] || 'n/a') + ', precip ' + d.precipitation_sum[i].toFixed(1) + 'mm, wind ' + Math.round(d.wind_speed_10m_max[i]) + 'km/h</div>';
+      }
+      html += '<div class="note">Real 7-day forecast from Open-Meteo for the exact point you tapped — this works anywhere on the globe, not just the coarse world-grid overlay layers.</div>';
+      document.getElementById('panelBody').innerHTML = html;
+    } catch(err){
+      document.getElementById('panelBody').innerHTML =
+        '<h3>Forecast — ' + lat.toFixed(1) + '°, ' + lon.toFixed(1) + '°</h3><div>Failed to load: ' + (err.message||'network error') + '</div>';
+    }
+  }
+
+  // ---------------- Weather overlay layers (current conditions, independently toggleable) ----------------
+  function disableLayer(layer){
+    activeLayers[layer] = false;
+    if(overlayMeshes[layer]){ scene.remove(overlayMeshes[layer]); delete overlayMeshes[layer]; }
+    if(layer === 'wind'){ disableWindParticles(); }
+    if(layer === 'radar'){ disableRadar(); }
+    checkLiveRefreshTimer();
+  }
+
+  function enableLayer(layer){
+    if(HAZARD_LAYERS[layer]){ enableHazard(layer); return; }
+    var infoEl = document.getElementById('info');
+    if(layer === 'wind'){
+      infoEl.textContent = "Loading wind vector data…";
+      enableWindParticles().then(function(){
+        infoEl.textContent = "Drag to rotate • Pinch to zoom";
+        markLiveUpdated();
+      }).catch(function(err){
+        console.error(err);
+        setInfoWarning('Wind failed to load: ' + (err.message || 'network error') + ' — tap Wind again to retry');
+        activeLayers['wind'] = false;
+        document.querySelector('.layer-btn[data-layer="wind"]').classList.remove('active');
+        checkLiveRefreshTimer();
+      });
+      checkLiveRefreshTimer();
+      return;
+    }
+    if(layer === 'radar'){
+      infoEl.textContent = "Loading Doppler radar…";
+      enableRadar().then(function(){
+        infoEl.textContent = "Drag to rotate • Pinch to zoom";
+        markLiveUpdated();
+      }).catch(function(err){
+        console.error(err);
+        setInfoWarning('Radar failed to load: ' + (err.message || 'network error') + ' — tap Radar again to retry');
+        activeLayers['radar'] = false;
+        document.querySelector('.layer-btn[data-layer="radar"]').classList.remove('active');
+        checkLiveRefreshTimer();
+      });
+      checkLiveRefreshTimer();
+      return;
+    }
+    infoEl.textContent = "Loading " + layer + " data…";
+    buildOverlayGrid(layer, null).then(function(){
+      infoEl.textContent = "Drag to rotate • Pinch to zoom";
+      markLiveUpdated();
+    }).catch(function(err){
+      console.error(err);
+      setInfoWarning(layer + ' failed to load: ' + (err.message || 'network error') + ' — tap it again to retry');
+      activeLayers[layer] = false;
+      document.querySelector('.layer-btn[data-layer="'+layer+'"]').classList.remove('active');
+      checkLiveRefreshTimer();
+    });
+    checkLiveRefreshTimer();
+  }
+
+  // Keeps whichever layers are toggled on fetching fresh data every LIVE_REFRESH_MS,
+  // so leaving the app open doesn't leave you looking at a stale snapshot.
+  function checkLiveRefreshTimer(){
+    var anyActive = Object.keys(activeLayers).some(function(l){ return activeLayers[l]; });
+    if(anyActive && !liveRefreshTimer){
+      liveRefreshTimer = setInterval(refreshAllActiveLayers, LIVE_REFRESH_MS);
+    } else if(!anyActive && liveRefreshTimer){
+      clearInterval(liveRefreshTimer);
+      liveRefreshTimer = null;
+      document.getElementById('liveUpdated').textContent = '';
+    }
+  }
+
+  function refreshAllActiveLayers(){
+    if(forecastPlaying) return; // don't fight with forecast playback
+    Object.keys(activeLayers).forEach(function(layer){
+      if(!activeLayers[layer]) return;
+      if(HAZARD_LAYERS[layer]){ loadHazard(layer).catch(function(){}); }
+      else if(layer === 'wind'){ refreshWindVectors(); }
+      else if(layer === 'radar'){ enableRadar().catch(function(){}); }
+      else { buildOverlayGrid(layer, null).catch(function(){}); }
+    });
+    markLiveUpdated();
+  }
+
+  function markLiveUpdated(){
+    var now = new Date();
+    var hh = String(now.getHours()).padStart(2,'0');
+    var mm = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('liveUpdated').textContent = '● Live — updated ' + hh + ':' + mm + ' (auto-refreshes every 10 min)';
+  }
+
+  // ---------------- Wind particle flow (adapted from ParticleFlow's physics loop) ----------------
+  // Canonical order carried over from the ParticleFlow app:
+  //   velocity += acceleration  ->  position += velocity  ->  color from velocity  ->  velocity *= drag
+  // Here "acceleration" each frame steers a particle's velocity toward the real wind vector
+  // sampled at its location, "drag" keeps speeds bounded, and color encodes speed exactly like
+  // ParticleFlow's cymatic/attractor visuals do.
+  var windParticles = null;      // {geo, mesh, particles:[{lat,lon,vLat,vLon,age,life}], grid, uComp, vComp}
+  var WIND_PARTICLE_COUNT = 700;
+  var windAnimHandleActive = false;
+
+  function windVectorAt(lat, lon, grid, uComp, vComp){
+    // Nearest-neighbor lookup on the coarse sample grid (fast, good enough at this resolution).
+    var best = 0, bestDist = Infinity;
+    for(var i=0;i<grid.latParam.length;i++){
+      var dlat = grid.latParam[i]-lat, dlon = grid.lonParam[i]-lon;
+      var d = dlat*dlat + dlon*dlon;
+      if(d < bestDist){ bestDist = d; best = i; }
+    }
+    return { u: uComp[best]||0, v: vComp[best]||0 };
+  }
+
+  async function enableWindParticles(){
+    var grid = buildGridPoints();
+    var r = await fetchWeatherGrid(grid, 'wind_speed_10m,wind_direction_10m');
+    if(r.failedChunks === r.totalChunks){
+      throw new Error((r.lastError && r.lastError.message) || 'all regions failed');
+    }
+    if(r.failedChunks > 0){
+      setInfoWarning('Wind: ' + r.failedChunks + '/' + r.totalChunks + ' regions failed to load — will retry on next refresh');
+    }
+    // Convert speed+compass-direction into simplified eastward(u)/northward(v) components.
+    // Meteorological convention: direction is where wind blows FROM, so the flow vector points
+    // 180° opposite — this is a simplified conversion for visualization, not navigation-grade.
+    var uComp = [], vComp = [], maxSpeed = 0.001;
+    r.results.forEach(function(d){
+      var spd = d ? d.wind_speed_10m : 0;
+      var dir = d ? d.wind_direction_10m : 0;
+      var rad = ((dir||0)+180) * Math.PI/180;
+      uComp.push((spd||0) * Math.sin(rad));
+      vComp.push((spd||0) * Math.cos(rad));
+      if(spd > maxSpeed) maxSpeed = spd;
+    });
+
+    var particles = [];
+    for(var i=0;i<WIND_PARTICLE_COUNT;i++){
+      particles.push(spawnWindParticle());
+    }
+
+    var posArr = new Float32Array(WIND_PARTICLE_COUNT*3);
+    var colArr = new Float32Array(WIND_PARTICLE_COUNT*3);
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(posArr,3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colArr,3));
+    var mat = new THREE.PointsMaterial({size:0.02, vertexColors:true, transparent:true, opacity:0.95, depthWrite:false});
+    var mesh = new THREE.Points(geo, mat);
+    mesh.rotation.copy(globe.rotation);
+    scene.add(mesh);
+
+    windParticles = { geo:geo, mesh:mesh, particles:particles, grid:grid, uComp:uComp, vComp:vComp, maxSpeed:maxSpeed };
+    overlayMeshes['wind'] = mesh; // so drag-rotation sync + clear-all still pick it up
+    windAnimHandleActive = true;
+  }
+
+  function spawnWindParticle(){
+    return {
+      lat: -80 + Math.random()*160,
+      lon: -180 + Math.random()*360,
+      vLat: 0, vLon: 0,
+      age: 0, life: 120 + Math.random()*120
+    };
+  }
+
+  function disableWindParticles(){
+    windAnimHandleActive = false;
+    if(windParticles){
+      scene.remove(windParticles.mesh);
+      windParticles = null;
+    }
+    delete overlayMeshes['wind'];
+  }
+
+  // ---------------- Doppler radar (RainViewer public API — real, no key required) ----------------
+  // RainViewer's global radar tiles are in a Web Mercator (slippy-map) projection, but our globe's
+  // UV mapping is equirectangular. Stretching the stitched Mercator image onto equirectangular UVs
+  // is a simplification: accurate near the equator/mid-latitudes, increasingly compressed toward the
+  // poles. That's an acceptable trade-off since radar coverage is sparse at the poles anyway, but
+  // it's worth knowing this isn't pixel-perfect placement at high latitudes.
+  var radarMesh = null;
+  var RADAR_ZOOM = 2; // 4x4 = 16 tiles covering the whole world at 256px each -> 1024x1024 canvas
+
+  async function enableRadar(){
+    var controller = new AbortController();
+    var timer = setTimeout(function(){controller.abort();}, 9000);
+    var res = await fetch('https://api.rainviewer.com/public/weather-maps.json', {signal:controller.signal});
+    clearTimeout(timer);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    var meta = await res.json();
+    var frames = meta.radar && meta.radar.past;
+    if(!frames || !frames.length) throw new Error('no radar frames available');
+    var latest = frames[frames.length-1];
+    var host = meta.host;
+    var tilesPerSide = Math.pow(2, RADAR_ZOOM);
+    var tileSize = 256;
+    var canvas = document.createElement('canvas');
+    canvas.width = tileSize*tilesPerSide;
+    canvas.height = tileSize*tilesPerSide;
+    var ctx = canvas.getContext('2d');
+
+    var loads = [];
+    for(var ty=0; ty<tilesPerSide; ty++){
+      for(var tx=0; tx<tilesPerSide; tx++){
+        loads.push(loadRadarTile(host, latest.path, RADAR_ZOOM, tx, ty, ctx, tx*tileSize, ty*tileSize, tileSize));
+      }
+    }
+    await Promise.all(loads);
+
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    var geo = new THREE.SphereGeometry(1.03, 64, 64);
+    var mat = new THREE.MeshBasicMaterial({map:tex, transparent:true, opacity:0.75, depthWrite:false});
+    if(radarMesh){ scene.remove(radarMesh); }
+    radarMesh = new THREE.Mesh(geo, mat);
+    radarMesh.rotation.copy(globe.rotation);
+    earthGroup.add(radarMesh);
+    overlayMeshes['radar'] = radarMesh;
+  }
+
+  function loadRadarTile(host, path, z, x, y, ctx, destX, destY, size){
+    return new Promise(function(resolve){
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function(){ try{ ctx.drawImage(img, destX, destY, size, size); }catch(e){} resolve(); };
+      img.onerror = function(){ resolve(); }; // missing tile (e.g. no radar coverage there) — leave transparent
+      img.src = host + path + '/' + size + '/' + z + '/' + x + '/' + y + '/2/1_1.png';
+    });
+  }
+
+  function disableRadar(){
+    if(radarMesh){ earthGroup.remove(radarMesh); radarMesh = null; }
+    delete overlayMeshes['radar'];
+  }
+
+  async function refreshWindVectors(){
+    if(!windParticles) return;
+    var grid = windParticles.grid;
+    try{
+      var r = await fetchWeatherGrid(grid, 'wind_speed_10m,wind_direction_10m');
+      if(r.failedChunks === r.totalChunks) throw new Error('all regions failed');
+      var uComp = [], vComp = [], maxSpeed = 0.001;
+      r.results.forEach(function(d){
+        var spd = d ? d.wind_speed_10m : 0;
+        var dir = d ? d.wind_direction_10m : 0;
+        var rad = ((dir||0)+180) * Math.PI/180;
+        uComp.push((spd||0) * Math.sin(rad));
+        vComp.push((spd||0) * Math.cos(rad));
+        if(spd > maxSpeed) maxSpeed = spd;
+      });
+      // Swap in place — particles already in flight keep moving, just get steered by fresh data
+      // on their next integration step instead of jumping/resetting.
+      windParticles.uComp = uComp;
+      windParticles.vComp = vComp;
+      windParticles.maxSpeed = maxSpeed;
+    } catch(err){
+      console.error('wind refresh failed', err);
+      setInfoWarning('Wind refresh failed — will retry in 10 min');
+    }
+  }
+
+  function stepWindParticles(){
+    if(!windParticles) return;
+    var wp = windParticles;
+    var pos = wp.geo.attributes.position.array;
+    var col = wp.geo.attributes.color.array;
+    var dragFactor = 0.90;
+    var accelFactor = 0.18;
+    var speedScale = 0.012; // degrees per frame per unit wind speed
+
+    for(var i=0;i<wp.particles.length;i++){
+      var p = wp.particles[i];
+      var wind = windVectorAt(p.lat, p.lon, wp.grid, wp.uComp, wp.vComp);
+      var targetVLon = wind.u * speedScale;
+      var targetVLat = wind.v * speedScale;
+
+      // velocity += acceleration  (steer current velocity toward the real wind vector)
+      p.vLon += (targetVLon - p.vLon) * accelFactor;
+      p.vLat += (targetVLat - p.vLat) * accelFactor;
+
+      // position += velocity
+      p.lon += p.vLon;
+      p.lat += p.vLat;
+
+      // velocity *= drag
+      p.vLon *= dragFactor;
+      p.vLat *= dragFactor;
+
+      p.age++;
+      if(p.age > p.life || p.lat > 85 || p.lat < -85){
+        var fresh = spawnWindParticle();
+        p.lat = fresh.lat; p.lon = fresh.lon; p.vLat = 0; p.vLon = 0; p.age = 0; p.life = fresh.life;
+      }
+      if(p.lon > 180) p.lon -= 360;
+      if(p.lon < -180) p.lon += 360;
+
+      var v3 = latLonToVec3(p.lat, p.lon, 1.02);
+      pos[i*3] = v3.x; pos[i*3+1] = v3.y; pos[i*3+2] = v3.z;
+
+      // color from velocity (speed) — same principle as ParticleFlow's velocity-driven color
+      var speed = Math.sqrt(p.vLat*p.vLat + p.vLon*p.vLon) / speedScale;
+      var norm = Math.min(speed / wp.maxSpeed, 1);
+      var c = colorForValue('wind', norm);
+      col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
+    }
+    wp.geo.attributes.position.needsUpdate = true;
+    wp.geo.attributes.color.needsUpdate = true;
+  }
+
+  function latLonToVec3(lat, lon, radius){
+    var phi = (90-lat) * (Math.PI/180);
+    var theta = (lon+180) * (Math.PI/180);
+    return new THREE.Vector3(
+      -radius*Math.sin(phi)*Math.cos(theta),
+      radius*Math.cos(phi),
+      radius*Math.sin(phi)*Math.sin(theta)
+    );
+  }
+
+  // Inverse of latLonToVec3 — recovers lat/lon from a point in the globe's own local
+  // (unrotated-texture) space, which is what globe.worldToLocal() gives us.
+  function latLonFromLocalPosition(p){
+    var r = p.length() || 1;
+    var phi = Math.acos(Math.max(-1, Math.min(1, p.y / r)));
+    var lat = 90 - phi * 180/Math.PI;
+    var theta = Math.atan2(p.z, -p.x);
+    var lon = theta * 180/Math.PI - 180;
+    if(lon < -180) lon += 360;
+    if(lon > 180) lon -= 360;
+    return { lat:lat, lon:lon };
+  }
+
+  function colorForValue(layer, v){
+    var c = new THREE.Color();
+    if(layer === 'temp'){ c.setHSL((1-v)*0.66, 1.0, 0.5); }
+    else if(layer === 'precip'){ c.setHSL(0.55, 0.9, 0.3+v*0.4); }
+    else if(layer === 'clouds'){ c.setHSL(0, 0, 0.5+v*0.5); }
+    else if(layer === 'pressure'){ c.setHSL(0.78*(1-v), 0.85, 0.5); }
+    else if(layer === 'wind'){ c.setHSL(0.38-v*0.38, 1.0, 0.5); }
+    else if(layer === 'lightning'){ c.setHSL(0.16+v*0.64, 1.0, 0.5); }
+    else { c.setHSL(0,0,0.6); }
+    return c;
+  }
+
+  var FIELD_MAP = {
+    temp: 'temperature_2m', precip: 'precipitation', clouds: 'cloud_cover',
+    pressure: 'surface_pressure', wind: 'wind_speed_10m', lightning: 'cape'
+  };
+
+  function buildGridPoints(){
+    var step = 15; // coarser than before — fewer points per request, more reliable on mobile networks
+    var lats = [], lons = [];
+    for(var la=-75; la<=75; la+=step) lats.push(la);
+    for(var lo=-180; lo<180; lo+=step) lons.push(lo);
+    var latParam = [], lonParam = [];
+    lats.forEach(function(la){ lons.forEach(function(lo){ latParam.push(la); lonParam.push(lo); }); });
+    return {latParam:latParam, lonParam:lonParam};
+  }
+
+  // Fetches a weather field across the grid in small parallel batches instead of one huge request —
+  // a single 400+ point request is fragile on real mobile connections (URL size, timeouts). Batching
+  // means a failed chunk only costs you that region, not the whole layer, and failures are reported
+  // instead of silently swallowed.
+  // ---------------- Shared request throttle (fixes HTTP 429 from Open-Meteo) ----------------
+  // Every weather fetch in the app funnels through here. Without this, turning on multiple
+  // layers (or a manual retry landing on top of the 10-min auto-refresh) could fire a dozen+
+  // requests at once, which is exactly what trips Open-Meteo's rate limiting. This caps how
+  // many requests are ever in flight at once, queues the rest, and auto-retries on a 429 with
+  // backoff instead of just failing and asking the person to tap again.
+  var MAX_CONCURRENT_FETCHES = 3;
+  var activeFetchCount = 0;
+  var fetchQueue = [];
+
+  function runQueuedFetch(){
+    if(activeFetchCount >= MAX_CONCURRENT_FETCHES || !fetchQueue.length) return;
+    var job = fetchQueue.shift();
+    activeFetchCount++;
+    job().finally(function(){
+      activeFetchCount--;
+      runQueuedFetch();
+    });
+  }
+
+  function throttledFetchJson(url, timeoutMs){
+    return new Promise(function(resolve, reject){
+      fetchQueue.push(async function(){
+        var maxRetries = 2;
+        for(var attempt=0; attempt<=maxRetries; attempt++){
+          var controller = new AbortController();
+          var timer = setTimeout(function(){ controller.abort(); }, timeoutMs || 9000);
+          try{
+            var res = await fetch(url, {signal: controller.signal});
+            clearTimeout(timer);
+            if(res.status === 429){
+              if(attempt < maxRetries){
+                var backoff = 1500 * Math.pow(2, attempt); // 1.5s, 3s
+                await new Promise(function(r){ setTimeout(r, backoff); });
+                continue;
+              }
+              throw new Error('HTTP 429 (rate limited) after retries');
+            }
+            if(!res.ok) throw new Error('HTTP ' + res.status);
+            var data = await res.json();
+            resolve(data);
+            return;
+          } catch(err){
+            clearTimeout(timer);
+            if(attempt >= maxRetries){ reject(err); return; }
+          }
+        }
+      });
+      runQueuedFetch();
+    });
+  }
+
+  async function fetchWeatherGrid(grid, fieldsCsv, timeoutMs){
+    var chunkSize = 90; // fewer, larger chunks -> fewer simultaneous requests -> less rate-limit pressure
+    var chunks = [];
+    for(var i=0;i<grid.latParam.length;i+=chunkSize){
+      chunks.push({ lat:grid.latParam.slice(i,i+chunkSize), lon:grid.lonParam.slice(i,i+chunkSize), offset:i });
+    }
+    var results = new Array(grid.latParam.length).fill(null);
+    var failedChunks = 0, lastError = null;
+
+    await Promise.all(chunks.map(async function(chunk){
+      try{
+        var url = "https://api.open-meteo.com/v1/forecast?latitude=" + chunk.lat.join(",") +
+                  "&longitude=" + chunk.lon.join(",") + "&current=" + fieldsCsv;
+        var data = await throttledFetchJson(url, timeoutMs);
+        var list = Array.isArray(data) ? data : [data];
+        list.forEach(function(d, idx){ results[chunk.offset+idx] = d.current || null; });
+      } catch(err){
+        failedChunks++;
+        lastError = err;
+        console.error('weather chunk failed', err);
+      }
+    }));
+
+    return { results:results, failedChunks:failedChunks, totalChunks:chunks.length, lastError:lastError };
+  }
+
+  async function buildOverlayGrid(layer, valuesOverride){
+    var grid = buildGridPoints();
+    var values;
+    if(valuesOverride){
+      values = valuesOverride;
+    } else {
+      var r = await fetchWeatherGrid(grid, FIELD_MAP[layer]);
+      if(r.failedChunks === r.totalChunks){
+        throw new Error((r.lastError && r.lastError.message) || 'all regions failed');
+      }
+      if(r.failedChunks > 0){
+        setInfoWarning(layer + ': ' + r.failedChunks + '/' + r.totalChunks + ' regions failed to load — will retry on next refresh');
+      }
+      values = r.results.map(function(d){ return d ? d[FIELD_MAP[layer]] : null; });
+    }
+    renderGrid(layer, grid, values);
+  }
+
+  function renderGrid(layer, grid, values){
+    var positions = [], colors = [];
+    var valid = values.filter(function(v){ return v!==null && v!==undefined; });
+    var min = Math.min.apply(null, valid), max = Math.max.apply(null, valid);
+    if(min===max) max = min+1;
+    for(var i=0;i<values.length;i++){
+      var v = values[i];
+      if(v===null || v===undefined) continue;
+      var norm = (v-min)/(max-min);
+      var p = latLonToVec3(grid.latParam[i], grid.lonParam[i], 1.02 + (LAYER_SHELL_OFFSET[layer]||0));
+      positions.push(p.x,p.y,p.z);
+      var col = colorForValue(layer, norm);
+      colors.push(col.r,col.g,col.b);
+    }
+    if(overlayMeshes[layer]){ scene.remove(overlayMeshes[layer]); }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors,3));
+    var mat = new THREE.PointsMaterial({size:0.035, vertexColors:true, transparent:true, opacity:0.9, depthWrite:false});
+    var mesh = new THREE.Points(geo, mat);
+    mesh.rotation.copy(globe.rotation);
+    scene.add(mesh);
+    overlayMeshes[layer] = mesh;
+  }
+
+  // When multiple layers are on at once, stack their point shells slightly apart so they don't z-fight.
+  var LAYER_SHELL_OFFSET = { temp:0, precip:0.01, clouds:0.02, pressure:0.03, wind:0.04, lightning:0.05 };
+
+  // ---------------- Forecast playback (real Open-Meteo hourly forecast, ~48h) ----------------
+  // Plays back every layer that's currently toggled on, in sync.
+  async function startForecast(){
+    // Wind is now a live particle flow (real-time, continuously animated) rather than a
+    // static snapshot, so it's excluded from hourly forecast playback.
+    var layers = Object.keys(activeLayers).filter(function(l){ return activeLayers[l] && l !== 'wind' && !HAZARD_LAYERS[l]; });
+    if(!layers.length){
+      document.getElementById('info').textContent = 'Turn on at least one layer (Temp/Precip/etc) before playing the forecast';
+      return;
+    }
+    var btn = document.getElementById('playBtn');
+    btn.textContent = '⏳ Loading…';
+    var grid = buildGridPoints();
+    try{
+      var perLayer = {};
+      await Promise.all(layers.map(async function(layer){
+        var field = FIELD_MAP[layer];
+        var chunkSize = 90;
+        var chunks = [];
+        for(var i=0;i<grid.latParam.length;i+=chunkSize){
+          chunks.push({ lat:grid.latParam.slice(i,i+chunkSize), lon:grid.lonParam.slice(i,i+chunkSize), offset:i });
+        }
+        var points = new Array(grid.latParam.length).fill(null);
+        var times = null;
+        await Promise.all(chunks.map(async function(chunk){
+          var url = "https://api.open-meteo.com/v1/forecast?latitude=" + chunk.lat.join(",") +
+                    "&longitude=" + chunk.lon.join(",") + "&hourly=" + field + "&forecast_hours=48";
+          var data = await throttledFetchJson(url, 9000);
+          var list = Array.isArray(data) ? data : [data];
+          list.forEach(function(d, idx){
+            points[chunk.offset+idx] = d;
+            if(!times && d.hourly && d.hourly.time) times = d.hourly.time;
+          });
+        }));
+        perLayer[layer] = { field:field, points:points, times: times || [] };
+      }));
+      forecastData = { grid:grid, layers:perLayer };
+      forecastIndex = 0;
+      forecastPlaying = true;
+      btn.textContent = '⏸ Pause';
+      btn.classList.add('active');
+      document.getElementById('forecastBar').style.display = 'block';
+      stepForecast();
+      forecastTimer = setInterval(stepForecast, 900);
+    } catch(err){
+      btn.textContent = '▶ Forecast';
+      setInfoWarning('Forecast failed to load: ' + (err.message || 'network error'));
+    }
+  }
+
+  function stepForecast(){
+    if(!forecastData) return;
+    var layerKeys = Object.keys(forecastData.layers);
+    var refTimes = null, totalHours = 0;
+    layerKeys.forEach(function(layer){
+      var ld = forecastData.layers[layer];
+      if(!ld.times.length) return;
+      if(!refTimes){ refTimes = ld.times; totalHours = ld.times.length; }
+      var values = ld.points.map(function(d){
+        return (d.hourly && d.hourly[ld.field]) ? d.hourly[ld.field][forecastIndex] : null;
+      });
+      renderGrid(layer, forecastData.grid, values);
+    });
+    var t = refTimes ? refTimes[forecastIndex] : null;
+    document.getElementById('forecastBar').textContent = 'Forecast: ' + (t ? t.replace('T',' ') + ' UTC' : '') +
+      '  (hour ' + (forecastIndex+1) + ' of ' + totalHours + ') — real Open-Meteo hourly forecast — layers: ' + layerKeys.join(', ');
+    forecastIndex = (forecastIndex + 1) % Math.max(totalHours,1);
+  }
+
+  function stopForecast(){
+    forecastPlaying = false;
+    if(forecastTimer){ clearInterval(forecastTimer); forecastTimer = null; }
+    var btn = document.getElementById('playBtn');
+    btn.textContent = '▶ Forecast';
+    btn.classList.remove('active');
+    document.getElementById('forecastBar').style.display = 'none';
+  }
+
+
+  // ================= NATURAL HAZARD LAYERS =================
+  // quakes: USGS M2.5+ past 7 days | storms: NWS active US warnings (tornado, severe t-storm, flash flood, tropical)
+  // cyclones: GDACS tropical cyclones (global) | volcanoes: USGS volcano alert levels + GDACS eruptions
+  var HAZARD_LAYERS = {
+    quakes:{label:'earthquakes'}, storms:{label:'storm warnings'},
+    cyclones:{label:'hurricanes/cyclones'}, volcanoes:{label:'volcano alerts'}
+  };
+  var hazardItems = {};
+  var GDACS_URL = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/EVENTS4APP';
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function alertColor(a){
+    a = String(a||'').toUpperCase();
+    return a==='RED' ? 0xff3b30 : (a==='ORANGE' ? 0xff9500 : (a==='YELLOW' ? 0xffd60a : 0x30d158));
+  }
+
+  async function gdacsEvents(type){
+    var d = await throttledFetchJson(GDACS_URL, 15000);
+    return (d.features||[]).filter(function(f){
+      return f.properties && f.properties.eventtype === type && f.geometry && f.geometry.type === 'Point';
+    });
+  }
+
+  async function loadHazard(layer){
+    var items = [];
+    if(layer === 'quakes'){
+      var q = await throttledFetchJson('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson', 12000);
+      (q.features||[]).forEach(function(f){
+        var c = f.geometry && f.geometry.coordinates; if(!c) return;
+        var m = f.properties.mag || 0, ageH = (Date.now()-f.properties.time)/3600000;
+        items.push({lat:c[1], lon:c[0], size:0.008+m*0.006,
+          color: ageH<24 ? 0xff3b30 : (ageH<72 ? 0xff9500 : 0xffd60a),
+          title:'M'+m.toFixed(1)+' — '+(f.properties.place||'earthquake'),
+          detail:new Date(f.properties.time).toLocaleString()+' • depth '+Math.round(c[2])+' km (red <24h, orange <72h, yellow older)'});
+      });
+    } else if(layer === 'storms'){
+      var url = 'https://api.weather.gov/alerts/active?event=Tornado%20Warning,Tornado%20Watch,Severe%20Thunderstorm%20Warning,Flash%20Flood%20Warning,Hurricane%20Warning,Tropical%20Storm%20Warning';
+      var s = await throttledFetchJson(url, 15000);
+      (s.features||[]).forEach(function(f){
+        var g = f.geometry; if(!g || !g.coordinates) return;
+        var ring = g.type==='Polygon' ? g.coordinates[0] : (g.type==='MultiPolygon' ? g.coordinates[0][0] : null);
+        if(!ring || !ring.length) return;
+        var sx=0, sy=0; ring.forEach(function(p){ sx+=p[0]; sy+=p[1]; });
+        var ev = f.properties.event || '';
+        var tor = ev.indexOf('Tornado')>=0;
+        items.push({lat:sy/ring.length, lon:sx/ring.length, size:tor?0.03:0.022,
+          color: tor ? 0xff2d55 : (/Hurricane|Tropical/.test(ev) ? 0xbf5af2 : (ev.indexOf('Flood')>=0 ? 0x32ade6 : 0xffcc00)),
+          title:ev, detail:(f.properties.areaDesc||'').slice(0,140)+' • expires '+(f.properties.expires ? new Date(f.properties.expires).toLocaleString() : 'unknown')});
+      });
+    } else if(layer === 'cyclones'){
+      (await gdacsEvents('TC')).forEach(function(f){
+        var p = f.properties, sev = p.severitydata && p.severitydata.severitytext;
+        items.push({lat:f.geometry.coordinates[1], lon:f.geometry.coordinates[0], size:0.04, color:alertColor(p.alertlevel),
+          title:(p.name || 'Tropical cyclone')+(p.country ? ' — '+p.country : ''),
+          detail:(sev || '')+' • GDACS alert level: '+(p.alertlevel||'n/a')});
+      });
+    } else if(layer === 'volcanoes'){
+      try{
+        var v = await throttledFetchJson('https://volcanoes.usgs.gov/vsc/api/volcanoApi/vhpstatus', 15000);
+        (Array.isArray(v) ? v : []).forEach(function(x){
+          var la = x.lat!=null ? x.lat : x.latitude, lo = x.long!=null ? x.long : (x.lng!=null ? x.lng : x.longitude);
+          var cc = String(x.colorCode||'').toUpperCase();
+          if(la==null || lo==null || cc==='GREEN' || cc==='UNASSIGNED' || !cc) return; // only volcanoes above normal
+          items.push({lat:+la, lon:+lo, size:0.03, color:alertColor(cc),
+            title:(x.vName||'Volcano')+' — '+cc, detail:'USGS alert level: '+(x.alertLevel||'n/a')});
+        });
+      } catch(e){ console.error('USGS volcano feed failed', e); }
+      try{
+        (await gdacsEvents('VO')).forEach(function(f){
+          var p = f.properties;
+          items.push({lat:f.geometry.coordinates[1], lon:f.geometry.coordinates[0], size:0.03, color:alertColor(p.alertlevel),
+            title:(p.name || 'Volcano')+(p.country ? ' — '+p.country : ''), detail:'GDACS alert level: '+(p.alertlevel||'n/a')});
+        });
+      } catch(e){ console.error('GDACS volcano feed failed', e); }
+    }
+    renderHazard(layer, items);
+    return items.length;
+  }
+
+  function renderHazard(layer, items){
+    if(!activeLayers[layer]) return; // toggled off while loading
+    if(overlayMeshes[layer]){ scene.remove(overlayMeshes[layer]); }
+    var grp = new THREE.Group(), geo = new THREE.SphereGeometry(1, 8, 8), mats = {};
+    items.forEach(function(it){
+      var m = mats[it.color] || (mats[it.color] = new THREE.MeshBasicMaterial({color:it.color, transparent:true, opacity:0.9, depthWrite:false}));
+      var mesh = new THREE.Mesh(geo, m);
+      mesh.position.copy(latLonToVec3(it.lat, it.lon, 1.025));
+      mesh.scale.setScalar(it.size);
+      grp.add(mesh);
+    });
+    grp.rotation.copy(globe.rotation);
+    grp.visible = (mode === 'earth');
+    scene.add(grp);
+    overlayMeshes[layer] = grp;
+    hazardItems[layer] = items;
+  }
+
+  function enableHazard(layer){
+    var infoEl = document.getElementById('info'), label = HAZARD_LAYERS[layer].label;
+    infoEl.textContent = 'Loading ' + label + '…';
+    loadHazard(layer).then(function(n){
+      markLiveUpdated();
+      setInfoWarning(n===0 ? 'No ' + label + ' reported right now' : n + ' ' + label + ' shown — tap a marker for details', 5000);
+    }).catch(function(err){
+      console.error(err);
+      setInfoWarning(label + ' failed to load: ' + (err.message || 'network error') + ' — tap it again to retry');
+      activeLayers[layer] = false;
+      var b = document.querySelector('.layer-btn[data-layer="'+layer+'"]'); if(b) b.classList.remove('active');
+      checkLiveRefreshTimer();
+    });
+    checkLiveRefreshTimer();
+  }
+
+  // Tap near a hazard marker -> show its details instead of the point forecast.
+  function hazardTapped(lat, lon){
+    var best = null, bd = 1e9, thr = 4 * (camera.position.z / 2.6);
+    Object.keys(hazardItems).forEach(function(layer){
+      if(!activeLayers[layer]) return;
+      hazardItems[layer].forEach(function(it){
+        var dLat = it.lat-lat, dLon = ((it.lon-lon+540)%360)-180;
+        var d = Math.sqrt(dLat*dLat + dLon*dLon*Math.pow(Math.cos(lat*Math.PI/180),2));
+        if(d < thr && d < bd){ bd = d; best = it; }
+      });
+    });
+    if(!best) return false;
+    document.getElementById('panelBody').innerHTML = '<h3>' + esc(best.title) + '</h3><div>' + esc(best.detail) + '</div>' +
+      '<div class="note">Informational only. For life-safety alerts rely on official sources: NWS, USGS, local emergency management, and Wireless Emergency Alerts.</div>';
+    document.getElementById('panel').style.display = 'block';
+    return true;
+  }
+
+
+  // ================= BUOYS + WILDFIRES (+ lightning risk via the weather grid) =================
+  // buoys: NOAA NDBC latest observations | wildfires: NASA EONET open wildfire events (global, no key)
+  // lightning: modeled storm energy (CAPE) from Open-Meteo, shown with the grid layers (not live strike sensors)
+  var NDBC_URL = 'https://www.ndbc.noaa.gov/data/latest_obs/latest_obs.txt';
+  HAZARD_LAYERS.buoys = {label:'ocean buoys'};
+  HAZARD_LAYERS.wildfires = {label:'wildfires'};
+
+  async function fetchText(url, ms){
+    var c = new AbortController(), tm = setTimeout(function(){ c.abort(); }, ms || 12000);
+    try{
+      var r = await fetch(url, {signal:c.signal});
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.text();
+    } finally { clearTimeout(tm); }
+  }
+
+  var loadHazardBase = loadHazard;
+  loadHazard = async function(layer){
+    if(layer !== 'buoys' && layer !== 'wildfires') return loadHazardBase(layer);
+    var items = [];
+    if(layer === 'buoys'){
+      var txt = await fetchText(NDBC_URL, 15000);
+      txt.split('\n').forEach(function(line){
+        if(!line || line[0] === '#') return;
+        var a = line.trim().split(/\s+/);
+        if(a.length < 19) return;
+        var lat = +a[1], lon = +a[2];
+        if(isNaN(lat) || isNaN(lon)) return;
+        var wv = a[11]==='MM' ? null : +a[11], wt = a[18]==='MM' ? null : +a[18], ws = a[9]==='MM' ? null : +a[9];
+        items.push({lat:lat, lon:lon, size:0.016,
+          color: wv==null ? 0x8e8e93 : (wv<1 ? 0x32ade6 : (wv<2.5 ? 0x30d158 : (wv<4 ? 0xffcc00 : 0xff3b30))),
+          title:'Buoy ' + a[0],
+          detail:'Waves: ' + (wv==null ? 'n/a' : wv + ' m') + ' • Water: ' + (wt==null ? 'n/a' : wt + ' C') +
+                 ' • Wind: ' + (ws==null ? 'n/a' : ws + ' m/s') + ' • ' + a[3] + '-' + a[4] + '-' + a[5] + ' ' + a[6] + ':' + a[7] + ' UTC (blue <1 m, green <2.5, yellow <4, red higher)'});
+      });
+    } else {
+      var d = await throttledFetchJson('https://eonet.gsfc.nasa.gov/api/v3/events?category=wildfires&status=open&limit=300', 15000);
+      (d.events || []).forEach(function(e){
+        var g = e.geometry && e.geometry[e.geometry.length - 1];
+        if(!g || g.type !== 'Point') return;
+        items.push({lat:g.coordinates[1], lon:g.coordinates[0], size:0.022, color:0xff6b00,
+          title:e.title || 'Wildfire', detail:'Last reported ' + new Date(g.date).toLocaleString() + ' • source: NASA EONET'});
+      });
+    }
+    renderHazard(layer, items);
+    return items.length;
+  };
+
+  init();
+})();
+</script>
+</body>
+</html>
