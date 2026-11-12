@@ -1,1414 +1,1202 @@
-import React, { useState, useEffect } from 'react';
-import {
-  AlertTriangle,
-  Eye,
-  Car,
-  Navigation,
-  Zap,
-  Shield,
-  Award,
-  Settings,
-  Brain,
-  Heart,
-  Clock,
-  MapPin,
-  Activity,
-  CheckCircle,
-  XCircle,
-  AlertOctagon,
-  RotateCcw,
-  Cpu,
-  Radio,
-  Gauge,
-  Sliders
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS — Automotive & Enterprise Intelligence Suite</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel for in-browser JSX compilation -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-// ============================================================================
-// IMPAIRMENT SCENARIO PROFILES DATABASE (6 Physiological & Cognitive Profiles)
-// ============================================================================
-const IMPAIRMENT_SCENARIOS = {
-  alcohol: {
-    id: 'alcohol',
-    label: 'Alcohol (Ethanol)',
-    category: 'CNS Depressant',
-    badgeColor: 'text-amber-400 border-amber-500/50 bg-amber-950/40',
-    summary: 'Slurred speech, delayed reaction time, lane drift, and speed misjudgment.',
-    detectionMetrics: [
-      { label: 'Gait & Balance', value: 'Unstable Sway', severity: 'high' },
-      { label: 'Motor Control', value: 'Delayed (-38%)', severity: 'high' },
-      { label: 'Voice & Breath', value: 'Slurred / VOC+', severity: 'medium' },
-      { label: 'Eye Tracking', value: 'Horizontal Nystagmus', severity: 'high' }
-    ],
-    journeyTimeline: [
-      { time: '11:34 PM', event: 'Driver approached vehicle', status: 'impaired', location: 'Lounge parking lot' },
-      { time: '11:35 PM', event: 'Alcohol impairment signature detected', status: 'alert', location: 'Cabin entry' },
-      { time: '11:36 PM', event: 'Guardian Protocol engaged seamlessly', status: 'protected', location: 'Departure' },
-      { time: '11:38 PM', event: 'Corrected un-signaled lane drift', status: 'corrected', location: 'Main St' },
-      { time: '11:42 PM', event: 'Pedestrian unseen by driver — auto-braked', status: 'prevented', location: 'Oak St crossing' },
-      { time: '11:45 PM', event: 'Capped 65 MPH surge in 35 MPH zone', status: 'corrected', location: 'Highway ramp' },
-      { time: '11:51 PM', event: 'Safe arrival home', status: 'success', location: 'Home driveway' }
-    ],
-    debriefMetrics: {
-      reactionTime: 340,
-      motorControl: 62,
-      decisionQuality: 48,
-      visualAcuity: 71,
-      judgement: 35
-    },
-    interventions: [
-      {
-        title: 'CRITICAL: Pedestrian Not Seen',
-        detail: 'At 11:42 PM on Oak Street, you did not see a pedestrian crossing while looking down at the console. Emergency braking engaged.',
-        risk: 'Without intervention: 94% probability of fatal collision',
-        severity: 'high'
-      },
-      {
-        title: 'Speed Surge Dampening',
-        detail: 'Attempted 65 MPH in a 35 MPH zone. Smoothly limited throttle to 38 MPH with progressive pedal resistance.',
-        risk: 'Without intervention: High-speed loss of control',
-        severity: 'medium'
-      },
-      {
-        title: 'Center-Line Drift Correction',
-        detail: 'Drifted toward oncoming traffic 3 times. Applied subtle torque-vector steering correction with natural road-feel feedback.',
-        risk: 'Without intervention: Head-on collision risk',
-        severity: 'medium'
-      }
-    ],
-    debriefNote:
-      'Alcohol impairs prefrontal judgment and visual tracking at a biochemical level. Guardian Protocol preserved your dignity while preventing a tragedy.'
-  },
-
-  cannabis: {
-    id: 'cannabis',
-    label: 'Cannabis / Marijuana (THC)',
-    category: 'Psychoactive / Perceptual',
-    badgeColor: 'text-emerald-400 border-emerald-500/50 bg-emerald-950/40',
-    summary: 'Altered time/distance perception, delayed tracking, and intersection micro-hesitation.',
-    detectionMetrics: [
-      { label: 'Time/Space Depth', value: 'Distorted (-42%)', severity: 'high' },
-      { label: 'Motor Control', value: 'Slowed Cadence', severity: 'medium' },
-      { label: 'Ocular Saccades', value: 'Delayed Lock-On', severity: 'medium' },
-      { label: 'Pupilometry', value: 'Dilated / Sluggish', severity: 'high' }
-    ],
-    journeyTimeline: [
-      { time: '10:12 PM', event: 'Driver entered vehicle cabin', status: 'impaired', location: 'Vista Overlook' },
-      { time: '10:13 PM', event: 'Perceptual & tracking latency detected', status: 'alert', location: 'Ignition sequence' },
-      { time: '10:14 PM', event: 'Guardian Protocol active (Perceptual Assist)', status: 'protected', location: 'Ridge Rd' },
-      { time: '10:19 PM', event: 'Misjudged oncoming gap at left turn', status: 'prevented', location: '4th & Pine Ave' },
-      { time: '10:24 PM', event: 'Corrected late braking for red signal', status: 'corrected', location: 'Market Blvd' },
-      { time: '10:31 PM', event: 'Stabilized following distance on interstate', status: 'corrected', location: 'I-5 North' },
-      { time: '10:39 PM', event: 'Safe arrival home', status: 'success', location: 'Home driveway' }
-    ],
-    debriefMetrics: {
-      reactionTime: 265,
-      motorControl: 74,
-      decisionQuality: 56,
-      visualAcuity: 68,
-      judgement: 52
-    },
-    interventions: [
-      {
-        title: 'CRITICAL: Left-Turn Gap Misjudgment',
-        detail: 'At 4th & Pine Ave, you initiated a left turn across oncoming traffic moving at 45 MPH, misjudging closing distance by 140 feet.',
-        risk: 'Without intervention: 89% probability of T-bone impact',
-        severity: 'high'
-      },
-      {
-        title: 'Delayed Red-Light Deceleration',
-        detail: 'Visual recognition of the red traffic signal was delayed by 1.9 seconds. Progressive regenerative braking brought the vehicle to a smooth stop.',
-        risk: 'Without intervention: Intersection red-light violation',
-        severity: 'medium'
-      },
-      {
-        title: 'Lane Weaving Stabilization',
-        detail: 'Maintained lane centering during prolonged attention fixation on roadside lights.',
-        risk: 'Without intervention: Side-swipe collision risk',
-        severity: 'medium'
-      }
-    ],
-    debriefNote:
-      'High-potency THC alters spatial depth perception and divided-attention processing even when a driver feels calm and cautious.'
-  },
-
-  opioids_illicit: {
-    id: 'opioids_illicit',
-    label: 'Fentanyl / Heroin (Illicit Opioids)',
-    category: 'Severe CNS & Respiratory Depressant',
-    badgeColor: 'text-rose-400 border-rose-500/50 bg-rose-950/40',
-    summary: 'Sudden micro-sleep nods, severe pinpoint pupil constriction, and uncommanded lane drift.',
-    detectionMetrics: [
-      { label: 'Head Posture', value: 'Forward Nodding', severity: 'high' },
-      { label: 'Motor Control', value: 'Critical Drop (-71%)', severity: 'high' },
-      { label: 'Respiratory Rate', value: 'Suppressed (8 rpm)', severity: 'high' },
-      { label: 'Pupilometry', value: 'Pinpoint Miosis', severity: 'high' }
-    ],
-    journeyTimeline: [
-      { time: '01:18 AM', event: 'Driver slumped briefly at wheel', status: 'impaired', location: 'Industrial Ave' },
-      { time: '01:18 AM', event: 'Critical CNS sedation & miosis detected', status: 'alert', location: 'Biometric scan' },
-      { time: '01:19 AM', event: 'Immediate Full-Authority Guardian Takeover', status: 'protected', location: 'Industrial Ave' },
-      { time: '01:22 AM', event: 'Driver nodded off — prevented barrier strike', status: 'prevented', location: 'River Bridge' },
-      { time: '01:26 AM', event: 'Maintained airway-safe upright seat angle', status: 'corrected', location: 'Harbor Pkwy' },
-      { time: '01:30 AM', event: 'Navigated construction chicane autonomously', status: 'corrected', location: 'Cedar St' },
-      { time: '01:35 AM', event: 'Safe arrival & wellness check alert', status: 'success', location: 'Home driveway' }
-    ],
-    debriefMetrics: {
-      reactionTime: 520,
-      motorControl: 29,
-      decisionQuality: 22,
-      visualAcuity: 41,
-      judgement: 19
-    },
-    interventions: [
-      {
-        title: 'CRITICAL: Loss of Consciousness on Bridge',
-        detail: 'At 01:22 AM, eyelid closure exceeded 4.2 seconds as the vehicle approached a concrete bridge abutment at 48 MPH. Guardian assumed 100% steering and braking.',
-        risk: 'Without intervention: 98% probability of fatal barrier crash',
-        severity: 'high'
-      },
-      {
-        title: 'Zero-Throttle Drift Protection',
-        detail: 'Foot slipped off accelerator while hands released steering wheel pressure. Full autonomous lane-keeping engaged seamlessly.',
-        risk: 'Without intervention: Uncontrolled departure into oncoming lanes',
-        severity: 'high'
-      },
-      {
-        title: 'Biometric Wellness Monitoring',
-        detail: 'Cabin climate cooled and biometric vitals monitored continuously until safe arrival and trusted-contact notification.',
-        risk: 'Without intervention: Unmonitored medical emergency',
-        severity: 'medium'
-      }
-    ],
-    debriefNote:
-      'Potent opioids suppress central nervous system wakefulness without warning. You survived tonight because autonomous intervention bridged the gap.'
-  },
-
-  vicodin: {
-    id: 'vicodin',
-    label: 'Vicodin / Hydrocodone (Rx Opioid)',
-    category: 'Prescription Sedative Analgesic',
-    badgeColor: 'text-purple-400 border-purple-500/50 bg-purple-950/40',
-    summary: 'Drowsy nodding, slowed peripheral scanning, and delayed braking response.',
-    detectionMetrics: [
-      { label: 'Eyelid Closure', value: 'PERCLOS Elevated', severity: 'high' },
-      { label: 'Motor Control', value: 'Sluggish (-44%)', severity: 'medium' },
-      { label: 'Peripheral Scan', value: 'Narrowed (-50%)', severity: 'high' },
-      { label: 'Reaction Latency', value: '+1.6s Delay', severity: 'high' }
-    ],
-    journeyTimeline: [
-      { time: '06:45 PM', event: 'Driver departed post-procedure / pharmacy', status: 'impaired', location: 'Medical Plaza' },
-      { time: '06:46 PM', event: 'Sedative drowsiness & slow blink detected', status: 'alert', location: 'Exit ramp' },
-      { time: '06:47 PM', event: 'Guardian Protocol active (Drowsy Shield)', status: 'protected', location: 'State Route 9' },
-      { time: '06:52 PM', event: 'Stopped vehicle before rear-ending stopped SUV', status: 'prevented', location: 'Elm St queue' },
-      { time: '06:58 PM', event: 'Prevented right-shoulder drift during nod', status: 'corrected', location: 'Valley Rd' },
-      { time: '07:05 PM', event: 'Safe arrival home', status: 'success', location: 'Home driveway' }
-    ],
-    debriefMetrics: {
-      reactionTime: 390,
-      motorControl: 55,
-      decisionQuality: 46,
-      visualAcuity: 60,
-      judgement: 42
-    },
-    interventions: [
-      {
-        title: 'CRITICAL: Stopped Traffic Rear-End Prevented',
-        detail: 'Traffic ahead came to a standstill at Elm St while your eyes were half-closed. Pre-collision braking engaged 1.8 seconds before your foot reached the pedal.',
-        risk: 'Without intervention: 91% probability of high-impact rear collision',
-        severity: 'high'
-      },
-      {
-        title: 'Shoulder Departure Recovery',
-        detail: 'Vehicle drifted 3 feet across the white fog line toward a drainage ditch. Gentle steering torque returned vehicle to lane center.',
-        risk: 'Without intervention: Rollover or roadside impact',
-        severity: 'medium'
-      },
-      {
-        title: 'Peripheral Cyclist Yield',
-        detail: 'Detected a cyclist in your blind spot during a right merge and held lane clearance automatically.',
-        risk: 'Without intervention: Side-impact collision with cyclist',
-        severity: 'medium'
-      }
-    ],
-    debriefNote:
-      'Even taken exactly as prescribed, hydrocodone causes sudden waves of sedation that make highway speeds dangerous.'
-  },
-
-  meth: {
-    id: 'meth',
-    label: 'Methamphetamine (CNS Stimulant)',
-    category: 'Hyper-Arousal & Tunnel Vision',
-    badgeColor: 'text-cyan-400 border-cyan-500/50 bg-cyan-950/40',
-    summary: 'Erratic aggressive acceleration, severe tunnel vision, jerky over-corrections, and rapid pulse.',
-    detectionMetrics: [
-      { label: 'Steering Torque', value: 'Erratic / Jerky', severity: 'high' },
-      { label: 'Visual Field', value: 'Severe Tunnel Vision', severity: 'high' },
-      { label: 'Biometric Pulse', value: '148 BPM / Agitated', severity: 'high' },
-      { label: 'Throttle Profile', value: 'Hyper-Aggressive', severity: 'high' }
-    ],
-    journeyTimeline: [
-      { time: '02:40 AM', event: 'Rapid erratic entry & aggressive throttle', status: 'impaired', location: 'Eastside Station' },
-      { time: '02:41 AM', event: 'Hyper-arousal & erratic steering detected', status: 'alert', location: 'Broadway' },
-      { time: '02:41 AM', event: 'Guardian Protocol engaged (Stability Governor)', status: 'protected', location: 'Broadway' },
-      { time: '02:44 AM', event: 'Dampened 82 MPH surge & jerky lane weave', status: 'corrected', location: 'Crosstown Expwy' },
-      { time: '02:48 AM', event: 'Blocked blind-spot cut-off into semi-truck', status: 'prevented', location: 'Merge Lane 4' },
-      { time: '02:53 AM', event: 'Smoothed panic-braking over-correction', status: 'corrected', location: '7th Ave' },
-      { time: '02:59 AM', event: 'Safe arrival home', status: 'success', location: 'Home driveway' }
-    ],
-    debriefMetrics: {
-      reactionTime: 145,
-      motorControl: 38,
-      decisionQuality: 28,
-      visualAcuity: 44,
-      judgement: 24
-    },
-    interventions: [
-      {
-        title: 'CRITICAL: High-Speed Semi-Truck Cut-Off Prevented',
-        detail: 'Due to stimulant tunnel vision, you attempted an abrupt 78 MPH lane change directly into the side of a commercial tractor-trailer.',
-        risk: 'Without intervention: 96% probability of fatal underride crash',
-        severity: 'high'
-      },
-      {
-        title: 'Steering Oscillation Dampening',
-        detail: 'Filtered out rapid, jerky steering-wheel over-corrections that would have induced a high-speed spinout.',
-        risk: 'Without intervention: Loss of directional stability',
-        severity: 'high'
-      },
-      {
-        title: 'Throttle & Tailgating Governor',
-        detail: 'Maintained a safe 2.5-second following buffer despite repeated full-throttle inputs.',
-        risk: 'Without intervention: Multi-vehicle chain collision',
-        severity: 'medium'
-      }
-    ],
-    debriefNote:
-      'Stimulants create a false illusion of hyper-sharp reflexes while destroying peripheral awareness, impulse control, and smooth motor execution.'
-  },
-
-  fatigue: {
-    id: 'fatigue',
-    label: 'Severe Fatigue / Microsleep',
-    category: 'Acute Cognitive Exhaustion',
-    badgeColor: 'text-sky-400 border-sky-500/50 bg-sky-950/40',
-    summary: 'Heavy eyelid closure, zero steering micro-adjustments, and highway hypnosis.',
-    detectionMetrics: [
-      { label: 'Blink Duration', value: 'Slow (>650ms)', severity: 'high' },
-      { label: 'Steering Micro-Input', value: 'Flatlined (4.5s)', severity: 'high' },
-      { label: 'Head Tilt Angle', value: '18° Forward Drop', severity: 'medium' },
-      { label: 'Cognitive Vigilance', value: 'Depleted (31%)', severity: 'high' }
-    ],
-    journeyTimeline: [
-      { time: '04:15 AM', event: 'Double-shift departure detected', status: 'impaired', location: 'Logistics Hub' },
-      { time: '04:22 AM', event: 'Microsleep episode & steering flatline detected', status: 'alert', location: 'Milepost 14' },
-      { time: '04:22 AM', event: 'Guardian Protocol engaged seamlessly', status: 'protected', location: 'Milepost 14' },
-      { time: '04:29 AM', event: 'Prevented median guardrail strike during 3s nod', status: 'prevented', location: 'Milepost 21' },
-      { time: '04:36 AM', event: 'Executed safe highway exit & urban turns', status: 'corrected', location: 'Exit 24B' },
-      { time: '04:44 AM', event: 'Safe arrival home', status: 'success', location: 'Home driveway' }
-    ],
-    debriefMetrics: {
-      reactionTime: 360,
-      motorControl: 58,
-      decisionQuality: 45,
-      visualAcuity: 62,
-      judgement: 40
-    },
-    interventions: [
-      {
-        title: 'CRITICAL: 3.4-Second Microsleep at 65 MPH',
-        detail: 'At Milepost 21, your brain entered brief sleep while traveling 95 feet per second toward the steel center median. Guardian steered cleanly through the curve.',
-        risk: 'Without intervention: 92% probability of high-speed median impact',
-        severity: 'high'
-      },
-      {
-        title: 'Highway Hypnosis Exit Guidance',
-        detail: 'Managed speed reduction and signaling at Exit 24B when delayed cognitive processing missed the deceleration zone.',
-        risk: 'Without intervention: Ramp departure crash',
-        severity: 'medium'
-      }
-    ],
-    debriefNote:
-      'Driving after 18+ hours awake produces cognitive impairment equivalent to a 0.08% blood alcohol level. Rest is non-negotiable.'
-  }
-};
-
-// ============================================================================
-// MODULE 1: NEXUS COMMAND TELEMETRY (UNIFIED DASHBOARD)
-// ============================================================================
-function NexusCommandTelemetry() {
-  const [securityStatus, setSecurityStatus] = useState('LOCKED');
-  const [protocolSync, setProtocolSync] = useState(97);
-  const [systemAlert, setSystemAlert] = useState(false);
-  const [syncHistory, setSyncHistory] = useState([88, 91, 94, 92, 96, 95, 97]);
-  const [coreLoads, setCoreLoads] = useState([52, 68, 81, 59, 74]);
-
-  // Automatic background telemetry heartbeat
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const statuses = ['LOCKED', 'VERIFYING', 'LOCKED', 'SCANNING', 'LOCKED'];
-      setSecurityStatus(statuses[Math.floor(Math.random() * statuses.length)]);
-
-      const nextSync = 93 + Math.floor(Math.random() * 7);
-      setProtocolSync(nextSync);
-      setSyncHistory(prev => [...prev.slice(1), nextSync]);
-
-      setCoreLoads(prev =>
-        prev.map(val => {
-          const delta = Math.floor(Math.random() * 17) - 8;
-          return Math.min(98, Math.max(35, val + delta));
-        })
-      );
-    }, 3500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const triggerAnomalyDemo = () => {
-    setSystemAlert(true);
-    setSecurityStatus('ISOLATING');
-    setTimeout(() => {
-      setSystemAlert(false);
-      setSecurityStatus('LOCKED');
-    }, 4000);
-  };
-
-  // Build SVG polyline points for Protocol Sync History
-  const width = 560;
-  const height = 140;
-  const padX = 24;
-  const padY = 18;
-  const points = syncHistory
-    .map((val, idx) => {
-      const x = padX + (idx / (syncHistory.length - 1)) * (width - padX * 2);
-      const y = height - padY - ((val - 75) / 25) * (height - padY * 2);
-      return `${x},${y}`;
-    })
-    .join(' ');
-
-  const areaPoints = `${padX},${height - padY} ${points} ${width - padX},${height - padY}`;
-  const timeLabels = ['-6m', '-5m', '-4m', '-3m', '-2m', '-1m', 'NOW'];
-
-  return (
-    <div className="space-y-6">
-      {/* Pulsing Neural Sync HUD Banner */}
-      <div className="relative rounded-2xl bg-gradient-to-br from-[#132E2E] via-[#0D1F1F] to-[#0A1628] border border-cyan-400/30 p-8 overflow-hidden shadow-[0_0_35px_rgba(0,255,255,0.15)]">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Concentric Pulsing Core Ring */}
-          <div className="relative w-44 h-44 flex items-center justify-center flex-shrink-0">
-            <div className="absolute inset-0 rounded-full border-2 border-cyan-400/50 animate-ping" style={{ animationDuration: '3s' }} />
-            <div className="absolute inset-3 rounded-full border-2 border-cyan-300/60 animate-pulse" />
-            <div className="absolute inset-7 rounded-full border border-teal-400/40 bg-cyan-950/50 backdrop-blur-sm flex flex-col items-center justify-center text-center p-2 shadow-[inset_0_0_25px_rgba(0,255,255,0.25)]">
-              <Cpu className="w-7 h-7 text-cyan-300 mb-1" />
-              <span className="text-[11px] font-bold tracking-widest text-cyan-200 uppercase">Neural Sync</span>
-              <span className="text-lg font-extrabold text-cyan-400">{protocolSync}%</span>
-            </div>
-          </div>
-
-          {/* Center Architectural Readout */}
-          <div className="flex-1 text-center md:text-left space-y-2">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-xs font-semibold tracking-widest uppercase">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <span>EIAIO Sovereign Core • Online</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-white uppercase">
-              Neural Sync Active
-            </h2>
-            <p className="text-sm text-cyan-100/75 max-w-xl">
-              Unified multi-modal telemetry across vehicle edge nodes, Guardian Protocol intervention engines, and encrypted local memory stores.
-            </p>
-          </div>
-
-          {/* Presenter Override Controls */}
-          <div className="flex flex-col gap-2.5 w-full md:w-auto">
-            <button
-              onClick={triggerAnomalyDemo}
-              className="px-4 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/50 text-rose-200 text-xs font-bold tracking-wider uppercase transition flex items-center justify-center space-x-2"
-            >
-              <AlertTriangle className="w-4 h-4 text-rose-400" />
-              <span>Simulate Anomaly</span>
-            </button>
-            <button
-              onClick={() => {
-                setSystemAlert(false);
-                setSecurityStatus('LOCKED');
-                setProtocolSync(99);
-              }}
-              className="px-4 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-200 text-xs font-bold tracking-wider uppercase transition flex items-center justify-center space-x-2"
-            >
-              <Shield className="w-4 h-4 text-cyan-300" />
-              <span>Verify Lock</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Live Telemetry Status Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl bg-[#0D1F1F]/90 border border-cyan-400/25 p-5 text-center shadow-lg">
-          <div className="text-xs font-semibold tracking-widest text-teal-300/80 uppercase mb-2">
-            Security Status
-          </div>
-          <div className="text-2xl font-extrabold tracking-wider text-cyan-300">
-            {securityStatus}
-          </div>
-          <div className="text-[11px] text-cyan-100/50 mt-1">Knox Hardware Enclave</div>
-        </div>
-
-        <div className="rounded-xl bg-[#0D1F1F]/90 border border-cyan-400/25 p-5 text-center shadow-lg">
-          <div className="text-xs font-semibold tracking-widest text-teal-300/80 uppercase mb-2">
-            Protocol Sync
-          </div>
-          <div className="text-2xl font-extrabold tracking-wider text-cyan-300">
-            {protocolSync}%
-          </div>
-          <div className="text-[11px] text-cyan-100/50 mt-1">Zero-Cloud Edge Mesh</div>
-        </div>
-
-        <div
-          className={`rounded-xl border p-5 text-center shadow-lg transition-colors ${
-            systemAlert
-              ? 'bg-rose-950/60 border-rose-500 animate-pulse'
-              : 'bg-[#0D1F1F]/90 border-cyan-400/25'
-          }`}
-        >
-          <div className="text-xs font-semibold tracking-widest text-teal-300/80 uppercase mb-2">
-            System Alert
-          </div>
-          <div
-            className={`text-2xl font-extrabold tracking-wider ${
-              systemAlert ? 'text-rose-400' : 'text-emerald-400'
-            }`}
-          >
-            {systemAlert ? 'ANOMALY DETECTED' : 'CLEAR'}
-          </div>
-          <div className="text-[11px] text-cyan-100/50 mt-1">
-            {systemAlert ? 'Containment Shield Engaged' : 'All Subsystems Nominal'}
-          </div>
-        </div>
-      </div>
-
-      {/* Crisp SVG & Animated Core Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Protocol Sync History SVG Line Chart */}
-        <div className="rounded-2xl bg-[#0B192C]/90 border border-cyan-400/25 p-5 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold tracking-widest text-cyan-300 uppercase flex items-center gap-2">
-              <Activity className="w-4 h-4 text-cyan-400" />
-              Protocol Sync History
-            </h3>
-            <span className="text-xs text-teal-300/70 font-mono">7-MIN WINDOW</span>
-          </div>
-
-          <div className="w-full overflow-hidden">
-            <svg viewBox={`0 0 ${width} ${height + 24}`} className="w-full h-48">
-              <defs>
-                <linearGradient id="nexusSyncGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#00FFFF" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#00FFFF" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-
-              {/* Horizontal Grid Lines */}
-              {[100, 92, 85, 75].map((tick, i) => {
-                const y = height - padY - ((tick - 75) / 25) * (height - padY * 2);
-                return (
-                  <g key={tick}>
-                    <line
-                      x1={padX}
-                      y1={y}
-                      x2={width - padX}
-                      y2={y}
-                      stroke="rgba(0,255,255,0.12)"
-                      strokeDasharray="4 4"
-                    />
-                    <text x={2} y={y + 4} fill="#5EEAD4" fontSize="10" fontFamily="monospace">
-                      {tick}%
-                    </text>
-                  </g>
-                );
-              })}
-
-              {/* Area Fill & Line */}
-              <polygon points={areaPoints} fill="url(#nexusSyncGrad)" />
-              <polyline
-                fill="none"
-                stroke="#00FFFF"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                points={points}
-              />
-
-              {/* Data Points & X-Axis Labels */}
-              {syncHistory.map((val, idx) => {
-                const x = padX + (idx / (syncHistory.length - 1)) * (width - padX * 2);
-                const y = height - padY - ((val - 75) / 25) * (height - padY * 2);
-                return (
-                  <g key={idx}>
-                    <circle cx={x} cy={y} r="4.5" fill="#0A1628" stroke="#00FFFF" strokeWidth="2.5" />
-                    <text
-                      x={x}
-                      y={height + 14}
-                      textAnchor="middle"
-                      fill="#99F6E4"
-                      fontSize="11"
-                      fontFamily="monospace"
-                    >
-                      {timeLabels[idx]}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
-        </div>
-
-        {/* Neural Core Load Distribution Animated Bars */}
-        <div className="rounded-2xl bg-[#0B192C]/90 border border-cyan-400/25 p-5 shadow-xl flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold tracking-widest text-cyan-300 uppercase flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-cyan-400" />
-              Neural Core Load Distribution
-            </h3>
-            <span className="text-xs text-teal-300/70 font-mono">5 ACTIVE CORES</span>
-          </div>
-
-          <div className="space-y-3.5 my-auto">
-            {[
-              { name: 'Core 1 • Vision & LiDAR Fusion', load: coreLoads[0] },
-              { name: 'Core 2 • Biometric & Ocular Scan', load: coreLoads[1] },
-              { name: 'Core 3 • Guardian Torque Override', load: coreLoads[2] },
-              { name: 'Core 4 • Para-Nexus Spatial Mesh', load: coreLoads[3] },
-              { name: 'Core 5 • Memoria Vault Encryption', load: coreLoads[4] }
-            ].map((core, idx) => (
-              <div key={idx} className="space-y-1">
-                <div className="flex justify-between text-xs font-mono">
-                  <span className="text-cyan-100">{core.name}</span>
-                  <span className="text-cyan-300 font-bold">{core.load}%</span>
-                </div>
-                <div className="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-cyan-500/20">
-                  <div
-                    className="h-full bg-gradient-to-r from-teal-400 to-cyan-300 rounded-full transition-all duration-700"
-                    style={{ width: `${core.load}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// MODULE 2: ACTIVE HAZARD HUD (IN-VEHICLE DISPLAY + PRESENTER TRIGGERS)
-// ============================================================================
-function ActiveHazardHUD() {
-  const [points, setPoints] = useState(2847);
-  const [currentSpeed, setCurrentSpeed] = useState(45);
-  const [speedLimit] = useState(45);
-  const [hazardDetected, setHazardDetected] = useState(null);
-  const [isRecording, setIsRecording] = useState(true);
-  const [activeTab, setActiveTab] = useState('Vehicle');
-
-  // Subtle realistic speed drift
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSpeed(prev => Math.max(0, prev + (Math.random() - 0.5) * 1.6));
-    }, 1800);
-    return () => clearInterval(interval);
-  }, []);
-
-  const triggerManualHazard = (type, distance, severity) => {
-    setHazardDetected({ type, distance, severity });
-    setTimeout(() => {
-      setHazardDetected(prev => (prev?.type === type ? null : prev));
-    }, 4000);
-  };
-
-  const getSpeedColor = () => {
-    const diff = currentSpeed - speedLimit;
-    if (diff <= 0) return 'text-emerald-400';
-    if (diff <= 5) return 'text-amber-400';
-    return 'text-rose-400';
-  };
-
-  const getHazardIcon = type => {
-    switch (type) {
-      case 'Deer':
-        return '🦌';
-      case 'Pothole':
-        return '🕳️';
-      case 'Debris':
-        return '⚠️';
-      case 'Sudden Braking Ahead':
-        return '🛑';
-      default:
-        return '⚠️';
+  <style>
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
-  };
+    @keyframes spinReverse {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+    .animate-spin-slow {
+      animation: spinSlow 24s linear infinite;
+    }
+    .animate-spin-reverse {
+      animation: spinReverse 18s linear infinite;
+    }
+    body {
+      background-color: #050b14;
+      color: #f8fafc;
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
 
-  return (
-    <div className="space-y-5 max-w-3xl mx-auto">
-      {/* Presenter Live Demo Trigger Bar */}
-      <div className="rounded-2xl bg-[#0D1F1F] border border-cyan-400/30 p-4 shadow-lg">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <span className="text-xs font-bold tracking-widest text-cyan-300 uppercase flex items-center gap-1.5">
-            <Sliders className="w-4 h-4 text-cyan-400" />
-            Presenter Trigger Bar (Instant Hazard & Speed Override)
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentSpeed(prev => Math.round(prev + 10))}
-              className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 text-xs font-bold transition"
-            >
-              +10 MPH
-            </button>
-            <button
-              onClick={() => setCurrentSpeed(45)}
-              className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 text-cyan-200 text-xs font-bold transition"
-            >
-              Reset Speed
-            </button>
-          </div>
-        </div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <button
-            onClick={() => triggerManualHazard('Deer', '200ft', 'high')}
-            className="p-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/70 border border-rose-500/50 text-xs font-bold text-rose-200 transition flex items-center justify-center gap-1.5"
-          >
-            <span>🦌</span>
-            <span>Deer (High)</span>
-          </button>
-          <button
-            onClick={() => triggerManualHazard('Pothole', '150ft', 'medium')}
-            className="p-2.5 rounded-xl bg-amber-950/60 hover:bg-amber-900/70 border border-amber-500/50 text-xs font-bold text-amber-200 transition flex items-center justify-center gap-1.5"
-          >
-            <span>🕳️</span>
-            <span>Pothole (Med)</span>
-          </button>
-          <button
-            onClick={() => triggerManualHazard('Debris', '300ft', 'low')}
-            className="p-2.5 rounded-xl bg-cyan-950/60 hover:bg-cyan-900/70 border border-cyan-500/50 text-xs font-bold text-cyan-200 transition flex items-center justify-center gap-1.5"
-          >
-            <span>⚠️</span>
-            <span>Debris (Low)</span>
-          </button>
-          <button
-            onClick={() => triggerManualHazard('Sudden Braking Ahead', '120ft', 'high')}
-            className="p-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/70 border border-rose-500/50 text-xs font-bold text-rose-200 transition flex items-center justify-center gap-1.5"
-          >
-            <span>🛑</span>
-            <span>Braking (High)</span>
-          </button>
-        </div>
-      </div>
+    // Lightweight Lucide Icon wrapper for standalone HTML
+    const Icon = ({ name, className = "w-5 h-5" }) => {
+      const ref = useRef(null);
+      useEffect(() => {
+        if (ref.current && window.lucide) {
+          ref.current.innerHTML = '';
+          const iconEl = document.createElement('i');
+          iconEl.setAttribute('data-lucide', name);
+          iconEl.className = className;
+          ref.current.appendChild(iconEl);
+          window.lucide.createIcons({ root: ref.current });
+        }
+      }, [name, className]);
+      return <span ref={ref} className="inline-flex items-center justify-center"></span>;
+    };
 
-      {/* Main In-Vehicle HUD Screen */}
-      <div className="relative rounded-2xl bg-gradient-to-b from-[#0D1F1F] to-[#060D17] border border-cyan-400/30 p-5 sm:p-6 font-mono overflow-hidden shadow-2xl">
-        {/* Top Ambient Accent Line */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 opacity-60" />
+    // ==========================================
+    // MODULE 1: NEXUS COMMAND TELEMETRY
+    // ==========================================
+    function CommandTelemetryModule() {
+      const [secStatus, setSecStatus] = useState('LOCKED');
+      const [protoSync, setProtoSync] = useState(97);
+      const [sysAlert, setSysAlert] = useState('CLEAR');
+      const [syncHistory, setSyncHistory] = useState([88, 91, 94, 96, 95, 98, 97]);
+      const [coreLoads, setCoreLoads] = useState([
+        { name: 'Core 1 · Neural Kernel', load: 54 },
+        { name: 'Core 2 · Vision / LiDAR', load: 72 },
+        { name: 'Core 3 · Guardian Biometrics', load: 61 },
+        { name: 'Core 4 · Memoria Graph', load: 48 },
+        { name: 'Core 5 · Knox Enclave', load: 83 },
+      ]);
 
-        {/* HUD Header Status Bar */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setIsRecording(!isRecording)}
-              className="flex items-center space-x-2 focus:outline-none"
-            >
-              <div className={`w-3 h-3 rounded-full ${isRecording ? 'bg-rose-500 animate-pulse' : 'bg-slate-600'}`} />
-              <span className={`text-sm font-bold ${isRecording ? 'text-rose-400' : 'text-slate-500'}`}>
-                {isRecording ? 'REC' : 'PAUSED'}
-              </span>
-            </button>
-            <div className="text-cyan-300 text-sm">GPS: STRONG</div>
-          </div>
-          <div className="flex items-center space-x-2 bg-cyan-950/60 px-3.5 py-1.5 rounded-full border border-cyan-400/30">
-            <Award className="w-5 h-5 text-amber-400" />
-            <span className="text-amber-300 font-bold">{points.toLocaleString()}</span>
-          </div>
-        </div>
+      useEffect(() => {
+        const interval = setInterval(() => {
+          const statuses = ['LOCKED', 'LOCKED', 'SCANNING', 'LOCKED', 'VERIFYING'];
+          setSecStatus(statuses[Math.floor(Math.random() * statuses.length)]);
 
-        {/* Critical Hazard Alert Popup Overlay */}
-        {hazardDetected && (
-          <div className="mb-6 animate-pulse">
-            <div
-              className={`p-5 rounded-xl border-2 shadow-2xl ${
-                hazardDetected.severity === 'high'
-                  ? 'bg-rose-950/90 border-rose-500'
-                  : hazardDetected.severity === 'medium'
-                  ? 'bg-amber-950/90 border-amber-500'
-                  : 'bg-cyan-950/90 border-cyan-400'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span className="text-4xl">{getHazardIcon(hazardDetected.type)}</span>
-                  <div>
-                    <h3 className="text-xl font-bold text-white">{hazardDetected.type} Detected</h3>
-                    <p className="text-cyan-100/80 text-sm">
-                      Distance: {hazardDetected.distance} • Auto-Response Armed
-                    </p>
+          const nextSync = 93 + Math.floor(Math.random() * 7);
+          setProtoSync(nextSync);
+          setSyncHistory((prev) => [...prev.slice(1), nextSync]);
+
+          setCoreLoads((prev) =>
+            prev.map((core, idx) =>
+              idx === Math.floor(Math.random() * prev.length)
+                ? { ...core, load: 42 + Math.floor(Math.random() * 52) }
+                : core
+            )
+          );
+        }, 3500);
+        return () => clearInterval(interval);
+      }, []);
+
+      const triggerTestAnomaly = () => {
+        setSysAlert('ANOMALY DETECTED');
+        setTimeout(() => setSysAlert('CLEAR'), 3000);
+      };
+
+      const timeLabels = ['-6m', '-5m', '-4m', '-3m', '-2m', '-1m', 'NOW'];
+
+      return (
+        <div className="space-y-6">
+          {/* Top Neural Sync HUD */}
+          <div className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-[#0d222b] via-[#081520] to-[#050b14] p-8 shadow-[0_0_40px_rgba(6,182,212,0.15)]">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center space-x-6">
+                <div className="relative flex items-center justify-center w-28 h-28">
+                  <div className="absolute inset-0 rounded-full border-2 border-cyan-400/50 animate-ping" style={{ animationDuration: '3s' }}></div>
+                  <div className="absolute inset-2 rounded-full border border-dashed border-cyan-300/60 animate-spin-slow"></div>
+                  <div className="relative z-10 flex flex-col items-center justify-center w-20 h-20 rounded-full bg-cyan-950/80 border border-cyan-400/60 shadow-[0_0_20px_rgba(34,211,238,0.4)]">
+                    <Icon name="cpu" className="w-7 h-7 text-cyan-300" />
+                    <span className="text-[10px] font-mono text-cyan-300 mt-1">SYNC</span>
                   </div>
                 </div>
-                <AlertTriangle
-                  className={`w-8 h-8 ${
-                    hazardDetected.severity === 'high'
-                      ? 'text-rose-400'
-                      : hazardDetected.severity === 'medium'
-                      ? 'text-amber-400'
-                      : 'text-cyan-400'
-                  }`}
-                />
+                <div>
+                  <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-xs font-mono mb-2">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                    <span>SOVEREIGN ARCHITECTURE ONLINE</span>
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold tracking-wider text-white uppercase">
+                    Neural Sync Active
+                  </h2>
+                  <p className="text-slate-400 text-sm mt-1">
+                    EIAIO Kernel • Samsung Knox Enterprise Enclave • Multi-Vehicle Mesh
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={triggerTestAnomaly}
+                  className="px-4 py-2.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-mono uppercase tracking-wider transition cursor-pointer"
+                >
+                  Simulate Telemetry Ping
+                </button>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Speedometer Centerpiece */}
-        <div className="flex flex-col items-center space-y-6 my-4">
-          <div className="relative">
-            <div className="w-60 h-60 rounded-full border-8 border-cyan-500/30 flex items-center justify-center relative overflow-hidden shadow-[0_0_40px_rgba(0,255,255,0.18)]">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#122B2B] to-[#081220]" />
-              <div className="relative z-10 text-center">
-                <div className={`text-6xl font-bold transition-colors duration-300 ${getSpeedColor()}`}>
-                  {Math.round(currentSpeed)}
+          {/* 3 Status KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="rounded-xl border border-cyan-500/25 bg-[#091522] p-5 shadow-lg">
+              <div className="flex items-center justify-between text-xs font-mono text-cyan-400/80 uppercase tracking-widest mb-2">
+                <span>Security Status</span>
+                <Icon name="lock" className="w-4 h-4 text-cyan-400" />
+              </div>
+              <div className="text-2xl font-bold font-mono text-cyan-300">{secStatus}</div>
+              <div className="text-xs text-slate-400 mt-1">Hardware-backed attestation active</div>
+            </div>
+
+            <div className="rounded-xl border border-cyan-500/25 bg-[#091522] p-5 shadow-lg">
+              <div className="flex items-center justify-between text-xs font-mono text-cyan-400/80 uppercase tracking-widest mb-2">
+                <span>Protocol Sync</span>
+                <Icon name="radio" className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div className="text-2xl font-bold font-mono text-emerald-400">{protoSync}%</div>
+              <div className="text-xs text-slate-400 mt-1">Zero-latency edge state replication</div>
+            </div>
+
+            <div className={`rounded-xl border p-5 shadow-lg transition-colors ${
+              sysAlert === 'CLEAR'
+                ? 'border-cyan-500/25 bg-[#091522]'
+                : 'border-rose-500 bg-rose-950/40'
+            }`}>
+              <div className="flex items-center justify-between text-xs font-mono text-cyan-400/80 uppercase tracking-widest mb-2">
+                <span>System Alert</span>
+                <Icon name="shield" className={`w-4 h-4 ${sysAlert === 'CLEAR' ? 'text-cyan-400' : 'text-rose-400 animate-bounce'}`} />
+              </div>
+              <div className={`text-2xl font-bold font-mono ${sysAlert === 'CLEAR' ? 'text-cyan-300' : 'text-rose-400'}`}>
+                {sysAlert}
+              </div>
+              <div className="text-xs text-slate-400 mt-1">
+                {sysAlert === 'CLEAR' ? 'All behavioral & CAN-bus channels nominal' : 'Isolating external packet anomaly'}
+              </div>
+            </div>
+          </div>
+
+          {/* Telemetry Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Sync History Bar/Line Visualizer */}
+            <div className="rounded-xl border border-cyan-500/25 bg-[#091522] p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-sm font-mono uppercase tracking-widest text-cyan-300">Protocol Sync History</h3>
+                  <p className="text-xs text-slate-400">Rolling 7-minute fleet & edge node cohesion</p>
                 </div>
-                <div className="text-cyan-200/70 text-lg tracking-widest">MPH</div>
-                <div className="text-cyan-100/50 text-sm mt-1">Limit: {speedLimit}</div>
+                <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-1 rounded">
+                  AVG {Math.round(syncHistory.reduce((a, b) => a + b, 0) / syncHistory.length)}%
+                </span>
+              </div>
+
+              <div className="h-48 flex items-end justify-between gap-3 pt-6 px-2 border-b border-slate-800">
+                {syncHistory.map((val, idx) => (
+                  <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group">
+                    <span className="text-[11px] font-mono text-cyan-300 mb-1.5 opacity-80 group-hover:opacity-100">
+                      {val}%
+                    </span>
+                    <div
+                      className="w-full max-w-[38px] rounded-t-md bg-gradient-to-t from-cyan-600/40 to-cyan-400 border-t-2 border-cyan-200 transition-all duration-500"
+                      style={{ height: `${val}%` }}
+                    ></div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between px-2 pt-2 text-[11px] font-mono text-slate-400">
+                {timeLabels.map((lbl, i) => (
+                  <span key={i} className="flex-1 text-center">{lbl}</span>
+                ))}
               </div>
             </div>
 
-            {/* Speed Compliance Badge */}
-            <div className="absolute -top-1 -right-1">
-              {currentSpeed <= speedLimit ? (
-                <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg border-2 border-[#0A1628]">
-                  <Shield className="w-6 h-6 text-white" />
+            {/* Neural Core Load Distribution */}
+            <div className="rounded-xl border border-cyan-500/25 bg-[#091522] p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-sm font-mono uppercase tracking-widest text-cyan-300">Neural Core Load Distribution</h3>
+                  <p className="text-xs text-slate-400">Real-time compute allocation across active subsystems</p>
                 </div>
-              ) : (
-                <div className="w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center animate-pulse shadow-lg border-2 border-[#0A1628]">
-                  <AlertTriangle className="w-6 h-6 text-white" />
-                </div>
+                <span className="text-xs font-mono text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-1 rounded">
+                  5 CORES ACTIVE
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                {coreLoads.map((core, idx) => (
+                  <div key={idx}>
+                    <div className="flex justify-between text-xs font-mono mb-1.5">
+                      <span className="text-slate-300">{core.name}</span>
+                      <span className={core.load > 80 ? 'text-amber-400' : 'text-cyan-300'}>{core.load}%</span>
+                    </div>
+                    <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          core.load > 80
+                            ? 'bg-gradient-to-r from-cyan-400 to-amber-400'
+                            : 'bg-gradient-to-r from-teal-500 to-cyan-400'
+                        }`}
+                        style={{ width: `${core.load}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // MODULE 2: ACTIVE HAZARD HUD (WITH TRIGGERS)
+    // ==========================================
+    function HazardHudModule() {
+      const [points, setPoints] = useState(2847);
+      const [currentSpeed, setCurrentSpeed] = useState(45);
+      const [speedLimit] = useState(45);
+      const [hazardDetected, setHazardDetected] = useState(null);
+      const [activeTab, setActiveTab] = useState('vehicle');
+      const [autoSim, setAutoSim] = useState(true);
+
+      const presetHazards = [
+        { id: 'deer', label: 'Deer Crossing', icon: '🦌', distance: '180 ft', severity: 'high', action: 'Pre-charging brake hydraulics & acoustic alert' },
+        { id: 'pedestrian', label: 'Unseen Pedestrian', icon: '🚶', distance: '95 ft', severity: 'high', action: 'Autonomous emergency braking armed' },
+        { id: 'pothole', label: 'Deep Road Hazard', icon: '🕳️', distance: '140 ft', severity: 'medium', action: 'Active suspension damping & lane bias adjusted' },
+        { id: 'debris', label: 'Highway Debris', icon: '⚠️', distance: '260 ft', severity: 'low', action: 'Trajectory pathing plotted around obstruction' },
+      ];
+
+      useEffect(() => {
+        if (!autoSim) return;
+        const interval = setInterval(() => {
+          setCurrentSpeed((prev) => {
+            const delta = (Math.random() - 0.48) * 2.2;
+            const next = Math.max(38, Math.min(48, prev + delta));
+            return next;
+          });
+        }, 1800);
+        return () => clearInterval(interval);
+      }, [autoSim]);
+
+      const triggerHazard = (hazard) => {
+        setHazardDetected(hazard);
+        setPoints((p) => p + 25);
+      };
+
+      const triggerSpeedBurst = () => {
+        setAutoSim(false);
+        setCurrentSpeed(64);
+        setTimeout(() => {
+          setCurrentSpeed(45);
+          setAutoSim(true);
+        }, 3500);
+      };
+
+      const getSpeedColor = () => {
+        const diff = currentSpeed - speedLimit;
+        if (diff <= 0) return 'text-emerald-400';
+        if (diff <= 5) return 'text-amber-400';
+        return 'text-rose-500';
+      };
+
+      return (
+        <div className="space-y-4">
+          {/* Presenter Control Bar */}
+          <div className="rounded-xl border border-cyan-500/30 bg-[#091726] p-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center space-x-2">
+              <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-xs font-bold">
+                LIVE DEMO TRIGGERS
+              </span>
+              <span className="text-xs text-slate-400 hidden sm:inline">
+                Click any scenario to test instant HUD response:
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {presetHazards.map((h) => (
+                <button
+                  key={h.id}
+                  onClick={() => triggerHazard(h)}
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-mono text-white flex items-center space-x-1.5 transition cursor-pointer"
+                >
+                  <span>{h.icon}</span>
+                  <span>{h.label}</span>
+                </button>
+              ))}
+              <button
+                onClick={triggerSpeedBurst}
+                className="px-3 py-1.5 rounded-lg bg-rose-950/70 hover:bg-rose-900/70 border border-rose-500/50 text-xs font-mono text-rose-300 flex items-center space-x-1.5 transition cursor-pointer"
+              >
+                <Icon name="gauge" className="w-3.5 h-3.5" />
+                <span>Speed Surge</span>
+              </button>
+              {hazardDetected && (
+                <button
+                  onClick={() => setHazardDetected(null)}
+                  className="px-3 py-1.5 rounded-lg bg-cyan-900/50 hover:bg-cyan-800/50 border border-cyan-400/50 text-xs font-mono text-cyan-200 cursor-pointer"
+                >
+                  Clear Alert
+                </button>
               )}
             </div>
           </div>
 
-          {/* Subsystem Readiness Cards */}
-          <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-md">
-            <div className="bg-[#0F242B] p-3.5 rounded-xl text-center border border-cyan-400/25">
-              <Eye className="w-6 h-6 text-cyan-400 mx-auto mb-1.5" />
-              <div className="text-xs text-cyan-100/70">Vision</div>
-              <div className="text-emerald-400 font-bold text-sm">CLEAR</div>
+          {/* Main HUD Frame */}
+          <div className="relative rounded-2xl border border-slate-800 bg-gradient-to-b from-[#070d17] to-[#03060c] p-6 font-mono overflow-hidden shadow-2xl">
+            <div className="h-1 w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-500 opacity-50 absolute top-0 left-0"></div>
+
+            {/* HUD Top Bar */}
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 bg-rose-950/60 border border-rose-500/30 px-2.5 py-1 rounded">
+                  <div className="w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse"></div>
+                  <span className="text-rose-400 text-xs font-bold">BLACKBOX REC</span>
+                </div>
+                <div className="text-emerald-400 text-xs bg-emerald-950/50 border border-emerald-500/30 px-2.5 py-1 rounded">
+                  GPS + RTK: LOCKED
+                </div>
+              </div>
+              <div className="flex items-center space-x-2 bg-amber-950/40 border border-amber-500/30 px-3 py-1 rounded-full">
+                <Icon name="award" className="w-4 h-4 text-amber-400" />
+                <span className="text-amber-300 text-sm font-bold">{points.toLocaleString()} PTS</span>
+              </div>
             </div>
-            <div className="bg-[#0F242B] p-3.5 rounded-xl text-center border border-cyan-400/25">
-              <Navigation className="w-6 h-6 text-teal-400 mx-auto mb-1.5" />
-              <div className="text-xs text-cyan-100/70">Lane</div>
-              <div className="text-emerald-400 font-bold text-sm">CENTERED</div>
+
+            {/* Active Hazard Alert Banner */}
+            {hazardDetected && (
+              <div className={`mb-6 p-5 rounded-xl border-2 transition-all ${
+                hazardDetected.severity === 'high'
+                  ? 'bg-rose-950/85 border-rose-500 shadow-[0_0_30px_rgba(244,63,94,0.35)]'
+                  : hazardDetected.severity === 'medium'
+                  ? 'bg-amber-950/85 border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.3)]'
+                  : 'bg-cyan-950/85 border-cyan-400 shadow-[0_0_25px_rgba(34,211,238,0.3)]'
+              }`}>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center space-x-4">
+                    <span className="text-4xl">{hazardDetected.icon}</span>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs uppercase px-2 py-0.5 rounded bg-black/40 text-white font-bold">
+                          {hazardDetected.severity} priority
+                        </span>
+                        <span className="text-xs text-slate-300">Range: {hazardDetected.distance}</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-white mt-1">
+                        {hazardDetected.label} Detected
+                      </h3>
+                      <p className="text-xs text-cyan-200 mt-0.5">{hazardDetected.action}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setHazardDetected(null)}
+                    className="px-3 py-1.5 rounded bg-black/40 hover:bg-black/60 text-xs text-white border border-white/20 cursor-pointer"
+                  >
+                    Acknowledge
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Center Speedometer & Telemetry */}
+            <div className="flex flex-col items-center justify-center py-4 space-y-6">
+              <div className="relative">
+                <div className="w-56 h-56 rounded-full border-8 border-slate-800 flex items-center justify-center relative bg-gradient-to-br from-slate-900 to-black shadow-[inset_0_0_30px_rgba(0,0,0,0.9)]">
+                  <div className="text-center">
+                    <div className={`text-6xl font-bold tracking-tight ${getSpeedColor()}`}>
+                      {Math.round(currentSpeed)}
+                    </div>
+                    <div className="text-slate-400 text-sm tracking-widest mt-1">MPH</div>
+                    <div className="text-xs text-cyan-400/80 mt-2 px-2.5 py-0.5 rounded bg-cyan-950/50 border border-cyan-500/20">
+                      LIMIT {speedLimit}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Compliance Badge */}
+                <div className="absolute -top-1 -right-1">
+                  {currentSpeed <= speedLimit ? (
+                    <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.6)]">
+                      <Icon name="shield" className="w-6 h-6 text-slate-950" />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center animate-bounce shadow-[0_0_20px_rgba(244,63,94,0.8)]">
+                      <Icon name="alert-triangle" className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Sub-tab Dynamic Content */}
+              {activeTab === 'vehicle' && (
+                <div className="grid grid-cols-3 gap-3 w-full max-w-lg">
+                  <div className="bg-slate-900/90 p-3.5 rounded-xl text-center border border-slate-800">
+                    <Icon name="eye" className="w-5 h-5 text-cyan-400 mx-auto mb-1.5" />
+                    <div className="text-xs text-slate-400">360° Vision</div>
+                    <div className="text-emerald-400 text-sm font-bold">CLEAR</div>
+                  </div>
+                  <div className="bg-slate-900/90 p-3.5 rounded-xl text-center border border-slate-800">
+                    <Icon name="navigation" className="w-5 h-5 text-blue-400 mx-auto mb-1.5" />
+                    <div className="text-xs text-slate-400">Lane Hold</div>
+                    <div className="text-emerald-400 text-sm font-bold">LOCKED</div>
+                  </div>
+                  <div className="bg-slate-900/90 p-3.5 rounded-xl text-center border border-slate-800">
+                    <Icon name="zap" className="w-5 h-5 text-amber-400 mx-auto mb-1.5" />
+                    <div className="text-xs text-slate-400">Latency</div>
+                    <div className="text-emerald-400 text-sm font-bold">14 ms</div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'rights' && (
+                <div className="w-full max-w-lg bg-slate-900/90 border border-cyan-500/30 rounded-xl p-4 text-xs space-y-2">
+                  <div className="text-cyan-300 font-bold uppercase tracking-wider">Constitutional & Telemetry Vault</div>
+                  <p className="text-slate-300">
+                    Local edge encryption active. Zero cloud streaming without owner cryptographic key. Automated traffic-stop timestamp & speed compliance log ready.
+                  </p>
+                </div>
+              )}
+
+              {activeTab === 'scanner' && (
+                <div className="w-full max-w-lg bg-slate-900/90 border border-purple-500/30 rounded-xl p-4 text-xs space-y-2">
+                  <div className="text-purple-300 font-bold uppercase tracking-wider">V2X & RF Spectrum Perimeter</div>
+                  <p className="text-slate-300">
+                    Scanning 5.9 GHz DSRC / C-V2X emergency vehicle beacons and local weather hazards. 0 emergency transponders within 1.5 miles.
+                  </p>
+                </div>
+              )}
+
+              {activeTab === 'settings' && (
+                <div className="w-full max-w-lg bg-slate-900/90 border border-slate-700 rounded-xl p-4 text-xs flex items-center justify-between">
+                  <span className="text-slate-300">Autonomous Speed Drift Simulation</span>
+                  <button
+                    onClick={() => setAutoSim(!autoSim)}
+                    className={`px-3 py-1 rounded font-bold cursor-pointer ${autoSim ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 text-white'}`}
+                  >
+                    {autoSim ? 'ENABLED' : 'PAUSED'}
+                  </button>
+                </div>
+              )}
+
+              {/* Positive Streak Banner */}
+              <div className="w-full max-w-lg bg-emerald-950/40 border border-emerald-500/30 px-4 py-2.5 rounded-lg flex items-center justify-between text-xs">
+                <span className="text-emerald-300">Safe Driving & Compliance Streak Active</span>
+                <span className="text-emerald-400 font-bold">+15 PTS / MI</span>
+              </div>
             </div>
-            <div className="bg-[#0F242B] p-3.5 rounded-xl text-center border border-cyan-400/25">
-              <Zap className="w-6 h-6 text-amber-400 mx-auto mb-1.5" />
-              <div className="text-xs text-cyan-100/70">Response</div>
-              <div className="text-emerald-400 font-bold text-sm">0.3s</div>
-            </div>
-          </div>
 
-          {/* Safe Driving Streak Reward Banner */}
-          <div className="w-full max-w-md">
-            <button
-              onClick={() => setPoints(p => p + 15)}
-              className="w-full bg-emerald-950/70 hover:bg-emerald-900/70 border border-emerald-500/60 p-3 rounded-xl transition flex items-center justify-between text-sm"
-            >
-              <span className="text-emerald-200">Smooth driving streak (Tap to claim)</span>
-              <span className="text-emerald-400 font-bold">+15 PTS</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Bottom HUD Sub-Navigation */}
-        <div className="grid grid-cols-4 gap-2 mt-6">
-          {[
-            { id: 'Vehicle', icon: Car, color: 'text-cyan-400' },
-            { id: 'Rights', icon: Shield, color: 'text-emerald-400' },
-            { id: 'Scanner', icon: Eye, color: 'text-teal-400' },
-            { id: 'Settings', icon: Settings, color: 'text-slate-300' }
-          ].map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`p-3 rounded-xl flex flex-col items-center space-y-1.5 border transition ${
-                  active
-                    ? 'bg-cyan-950/70 border-cyan-400/70'
-                    : 'bg-[#0B1926] border-cyan-400/15 hover:border-cyan-400/40'
-                }`}
-              >
-                <Icon className={`w-5 h-5 ${tab.color}`} />
-                <span className="text-xs text-cyan-100">{tab.id}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// MODULE 3: GUARDIAN PROTOCOL (6 IMPAIRMENT SCENARIOS + INTERVENTION + DEBRIEF)
-// ============================================================================
-function GuardianProtocolModule() {
-  const [selectedScenarioId, setSelectedScenarioId] = useState('alcohol');
-  const [stage, setStage] = useState('start'); // 'start' | 'detecting' | 'driving' | 'arrived' | 'debrief'
-  const [progress, setProgress] = useState(0);
-  const [impairmentScore, setImpairmentScore] = useState(0);
-  const [showComparison, setShowComparison] = useState(false);
-
-  const [supportConnected, setSupportConnected] = useState(false);
-  const [autoPreventionEnabled, setAutoPreventionEnabled] = useState(false);
-  const [trustedAlertsEnabled, setTrustedAlertsEnabled] = useState(false);
-
-  const scenario = IMPAIRMENT_SCENARIOS[selectedScenarioId];
-
-  useEffect(() => {
-    if (stage === 'detecting') {
-      const interval = setInterval(() => {
-        setImpairmentScore(prev => {
-          if (prev >= 88) {
-            clearInterval(interval);
-            setTimeout(() => setStage('driving'), 1300);
-            return 88;
-          }
-          return prev + 6;
-        });
-      }, 100);
-      return () => clearInterval(interval);
-    }
-
-    if (stage === 'driving') {
-      const interval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setTimeout(() => setStage('arrived'), 900);
-            return 100;
-          }
-          return prev + 2.5;
-        });
-      }, 180);
-      return () => clearInterval(interval);
-    }
-
-    if (stage === 'arrived') {
-      const timer = setTimeout(() => {
-        setStage('debrief');
-      }, 2400);
-      return () => clearTimeout(timer);
-    }
-  }, [stage]);
-
-  const startDemo = () => {
-    setStage('detecting');
-    setProgress(0);
-    setImpairmentScore(0);
-    setShowComparison(false);
-    setSupportConnected(false);
-    setAutoPreventionEnabled(false);
-    setTrustedAlertsEnabled(false);
-  };
-
-  const handleSelectScenario = id => {
-    setSelectedScenarioId(id);
-    if (stage !== 'start') {
-      setStage('start');
-      setProgress(0);
-      setImpairmentScore(0);
-      setShowComparison(false);
-    }
-  };
-
-  return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Persistent Impairment Profile Selector Bar */}
-      <div className="rounded-2xl bg-[#0D1F1F]/90 border border-cyan-400/30 p-4 shadow-lg">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <span className="text-xs font-bold tracking-widest text-cyan-300 uppercase flex items-center gap-2">
-            <Brain className="w-4 h-4 text-cyan-400" />
-            Select Physiological / Cognitive Impairment Scenario
-          </span>
-          <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold ${scenario.badgeColor}`}>
-            {scenario.category}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {Object.values(IMPAIRMENT_SCENARIOS).map(item => {
-            const isSelected = item.id === selectedScenarioId;
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleSelectScenario(item.id)}
-                className={`p-2.5 rounded-xl text-left border transition ${
-                  isSelected
-                    ? 'bg-cyan-500/20 border-cyan-300 text-white shadow-[0_0_15px_rgba(0,255,255,0.2)]'
-                    : 'bg-[#0A1628]/80 border-cyan-400/15 text-cyan-100/75 hover:border-cyan-400/40'
-                }`}
-              >
-                <div className="text-xs font-bold truncate">{item.label}</div>
-                <div className="text-[10px] text-teal-300/70 truncate mt-0.5">{item.category}</div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* STAGE 0: START SCREEN */}
-      {stage === 'start' && (
-        <div className="space-y-6">
-          <div className="rounded-2xl bg-gradient-to-br from-[#0F2629] to-[#0A1628] border border-cyan-400/30 p-8 text-center shadow-xl">
-            <div className="inline-block p-3.5 bg-cyan-500/15 border border-cyan-400/30 rounded-full mb-4">
-              <Shield className="w-10 h-10 text-cyan-300" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">
-              Guardian Protocol: {scenario.label}
-            </h2>
-            <p className="text-cyan-200/80 text-sm max-w-2xl mx-auto mb-6">
-              {scenario.summary}
-            </p>
-            <button
-              onClick={startDemo}
-              className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 px-8 py-4 rounded-xl font-extrabold text-base tracking-wide transition shadow-[0_0_25px_rgba(0,255,255,0.35)]"
-            >
-              Launch {scenario.label} Simulation
-            </button>
-          </div>
-
-          <div className="rounded-2xl bg-[#0D1F1F]/80 border border-cyan-400/20 p-6">
-            <h3 className="text-lg font-bold text-cyan-300 mb-4">4-Stage Dignity-Preserving Safety Loop</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Bottom HUD Mode Selector */}
+            <div className="grid grid-cols-4 gap-2.5 mt-4 max-w-lg mx-auto">
               {[
-                {
-                  step: '1',
-                  title: 'Multi-Modal Biometric Detection',
-                  desc: 'Analyzes ocular saccades, pupilometry, steering micro-torque, gait, and respiratory cadence.'
-                },
-                {
-                  step: '2',
-                  title: 'Seamless Torque-Vector Takeover',
-                  desc: 'Assumes trajectory and braking authority while preserving natural steering/pedal feedback.'
-                },
-                {
-                  step: '3',
-                  title: 'Autonomous Hazard Shielding',
-                  desc: 'Neutralizes pedestrian conflicts, speed surges, and lane departures without triggering driver panic.'
-                },
-                {
-                  step: '4',
-                  title: 'Non-Judgmental Morning Debrief',
-                  desc: 'Reviews biometric impairment data and alternate-reality outcomes once safely parked.'
-                }
-              ].map(item => (
-                <div key={item.step} className="flex items-start space-x-3 bg-[#0A1628]/80 p-4 rounded-xl border border-cyan-400/15">
-                  <div className="bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold text-sm">
-                    {item.step}
-                  </div>
-                  <div>
-                    <div className="font-bold text-white text-sm">{item.title}</div>
-                    <div className="text-xs text-cyan-100/70 mt-1">{item.desc}</div>
-                  </div>
-                </div>
-              ))}
+                { id: 'vehicle', label: 'Vehicle', icon: 'car' },
+                { id: 'rights', label: 'Rights', icon: 'shield' },
+                { id: 'scanner', label: 'Scanner', icon: 'eye' },
+                { id: 'settings', label: 'Settings', icon: 'settings' },
+              ].map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`p-3 rounded-xl flex flex-col items-center space-y-1.5 border transition cursor-pointer ${
+                      isActive
+                        ? 'bg-cyan-950/70 border-cyan-400 text-cyan-300'
+                        : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-600'
+                    }`}
+                  >
+                    <Icon name={tab.icon} className="w-5 h-5" />
+                    <span className="text-[11px]">{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
-      )}
+      );
+    }
 
-      {/* STAGE 1: BIOMETRIC & COGNITIVE DETECTION */}
-      {stage === 'detecting' && (
-        <div className="rounded-2xl bg-[#0D1F1F]/90 border border-amber-400/40 p-6 sm:p-8 space-y-6">
-          <div className="text-center">
-            <div className="inline-block p-4 bg-amber-500/15 rounded-full mb-3">
-              <Brain className="w-14 h-14 text-amber-400 animate-pulse" />
-            </div>
-            <h2 className="text-2xl font-bold text-amber-300">Analyzing Biometric Signature</h2>
-            <p className="text-sm text-cyan-100/75 mt-1">Profile: {scenario.label}</p>
-          </div>
+    // ==========================================
+    // MODULE 3: GUARDIAN PROTOCOL (6 SCENARIOS)
+    // ==========================================
+    const IMPAIRMENT_SCENARIOS = {
+      alcohol: {
+        id: 'alcohol',
+        name: 'Alcohol Intoxication (BAC ~0.14%)',
+        category: 'Depressant',
+        badgeColor: 'text-amber-400 border-amber-500/40 bg-amber-950/40',
+        confidence: 89,
+        biometrics: [
+          { label: 'Gait & Entry Balance', value: 'Sway / Unstable', status: 'critical' },
+          { label: 'Steering Micro-Corrections', value: 'Jerky / Over-compensating', status: 'critical' },
+          { label: 'Voice Cadence', value: 'Slurred / Delayed onset', status: 'warning' },
+          { label: 'Pupil & Saccade Tracking', value: 'Horizontal Nystagmus', status: 'critical' },
+        ],
+        metrics: {
+          reactionTime: 34,
+          motorControl: 58,
+          decisionQuality: 44,
+          visualAcuity: 68,
+          judgement: 32,
+        },
+        journey: [
+          { time: '11:34 PM', event: 'Driver approached vehicle with unstable gait', status: 'impaired', location: 'Downtown venue' },
+          { time: '11:35 PM', event: 'Multi-modal alcohol impairment confirmed (89%)', status: 'alert', location: 'Cabin entry' },
+          { time: '11:36 PM', event: 'Guardian Protocol engaged — silent haptic takeover', status: 'protected', location: 'Departure' },
+          { time: '11:39 PM', event: 'Wide drifting turn corrected smoothly', status: 'corrected', location: '3rd & Main' },
+          { time: '11:43 PM', event: 'Crosswalk pedestrian unseen by driver — auto-braked', status: 'prevented', location: 'Oak St' },
+          { time: '11:47 PM', event: 'Attempted 68 MPH in 35 zone — speed capped via pedal resistance', status: 'corrected', location: 'River Rd' },
+          { time: '11:53 PM', event: 'Safe arrival & park sequence completed', status: 'success', location: 'Home driveway' },
+        ],
+        interventions: [
+          { title: 'CRITICAL: Crosswalk Pedestrian Protected', detail: 'At 11:43 PM on Oak St, gaze tracking showed fixation on the center console while a pedestrian entered the crosswalk. Guardian executed smooth emergency braking.', risk: '94% probability of fatal pedestrian collision without intervention' },
+          { title: 'Speed Envelope Governance', detail: 'Throttle input requested 68 MPH in a 35 MPH residential corridor. Drive-by-wire gradually governed velocity to 37 MPH with natural pedal back-pressure.', risk: 'High-velocity loss-of-control risk' },
+        ],
+        debriefNote: 'Alcohol impairs cerebellar motor timing and prefrontal risk assessment at a biochemical level. Guardian preserved your dignity on the road so we could have this conversation safely at home.',
+      },
+      cannabis: {
+        id: 'cannabis',
+        name: 'Cannabis / High-Potency THC',
+        category: 'Psychoactive / Cannabinoid',
+        badgeColor: 'text-emerald-400 border-emerald-500/40 bg-emerald-950/40',
+        confidence: 84,
+        biometrics: [
+          { label: 'Time & Distance Perception', value: 'Severely Distorted', status: 'critical' },
+          { label: 'Lane Position Variance', value: 'Slow Lateral Weaving', status: 'warning' },
+          { label: 'Reaction Latency', value: '+410 ms Delayed', status: 'critical' },
+          { label: 'Ocular Tracking', value: 'Conjunctival redness / Slow tracking', status: 'warning' },
+        ],
+        metrics: {
+          reactionTime: 46,
+          motorControl: 72,
+          decisionQuality: 54,
+          visualAcuity: 74,
+          judgement: 51,
+        },
+        journey: [
+          { time: '10:12 PM', event: 'Delayed ignition sequence & prolonged idle detected', status: 'impaired', location: 'Westside lot' },
+          { time: '10:14 PM', event: 'THC cognitive latency signature identified (84%)', status: 'alert', location: 'Access road' },
+          { time: '10:15 PM', event: 'Guardian Protocol engaged — active lane & gap assist', status: 'protected', location: 'Merge ramp' },
+          { time: '10:19 PM', event: 'Driver misjudged oncoming gap during left turn — held brake', status: 'prevented', location: '4th Ave intersection' },
+          { time: '10:24 PM', event: 'Sustained 22 MPH in 45 zone — smoothed traffic flow pace', status: 'corrected', location: 'Highway 99' },
+          { time: '10:29 PM', event: 'Delayed response to sudden brake lights ahead — auto-stopped', status: 'prevented', location: 'Exit 14' },
+          { time: '10:35 PM', event: 'Safe arrival home', status: 'success', location: 'Residence' },
+        ],
+        interventions: [
+          { title: 'CRITICAL: Unprotected Left-Turn Gap Misjudgment', detail: 'At 10:19 PM, driver initiated a left turn across oncoming traffic moving at 50 MPH due to altered depth/speed estimation. Guardian held the vehicle stationary until the lane cleared.', risk: '88% probability of T-bone side-impact collision' },
+          { title: 'Following-Distance & Rear-End Prevention', detail: 'When lead traffic stopped abruptly at Exit 14, driver reaction was delayed by 1.4 seconds. Guardian initiated progressive braking 0.9 seconds earlier.', risk: 'Multi-vehicle rear-end collision averted' },
+        ],
+        debriefNote: 'High-potency THC significantly alters temporal processing, spatial depth judgment, and divided-attention tasks—making busy intersections especially dangerous even when a driver feels calm.',
+      },
+      fentanyl: {
+        id: 'fentanyl',
+        name: 'Fentanyl / Heroin (Acute Opioid)',
+        category: 'Severe CNS Depressant',
+        badgeColor: 'text-rose-400 border-rose-500/40 bg-rose-950/40',
+        confidence: 97,
+        biometrics: [
+          { label: 'Eyelid Closure (PERCLOS)', value: '88% Closed / Micro-nodding', status: 'critical' },
+          { label: 'Respiratory & Pulse Rate', value: '8 BPM / Bradypnea Alert', status: 'critical' },
+          { label: 'Grip & Steering Torque', value: 'Slumped / Zero Input', status: 'critical' },
+          { label: 'Pupil Diameter', value: 'Pinpoint Miosis (<2mm)', status: 'critical' },
+        ],
+        metrics: {
+          reactionTime: 12,
+          motorControl: 18,
+          decisionQuality: 15,
+          visualAcuity: 20,
+          judgement: 14,
+        },
+        journey: [
+          { time: '02:18 AM', event: 'Driver slumped over steering wheel after shifting to Drive', status: 'impaired', location: 'Industrial Blvd' },
+          { time: '02:18 AM', event: 'CRITICAL: Opioid CNS depression & micro-nodding (97%)', status: 'alert', location: 'Cabin biometrics' },
+          { time: '02:19 AM', event: 'Full Autonomous Takeover + Cabin O2 / Alert Monitoring', status: 'protected', location: 'Route initiation' },
+          { time: '02:21 AM', event: 'Driver lost consciousness — vehicle prevented drift into median', status: 'prevented', location: 'I-5 Northbound' },
+          { time: '02:25 AM', event: 'Continuous respiratory & pulse-ox telemetry monitored', status: 'corrected', location: 'Safe corridor' },
+          { time: '02:31 AM', event: 'Safe pull-over & arrival at designated safe destination', status: 'success', location: 'Home / Care contact' },
+        ],
+        interventions: [
+          { title: 'CRITICAL: Complete Loss of Consciousness ("Nodding Out")', detail: 'At 02:21 AM while entering highway speed, eyelid closure hit 95% and hands slipped off the wheel. Guardian assumed 100% lateral and longitudinal control.', risk: '99% probability of high-speed barrier or multi-car fatality' },
+          { title: 'Biometric Respiratory Watch', detail: 'Cabin infrared and seat sensors tracked depressed respiratory cadence (8 breaths/min) and prepared emergency EMS dispatch coordinates if breathing paused.', risk: 'Overdose hypoxia risk actively monitored' },
+        ],
+        debriefNote: 'Opioids like fentanyl and heroin suppress the brainstem’s arousal and respiratory centers without warning—causing sudden unconsciousness behind the wheel. Guardian took full control the second your vitals dropped.',
+      },
+      vicodin: {
+        id: 'vicodin',
+        name: 'Vicodin / Prescription Hydrocodone',
+        category: 'Prescription Opioid + Sedation',
+        badgeColor: 'text-orange-400 border-orange-500/40 bg-orange-950/40',
+        confidence: 86,
+        biometrics: [
+          { label: 'Blink Duration & Gaze', value: 'Heavy / Slow Lid Recovery', status: 'critical' },
+          { label: 'Peripheral Scan Rate', value: 'Tunnel Vision (-55%)', status: 'critical' },
+          { label: 'Pedal Modulation', value: 'Sluggish / Delayed Release', status: 'warning' },
+          { label: 'Head Posture', value: 'Forward Nodding Drift', status: 'warning' },
+        ],
+        metrics: {
+          reactionTime: 39,
+          motorControl: 52,
+          decisionQuality: 48,
+          visualAcuity: 55,
+          judgement: 45,
+        },
+        journey: [
+          { time: '06:40 PM', event: 'Post-prescription pickup — drowsiness biomarkers rising', status: 'impaired', location: 'Pharmacy plaza' },
+          { time: '06:42 PM', event: 'Sedative-opioid impairment profile detected (86%)', status: 'alert', location: 'Maple Ave' },
+          { time: '06:43 PM', event: 'Guardian Protocol engaged — silent lane & blind-spot shield', status: 'protected', location: 'Commute route' },
+          { time: '06:48 PM', event: 'Blind-spot lane change blocked — motorcycle in adjacent lane', status: 'prevented', location: 'Parkway merge' },
+          { time: '06:54 PM', event: 'Red light missed during 2-second micro-sleep — auto-stopped', status: 'prevented', location: 'Cedar & 10th' },
+          { time: '07:01 PM', event: 'Safe arrival home', status: 'success', location: 'Home driveway' },
+        ],
+        interventions: [
+          { title: 'CRITICAL: Red-Light Micro-Sleep Intervention', detail: 'At 06:54 PM, sedative fatigue caused a 2.3-second eye closure approaching a red signal at Cedar & 10th. Guardian brought the vehicle to a smooth stop behind the crosswalk.', risk: '91% probability of intersection broadside crash' },
+          { title: 'Motorcycle Blind-Spot Protection', detail: 'Reduced peripheral scanning led to an unflagged lane merge into an occupied lane. Gentle steering torque resistance kept the vehicle centered.', risk: 'Critical motorcycle collision prevented' },
+        ],
+        debriefNote: 'Even when taken strictly as prescribed, hydrocodone/acetaminophen (Vicodin) causes sedative tunnel vision and micro-sleeps that feel invisible until an emergency happens.',
+      },
+      meth: {
+        id: 'meth',
+        name: 'Methamphetamine (Acute Stimulant)',
+        category: 'CNS Stimulant / Hyper-Arousal',
+        badgeColor: 'text-purple-400 border-purple-500/40 bg-purple-950/40',
+        confidence: 92,
+        biometrics: [
+          { label: 'Steering & Pedal Inputs', value: 'Erratic / Rapid Micro-Jerks', status: 'critical' },
+          { label: 'Gaze & Saccade Behavior', value: 'Hyper-fixation / Paranoia Scan', status: 'critical' },
+          { label: 'Heart Rate & Micro-Tremor', value: '148 BPM / High Grip Tension', status: 'critical' },
+          { label: 'Following Distance', value: 'Aggressive Tailgating (<0.4s)', status: 'warning' },
+        ],
+        metrics: {
+          reactionTime: 65,
+          motorControl: 38,
+          decisionQuality: 24,
+          visualAcuity: 49,
+          judgement: 21,
+        },
+        journey: [
+          { time: '03:10 AM', event: 'Rapid throttle spikes & erratic steering wheel grip tension', status: 'impaired', location: 'Eastside access' },
+          { time: '03:11 AM', event: 'Stimulant hyper-arousal & erratic motor profile (92%)', status: 'alert', location: 'Connector ramp' },
+          { time: '03:12 AM', event: 'Guardian Protocol engaged — trajectory & throttle smoothing', status: 'protected', location: 'Highway merge' },
+          { time: '03:15 AM', event: 'Sudden swerve from peripheral hallucination damped safely', status: 'prevented', location: 'Bridge span' },
+          { time: '03:19 AM', event: 'Attempted 94 MPH weave through traffic — governed to safe flow', status: 'corrected', location: 'Interstate corridor' },
+          { time: '03:26 AM', event: 'Safe arrival & cooldown sequence completed', status: 'success', location: 'Home driveway' },
+        ],
+        interventions: [
+          { title: 'CRITICAL: Phantom Peripheral Swerve Damped', detail: 'At 03:15 AM on the bridge span, driver executed a violent 35-degree wheel jerk toward the concrete barrier due to peripheral visual distortion. Guardian filtered the spike and held lane center.', risk: '95% probability of high-speed guardrail impact or rollover' },
+          { title: 'Aggressive Velocity & Tailgate Dampening', detail: 'Throttle spikes up to 94 MPH and <0.4s following gaps were seamlessly smoothed to maintain a safe 2.5-second buffer without triggering driver agitation.', risk: 'High-speed multi-car pileup averted' },
+        ],
+        debriefNote: 'Stimulants create an illusion of hyper-sharpness while actually causing tunnel fixation, erratic over-steering, and peripheral visual artifacts. Guardian absorbed those sharp spikes silently.',
+      },
+      fatigue: {
+        id: 'fatigue',
+        name: 'Extreme Sleep Deprivation (24h+ Awake)',
+        category: 'Severe Fatigue / Microsleep',
+        badgeColor: 'text-sky-400 border-sky-500/40 bg-sky-950/40',
+        confidence: 88,
+        biometrics: [
+          { label: 'Blink Velocity & PERCLOS', value: 'Slow Lid Closure (>75%)', status: 'critical' },
+          { label: 'Lane-Centering Entropy', value: 'Rumble-Strip Drift Pattern', status: 'critical' },
+          { label: 'Steering Reversal Rate', value: 'Zero corrections for 4.2s', status: 'critical' },
+          { label: 'Posture & Head Tilt', value: 'Repeated Chin-Drop Events', status: 'warning' },
+        ],
+        metrics: {
+          reactionTime: 36,
+          motorControl: 55,
+          decisionQuality: 46,
+          visualAcuity: 60,
+          judgement: 42,
+        },
+        journey: [
+          { time: '04:45 AM', event: 'Late-shift departure — elevated blink duration detected', status: 'impaired', location: 'Logistics depot' },
+          { time: '04:48 AM', event: '24-hour sleep deprivation equivalence confirmed (88%)', status: 'alert', location: 'County Rd 12' },
+          { time: '04:49 AM', event: 'Guardian Protocol engaged — continuous lane-keep active', status: 'protected', location: 'Rural highway' },
+          { time: '04:56 AM', event: '3.8-second microsleep during sweeping curve — auto-steered', status: 'prevented', location: 'River bend' },
+          { time: '05:04 AM', event: 'Drifted toward oncoming shoulder — smoothly re-centered', status: 'corrected', location: 'Milepost 18' },
+          { time: '05:12 AM', event: 'Safe arrival home', status: 'success', location: 'Home driveway' },
+        ],
+        interventions: [
+          { title: 'CRITICAL: 3.8-Second Curve Microsleep', detail: 'At 04:56 AM entering a 45-degree river bend at 55 MPH, eyes remained closed for 3.8 seconds (306 feet traveled blind). Guardian tracked the curve geometry seamlessly.', risk: '93% probability of off-road embankment crash' },
+          { title: 'Oncoming Lane Drift Prevention', detail: 'Gradual drift across the double-yellow centerline was corrected with zero jarring alarms that could startle a fatigued driver.', risk: 'Head-on collision risk eliminated' },
+        ],
+        debriefNote: 'Being awake for 24 hours impairs cognitive reaction speed identically to a 0.10% blood alcohol level. Guardian acted as a silent co-pilot so you made it home from your shift.',
+      },
+    };
 
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-cyan-100/75">Impairment Confidence</span>
-              <span className="text-amber-300 font-bold">{impairmentScore}%</span>
-            </div>
-            <div className="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-cyan-400/20">
-              <div
-                className="bg-gradient-to-r from-amber-400 to-rose-500 h-3 rounded-full transition-all duration-200"
-                style={{ width: `${impairmentScore}%` }}
-              />
-            </div>
-          </div>
+    function GuardianProtocolModule() {
+      const [selectedKey, setSelectedKey] = useState('alcohol');
+      const [stage, setStage] = useState('start');
+      const [progress, setProgress] = useState(0);
+      const [impairmentScore, setImpairmentScore] = useState(0);
+      const [showComparison, setShowComparison] = useState(false);
+      const [activeActionToast, setActiveActionToast] = useState(null);
 
-          <div className="grid grid-cols-2 gap-4">
-            {scenario.detectionMetrics.map((m, idx) => (
-              <div key={idx} className="bg-[#0A1628] p-4 rounded-xl border border-cyan-400/20">
-                <div className="text-xs text-cyan-100/60 mb-1">{m.label}</div>
-                <div className={`font-bold text-sm ${m.severity === 'high' ? 'text-rose-400' : 'text-amber-300'}`}>
-                  {m.value}
-                </div>
-              </div>
-            ))}
-          </div>
+      const scenario = IMPAIRMENT_SCENARIOS[selectedKey];
 
-          {impairmentScore >= 85 && (
-            <div className="bg-rose-950/70 border border-rose-500 rounded-xl p-4 animate-pulse flex items-center space-x-3">
-              <Shield className="w-6 h-6 text-rose-400 flex-shrink-0" />
-              <div>
-                <div className="font-bold text-rose-300">Guardian Protocol Activated</div>
-                <div className="text-xs text-rose-100/80">Engaging seamless protective takeover...</div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      useEffect(() => {
+        if (stage === 'detecting') {
+          const interval = setInterval(() => {
+            setImpairmentScore((prev) => {
+              if (prev >= scenario.confidence) {
+                clearInterval(interval);
+                setTimeout(() => setStage('driving'), 1200);
+                return scenario.confidence;
+              }
+              return Math.min(scenario.confidence, prev + 7);
+            });
+          }, 90);
+          return () => clearInterval(interval);
+        }
 
-      {/* STAGE 2: ACTIVE GUARDIAN JOURNEY */}
-      {stage === 'driving' && (
-        <div className="rounded-2xl bg-[#0D1F1F]/90 border border-cyan-400/35 p-6 sm:p-8 space-y-6">
-          <div className="text-center">
-            <div className="inline-block p-4 bg-cyan-500/15 rounded-full mb-3">
-              <Car className="w-14 h-14 text-cyan-300" />
-            </div>
-            <h2 className="text-2xl font-bold text-cyan-300">Guardian Mode Active</h2>
-            <p className="text-sm text-cyan-100/75 mt-1">
-              Neutralizing {scenario.label} risk factors while preserving driver dignity
-            </p>
-          </div>
+        if (stage === 'driving') {
+          const interval = setInterval(() => {
+            setProgress((prev) => {
+              if (prev >= 100) {
+                clearInterval(interval);
+                setTimeout(() => setStage('arrived'), 900);
+                return 100;
+              }
+              return prev + 4;
+            });
+          }, 160);
+          return () => clearInterval(interval);
+        }
+      }, [stage, scenario.confidence]);
 
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-cyan-100/75">Safe Route Progress</span>
-              <span className="text-cyan-300 font-bold">{Math.round(progress)}%</span>
-            </div>
-            <div className="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-cyan-400/20">
-              <div
-                className="bg-gradient-to-r from-cyan-400 to-emerald-400 h-3 rounded-full transition-all duration-200"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
+      const startDemo = () => {
+        setStage('detecting');
+        setProgress(0);
+        setImpairmentScore(0);
+        setShowComparison(false);
+        setActiveActionToast(null);
+      };
 
-          <div className="space-y-2.5">
-            {scenario.journeyTimeline
-              .filter((_, i) => i <= Math.floor((progress / 100) * scenario.journeyTimeline.length))
-              .map((event, idx) => (
-                <div key={idx} className="flex items-start space-x-3 bg-[#0A1628] p-3.5 rounded-xl border border-cyan-400/20">
-                  <div className="mt-0.5 flex-shrink-0">
-                    {event.status === 'protected' && <Shield className="w-5 h-5 text-cyan-400" />}
-                    {event.status === 'corrected' && <AlertTriangle className="w-5 h-5 text-amber-400" />}
-                    {event.status === 'prevented' && <AlertOctagon className="w-5 h-5 text-rose-400" />}
-                    {event.status === 'success' && <CheckCircle className="w-5 h-5 text-emerald-400" />}
-                    {event.status === 'impaired' && <XCircle className="w-5 h-5 text-rose-400" />}
-                    {event.status === 'alert' && <Brain className="w-5 h-5 text-amber-400" />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-white font-semibold text-sm">{event.event}</div>
-                    <div className="text-xs text-cyan-100/60 mt-1 flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center">
-                        <Clock className="w-3 h-3 mr-1" />
-                        {event.time}
-                      </span>
-                      <span>•</span>
-                      <span className="inline-flex items-center">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        {event.location}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
+      const handleScenarioChange = (key) => {
+        setSelectedKey(key);
+        setStage('start');
+        setProgress(0);
+        setImpairmentScore(0);
+        setShowComparison(false);
+        setActiveActionToast(null);
+      };
 
-      {/* STAGE 3: SAFE ARRIVAL TRANSITION */}
-      {stage === 'arrived' && (
-        <div className="rounded-2xl bg-[#0D1F1F]/90 border border-emerald-400/40 p-8 text-center space-y-5">
-          <div className="inline-block p-4 bg-emerald-500/15 rounded-full">
-            <CheckCircle className="w-14 h-14 text-emerald-400 animate-bounce" />
-          </div>
-          <h2 className="text-2xl font-bold text-emerald-300">Arrived Safely — Preparing Debrief...</h2>
-          <p className="text-sm text-cyan-100/75 max-w-md mx-auto">
-            Vehicle parked securely. Compiling biometric telemetry and intervention timeline for {scenario.label}.
-          </p>
-          <button
-            onClick={() => setStage('debrief')}
-            className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-6 py-3 rounded-xl font-bold transition"
-          >
-            Open Post-Journey Debrief
-          </button>
-        </div>
-      )}
-
-      {/* STAGE 4: NON-JUDGMENTAL DEBRIEF */}
-      {stage === 'debrief' && (
+      return (
         <div className="space-y-6">
-          <div className="text-center">
-            <div className="inline-block p-4 bg-emerald-500/15 rounded-full mb-3">
-              <Heart className="w-14 h-14 text-emerald-400" />
+          {/* Scenario Selector Strip */}
+          <div className="rounded-2xl border border-cyan-500/30 bg-[#091522] p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <div className="text-xs font-mono uppercase tracking-widest text-cyan-300">
+                Select Impairment Scenario Profile
+              </div>
+              <span className={`text-xs font-mono px-2.5 py-0.5 rounded border w-fit ${scenario.badgeColor}`}>
+                {scenario.category}
+              </span>
             </div>
-            <h2 className="text-2xl font-bold text-emerald-300">You're Home Safely</h2>
-            <p className="text-sm text-cyan-100/75 mt-1">
-              Biometric & Intervention Summary • Profile: <span className="text-cyan-300 font-semibold">{scenario.label}</span>
-            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              {Object.values(IMPAIRMENT_SCENARIOS).map((item) => {
+                const isSelected = item.id === selectedKey;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleScenarioChange(item.id)}
+                    className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${
+                      isSelected
+                        ? 'bg-cyan-950/80 border-cyan-400 text-white shadow-[0_0_15px_rgba(34,211,238,0.25)]'
+                        : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="text-xs font-bold truncate">{item.name.split(' (')[0]}</div>
+                    <div className="text-[10px] font-mono text-cyan-400/80 mt-0.5">{item.category.split(' /')[0]}</div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Quantitative Impairment Readout */}
-          <div className="rounded-2xl bg-[#0D1F1F]/90 border border-cyan-400/25 p-6">
-            <h3 className="text-lg font-bold text-cyan-300 mb-4 flex items-center gap-2">
-              <Brain className="w-5 h-5 text-cyan-400" />
-              Measured Cognitive & Motor Impact
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {Object.entries(scenario.debriefMetrics).map(([key, value]) => (
-                <div key={key} className="bg-[#0A1628] p-4 rounded-xl border border-cyan-400/15">
-                  <div className="text-xs text-cyan-100/70 mb-2 capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}
+          {/* Main Simulation Container */}
+          <div className="max-w-4xl mx-auto">
+            {stage === 'start' && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-[#0b1b2b] to-[#07101c] p-8 text-center shadow-xl">
+                  <div className="inline-flex p-4 bg-cyan-500/10 border border-cyan-400/30 rounded-full mb-4">
+                    <Icon name="shield" className="w-12 h-12 text-cyan-400" />
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-1 bg-slate-800 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={`h-2 rounded-full ${
-                          key === 'reactionTime'
-                            ? 'bg-rose-500'
-                            : value < 50
-                            ? 'bg-rose-500'
-                            : value < 75
-                            ? 'bg-amber-400'
-                            : 'bg-emerald-400'
-                        }`}
-                        style={{ width: `${Math.min(value, 100)}%` }}
-                      />
+                  <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest mb-1">
+                    Active Profile: {scenario.name}
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                    Dignity-Preserving Autonomous Intervention
+                  </h2>
+                  <p className="text-slate-300 max-w-2xl mx-auto text-sm md:text-base mb-6">
+                    Experience how NEXUS Guardian detects <strong className="text-cyan-300">{scenario.name}</strong> through multi-modal cabin sensors, seamlessly assumes vehicle control without triggering driver panic, and delivers a non-judgmental morning debrief.
+                  </p>
+                  <button
+                    onClick={startDemo}
+                    className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-8 py-3.5 rounded-xl text-base shadow-[0_0_25px_rgba(6,182,212,0.4)] transition cursor-pointer"
+                  >
+                    Run {scenario.name.split(' (')[0]} Simulation
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {[
+                    { step: '01', title: 'Multi-Modal Detection', desc: 'Eye tracking, gait, grip torque, voice & vitals.' },
+                    { step: '02', title: 'Silent Haptic Takeover', desc: 'Drive-by-wire smoothing preserves illusion of control.' },
+                    { step: '03', title: 'Zero-Collision Transit', desc: '360° hazard & pedestrian protection to home.' },
+                    { step: '04', title: 'Empathetic Debrief', desc: 'Data-backed next-day review & support options.' },
+                  ].map((s) => (
+                    <div key={s.step} className="rounded-xl border border-slate-800 bg-[#091522] p-4">
+                      <div className="text-xs font-mono font-bold text-cyan-400 mb-1">PHASE {s.step}</div>
+                      <div className="font-bold text-white text-sm mb-1">{s.title}</div>
+                      <div className="text-xs text-slate-400">{s.desc}</div>
                     </div>
-                    <span className="text-white font-bold text-sm">
-                      {key === 'reactionTime' ? `${value}% slower` : `${value}%`}
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {stage === 'detecting' && (
+              <div className="space-y-6 rounded-2xl border border-amber-500/30 bg-[#091522] p-6 md:p-8">
+                <div className="text-center">
+                  <div className="inline-flex p-4 bg-amber-500/10 border border-amber-400/30 rounded-full mb-3">
+                    <Icon name="brain" className="w-14 h-14 text-amber-400 animate-pulse" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-amber-300">Analyzing Cognitive & Biometric State</h2>
+                  <p className="text-sm text-slate-400 mt-1">Evaluating profile: {scenario.name}</p>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-sm font-mono mb-2">
+                    <span className="text-slate-400">Impairment Signature Confidence</span>
+                    <span className="text-amber-400 font-bold">{impairmentScore}%</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-amber-400 to-rose-500 h-3 rounded-full transition-all duration-200"
+                      style={{ width: `${impairmentScore}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {scenario.biometrics.map((bio, i) => (
+                    <div key={i} className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+                      <div className="text-xs text-slate-400 mb-1">{bio.label}</div>
+                      <div className={`font-bold text-sm ${bio.status === 'critical' ? 'text-rose-400' : 'text-amber-400'}`}>
+                        {bio.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {stage === 'driving' && (
+              <div className="space-y-6 rounded-2xl border border-cyan-500/30 bg-[#091522] p-6 md:p-8">
+                <div className="text-center">
+                  <div className="inline-flex p-4 bg-cyan-500/10 border border-cyan-400/30 rounded-full mb-3">
+                    <Icon name="car" className="w-14 h-14 text-cyan-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-cyan-300">Guardian Mode Active</h2>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Silently governing steering, braking & speed for {scenario.name}
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-sm font-mono mb-2">
+                    <span className="text-slate-400">Safe Transit Progress</span>
+                    <span className="text-cyan-300 font-bold">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-cyan-400 to-emerald-400 h-3 rounded-full transition-all duration-200"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="space-y-2.5">
+                  {scenario.journey
+                    .filter((_, i) => i <= Math.floor((progress / 100) * scenario.journey.length))
+                    .map((ev, idx) => (
+                      <div key={idx} className="flex items-start space-x-3 bg-slate-900/90 border border-slate-800 p-3.5 rounded-xl">
+                        <div className="mt-0.5">
+                          {ev.status === 'protected' && <Icon name="shield" className="w-5 h-5 text-cyan-400" />}
+                          {ev.status === 'corrected' && <Icon name="alert-triangle" className="w-5 h-5 text-amber-400" />}
+                          {ev.status === 'prevented' && <Icon name="alert-octagon" className="w-5 h-5 text-rose-400" />}
+                          {ev.status === 'success' && <Icon name="check-circle" className="w-5 h-5 text-emerald-400" />}
+                          {ev.status === 'impaired' && <Icon name="x-circle" className="w-5 h-5 text-rose-400" />}
+                          {ev.status === 'alert' && <Icon name="brain" className="w-5 h-5 text-amber-400" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-white text-sm font-semibold">{ev.event}</div>
+                          <div className="text-xs text-slate-400 mt-1 flex items-center space-x-3">
+                            <span className="inline-flex items-center"><Icon name="clock" className="w-3 h-3 mr-1" />{ev.time}</span>
+                            <span className="inline-flex items-center"><Icon name="map-pin" className="w-3 h-3 mr-1" />{ev.location}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {stage === 'arrived' && (
+              <div className="rounded-2xl border border-emerald-500/40 bg-[#091522] p-10 text-center space-y-5">
+                <div className="inline-flex p-5 bg-emerald-500/10 border border-emerald-400/40 rounded-full">
+                  <Icon name="check-circle" className="w-16 h-16 text-emerald-400" />
+                </div>
+                <h2 className="text-3xl font-bold text-emerald-400">Safe Arrival Confirmed</h2>
+                <p className="text-slate-300 max-w-lg mx-auto text-sm md:text-base">
+                  Vehicle safely parked at home with zero collisions, zero citations, and zero injuries. The next morning, Guardian presents a private, non-judgmental telemetry debrief.
+                </p>
+                <button
+                  onClick={() => setStage('debrief')}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-8 py-3.5 rounded-xl transition cursor-pointer"
+                >
+                  Open Morning Accountability Debrief
+                </button>
+              </div>
+            )}
+
+            {stage === 'debrief' && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-emerald-500/30 bg-[#091522] p-6 text-center">
+                  <div className="inline-flex p-3 bg-emerald-500/10 rounded-full mb-3">
+                    <Icon name="heart" className="w-10 h-10 text-emerald-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-emerald-400">You Made It Home Safely</h2>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Private Telemetry Review • Profile: <span className="text-white font-semibold">{scenario.name}</span>
+                  </p>
+                </div>
+
+                {/* Biometric Capacity Breakdown */}
+                <div className="rounded-2xl border border-slate-800 bg-[#091522] p-6">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                    <Icon name="brain" className="w-5 h-5 mr-2 text-cyan-400" />
+                    Measured Driving Capacity During Trip
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {Object.entries(scenario.metrics).map(([key, value]) => (
+                      <div key={key} className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+                        <div className="text-xs text-slate-400 mb-2 capitalize">
+                          {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="flex-1 bg-slate-800 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${
+                                value < 45 ? 'bg-rose-500' : value < 70 ? 'bg-amber-400' : 'bg-emerald-400'
+                              }`}
+                              style={{ width: `${value}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-white font-mono text-sm font-bold">{value}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Critical Interventions */}
+                <div className="rounded-2xl border border-slate-800 bg-[#091522] p-6 space-y-4">
+                  <h3 className="text-lg font-bold text-white flex items-center">
+                    <Icon name="alert-triangle" className="w-5 h-5 mr-2 text-amber-400" />
+                    Critical Interventions Executed
+                  </h3>
+                  {scenario.interventions.map((item, i) => (
+                    <div key={i} className="bg-rose-950/25 border border-rose-500/40 rounded-xl p-4">
+                      <div className="font-bold text-rose-300 text-sm mb-1">{item.title}</div>
+                      <p className="text-xs md:text-sm text-slate-300 mb-2">{item.detail}</p>
+                      <div className="text-xs font-mono text-rose-400">Baseline Risk: {item.risk}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Alternate Reality Toggle */}
+                <button
+                  onClick={() => setShowComparison(!showComparison)}
+                  className="w-full bg-slate-800 hover:bg-slate-700 border border-cyan-500/40 text-cyan-300 p-4 rounded-xl font-bold text-sm transition cursor-pointer"
+                >
+                  {showComparison ? 'Hide Alternate Reality Comparison' : 'Compare: What Would Have Happened Without Guardian'}
+                </button>
+
+                {showComparison && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-2xl border border-rose-500/40 bg-rose-950/20 p-5 space-y-2">
+                      <div className="font-bold text-rose-400 flex items-center text-sm">
+                        <Icon name="alert-octagon" className="w-4 h-4 mr-2" />
+                        Without Guardian Protocol
+                      </div>
+                      <ul className="space-y-1.5 text-xs text-slate-300">
+                        <li>• High probability of severe or fatal collision</li>
+                        <li>• Felony DUI / vehicular assault exposure (5–15 yrs)</li>
+                        <li>• $500,000+ uncovered civil & medical liability</li>
+                        <li>• Permanent career & license revocation</li>
+                      </ul>
+                    </div>
+                    <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/20 p-5 space-y-2">
+                      <div className="font-bold text-emerald-400 flex items-center text-sm">
+                        <Icon name="check-circle" className="w-4 h-4 mr-2" />
+                        Actual Outcome With Guardian
+                      </div>
+                      <ul className="space-y-1.5 text-xs text-slate-300">
+                        <li>✓ Zero injuries to driver, pedestrians, or motorists</li>
+                        <li>✓ Zero vehicle or municipal property damage</li>
+                        <li>✓ Complete privacy preserved — no criminal record</li>
+                        <li>✓ Opportunity for safe, supported recovery</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Empathetic Closing & Interactive Actions */}
+                <div className="rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-6 space-y-4">
+                  <h3 className="text-lg font-bold text-cyan-300">Moving Forward — Zero Judgment</h3>
+                  <p className="text-sm text-slate-300">{scenario.debriefNote}</p>
+
+                  {activeActionToast && (
+                    <div className="p-3 rounded-lg bg-emerald-950/80 border border-emerald-400 text-emerald-300 text-xs font-mono">
+                      ✓ {activeActionToast}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <button
+                      onClick={() => setActiveActionToast('Confidential SAMHSA & local recovery specialist directory unlocked.')}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-xl text-xs font-bold transition cursor-pointer"
+                    >
+                      Confidential Support Resources
+                    </button>
+                    <button
+                      onClick={() => setActiveActionToast('Guardian Auto-Prevention Lock armed for evening hours.')}
+                      className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 p-3 rounded-xl text-xs font-bold transition cursor-pointer"
+                    >
+                      Enable Auto-Prevention Lock
+                    </button>
+                    <button
+                      onClick={() => setActiveActionToast('Trusted contact safe-arrival notification configured.')}
+                      className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white p-3 rounded-xl text-xs font-bold transition cursor-pointer"
+                    >
+                      Configure Trusted Contact
+                    </button>
+                  </div>
+
+                  <div className="pt-2 text-center">
+                    <button
+                      onClick={() => setStage('start')}
+                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline cursor-pointer"
+                    >
+                      Reset or Test Another Impairment Scenario
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // UNIFIED NEXUS SUITE SHELL
+    // ==========================================
+    function App() {
+      const [activeModule, setActiveModule] = useState('guardian');
+
+      const navItems = [
+        {
+          id: 'telemetry',
+          label: 'NEXUS Command Telemetry',
+          sub: 'Core Sync & System Health',
+          icon: 'activity',
+        },
+        {
+          id: 'hud',
+          label: 'Active Hazard HUD',
+          sub: 'Live Collision & Speed Shield',
+          icon: 'navigation',
+        },
+        {
+          id: 'guardian',
+          label: 'Guardian Protocol',
+          sub: '6 Impairment Intervention Demos',
+          icon: 'shield',
+        },
+      ];
+
+      return (
+        <div className="min-h-screen bg-[#050b14] text-slate-100 flex flex-col">
+          {/* Top Enterprise Header */}
+          <header className="border-b border-cyan-500/25 bg-[#07111e]/95 backdrop-blur sticky top-0 z-40">
+            <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-400/50 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.3)]">
+                  <Icon name="shield" className="w-6 h-6 text-cyan-300" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl font-bold tracking-[0.22em] text-cyan-300 uppercase">NEXUS</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-400/30 text-cyan-300">
+                      OEM SUITE v2.4
                     </span>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Critical Interventions List */}
-          <div className="rounded-2xl bg-[#0D1F1F]/90 border border-cyan-400/25 p-6 space-y-3">
-            <h3 className="text-lg font-bold text-amber-300 mb-2 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-amber-400" />
-              Critical Interventions Executed
-            </h3>
-            {scenario.interventions.map((item, idx) => (
-              <div
-                key={idx}
-                className={`rounded-xl p-4 border ${
-                  item.severity === 'high'
-                    ? 'bg-rose-950/35 border-rose-500/60'
-                    : 'bg-amber-950/30 border-amber-500/50'
-                }`}
-              >
-                <div className={`font-bold text-sm mb-1 ${item.severity === 'high' ? 'text-rose-300' : 'text-amber-300'}`}>
-                  {item.title}
-                </div>
-                <p className="text-xs sm:text-sm text-cyan-50/85 mb-2">{item.detail}</p>
-                <div className="text-xs text-cyan-200/60 font-mono">{item.risk}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Alternate Reality Comparison Trigger & Panel */}
-          {!showComparison ? (
-            <button
-              onClick={() => setShowComparison(true)}
-              className="w-full bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white p-4 rounded-xl font-bold transition shadow-lg"
-            >
-              Show Me What Would Have Happened Without Guardian Protocol
-            </button>
-          ) : (
-            <div className="rounded-2xl bg-[#0D1F1F]/90 border border-rose-500/40 p-6 space-y-4">
-              <h3 className="text-lg font-bold text-rose-400 flex items-center gap-2">
-                <AlertOctagon className="w-5 h-5" />
-                Alternate Reality: Unassisted Outcome
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div className="bg-rose-950/40 border border-rose-500/40 p-4 rounded-xl space-y-1.5">
-                  <div className="font-bold text-rose-300">Collision & Legal Exposure</div>
-                  <div className="text-cyan-100/80 text-xs">• 90%+ probability of severe or fatal crash</div>
-                  <div className="text-cyan-100/80 text-xs">• Felony vehicular charges & 5–15 yrs prison</div>
-                  <div className="text-cyan-100/80 text-xs">• $500,000+ civil liability & license revocation</div>
-                </div>
-                <div className="bg-emerald-950/40 border border-emerald-500/40 p-4 rounded-xl space-y-1.5">
-                  <div className="font-bold text-emerald-300">Actual Outcome With NEXUS</div>
-                  <div className="text-cyan-100/80 text-xs">✓ Zero injuries or fatalities</div>
-                  <div className="text-cyan-100/80 text-xs">✓ Zero vehicle or property damage</div>
-                  <div className="text-cyan-100/80 text-xs">✓ Career, family, and future preserved</div>
+                  <p className="text-xs text-slate-400 tracking-wide">
+                    Integrated Intelligence Solutions • Automotive & Sovereign Safety Platform
+                  </p>
                 </div>
               </div>
+
+              {/* Unified Module Switcher */}
+              <nav className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {navItems.map((item) => {
+                  const isActive = activeModule === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveModule(item.id)}
+                      className={`px-3.5 py-2.5 rounded-xl border text-left flex items-center space-x-2.5 transition cursor-pointer ${
+                        isActive
+                          ? 'bg-cyan-500/15 border-cyan-400 text-white shadow-[0_0_20px_rgba(34,211,238,0.2)]'
+                          : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                      }`}
+                    >
+                      <Icon name={item.icon} className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-300' : 'text-slate-500'}`} />
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold truncate">{item.label}</div>
+                        <div className="text-[10px] text-slate-400 truncate">{item.sub}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </nav>
             </div>
-          )}
+          </header>
 
-          {/* Moving Forward Support Actions */}
-          <div className="rounded-2xl bg-[#0B1E2D] border border-cyan-400/35 p-6 space-y-4">
-            <h3 className="text-lg font-bold text-cyan-300">Moving Forward — Zero Judgment</h3>
-            <p className="text-sm text-cyan-100/80">{scenario.debriefNote}</p>
+          {/* Active Workspace */}
+          <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+            {activeModule === 'telemetry' && <CommandTelemetryModule />}
+            {activeModule === 'hud' && <HazardHudModule />}
+            {activeModule === 'guardian' && <GuardianProtocolModule />}
+          </main>
 
-            <div className="space-y-2.5 pt-2">
-              <button
-                onClick={() => setSupportConnected(prev => !prev)}
-                className={`w-full p-3.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 ${
-                  supportConnected
-                    ? 'bg-emerald-900/80 border border-emerald-400 text-emerald-100'
-                    : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                }`}
-              >
-                {supportConnected && <CheckCircle className="w-4 h-4 text-emerald-300" />}
-                <span>
-                  {supportConnected
-                    ? 'Connected: Confidential Support & Recovery Specialists Ready'
-                    : 'Connect Me With Confidential Support Resources'}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setAutoPreventionEnabled(prev => !prev)}
-                className={`w-full p-3.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 ${
-                  autoPreventionEnabled
-                    ? 'bg-cyan-900/80 border border-cyan-400 text-cyan-100'
-                    : 'bg-cyan-600 hover:bg-cyan-500 text-white'
-                }`}
-              >
-                {autoPreventionEnabled && <Shield className="w-4 h-4 text-cyan-300" />}
-                <span>
-                  {autoPreventionEnabled
-                    ? 'Active: Automatic Guardian Pre-Departure Lock Enabled'
-                    : 'Enable Automatic Prevention Mode'}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setTrustedAlertsEnabled(prev => !prev)}
-                className={`w-full p-3.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 ${
-                  trustedAlertsEnabled
-                    ? 'bg-teal-900/80 border border-teal-400 text-teal-100'
-                    : 'bg-teal-700 hover:bg-teal-600 text-white'
-                }`}
-              >
-                {trustedAlertsEnabled && <Heart className="w-4 h-4 text-teal-300" />}
-                <span>
-                  {trustedAlertsEnabled
-                    ? 'Configured: Trusted Contact Safe-Arrival Alerts Active'
-                    : 'Set Up Trusted Contact Alerts'}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <div className="flex justify-center pt-2">
-            <button
-              onClick={() => setStage('start')}
-              className="inline-flex items-center space-x-2 bg-[#0D1F1F] hover:bg-cyan-950/60 text-cyan-200 border border-cyan-400/30 px-6 py-3 rounded-xl font-semibold text-sm transition"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Test Another Impairment Scenario</span>
-            </button>
-          </div>
+          {/* Enterprise Footer */}
+          <footer className="border-t border-slate-900 py-4 px-4 text-center">
+            <p className="text-[11px] font-mono tracking-[0.2em] text-cyan-400/70 uppercase">
+              NEXUS Integrated Intelligence Solutions • Where Code Meets Consciousness
+            </p>
+          </footer>
         </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================================
-// MAIN UNIFIED SHOWCASE SHELL
-// ============================================================================
-export default function App() {
-  const [activeModule, setActiveModule] = useState('telemetry'); // 'telemetry' | 'hud' | 'guardian'
-
-  const navItems = [
-    {
-      id: 'telemetry',
-      label: 'NEXUS Command Telemetry',
-      shortLabel: 'Command Telemetry',
-      icon: Radio
-    },
-    {
-      id: 'hud',
-      label: 'Active Hazard HUD',
-      shortLabel: 'Hazard HUD',
-      icon: Gauge
-    },
-    {
-      id: 'guardian',
-      label: 'Guardian Protocol',
-      shortLabel: 'Guardian Protocol',
-      icon: Shield
+      );
     }
-  ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0D1F1F] via-[#0A1628] to-[#060E1A] text-white flex flex-col">
-      {/* Persistent Top Executive Suite Header & Module Switcher */}
-      <header className="sticky top-0 z-40 bg-[#0A1628]/90 backdrop-blur-md border-b border-cyan-400/25 shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-3">
-          {/* Brand Identity */}
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(0,255,255,0.25)]">
-              <Shield className="w-5 h-5 text-cyan-300" />
-            </div>
-            <div>
-              <h1 className="text-lg sm:text-xl font-extrabold tracking-[0.22em] text-cyan-300 uppercase leading-none">
-                NEXUS
-              </h1>
-              <p className="text-[10px] tracking-[0.2em] text-teal-200/75 uppercase mt-1">
-                Automotive & Enterprise Intelligence Suite
-              </p>
-            </div>
-          </div>
-
-          {/* 3-Module Switcher Pills */}
-          <nav className="flex items-center bg-[#0D1F1F] p-1 rounded-xl border border-cyan-400/25 w-full md:w-auto justify-between md:justify-start">
-            {navItems.map(item => {
-              const Icon = item.icon;
-              const isActive = activeModule === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveModule(item.id)}
-                  className={`flex-1 md:flex-initial flex items-center justify-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-bold tracking-wide transition ${
-                    isActive
-                      ? 'bg-gradient-to-r from-teal-500 to-cyan-400 text-slate-950 shadow-[0_0_15px_rgba(0,255,255,0.35)]'
-                      : 'text-cyan-100/75 hover:text-white hover:bg-cyan-500/10'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">{item.label}</span>
-                  <span className="sm:hidden">{item.shortLabel}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </header>
-
-      {/* Active Module Viewport */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8">
-        {activeModule === 'telemetry' && <NexusCommandTelemetry />}
-        {activeModule === 'hud' && <ActiveHazardHUD />}
-        {activeModule === 'guardian' && <GuardianProtocolModule />}
-      </main>
-
-      {/* Executive Suite Footer */}
-      <footer className="border-t border-cyan-400/15 py-4 px-4 text-center text-[11px] tracking-[0.18em] text-teal-300/60 uppercase">
-        WHERE CODE MEETS CONSCIOUSNESS • NEXUS INTEGRATED INTELLIGENCE SOLUTIONS
-      </footer>
-    </div>
-  );
-}
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
