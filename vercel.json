@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/nexus-earth",
+      "destination": "/nexus-earth.html"
+    },
+    {
       "source": "/",
       "has": [{"type": "host", "value": "family.kaneonexus.net"}],
       "destination": "/family/index.html"
