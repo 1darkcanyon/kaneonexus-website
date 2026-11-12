@@ -20,3 +20,11 @@
     }
   ]
 }
+{
+  "rewrites": [
+    {
+      "source": "/nexus-earth",
+      "destination": "/nexus-earth/nexus-earth.html"
+    }
+  ]
+}
