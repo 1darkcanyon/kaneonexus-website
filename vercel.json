@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/nexus-earth",
-      "destination": "/nexus-earth.html"
+      "destination": "/nexus-earth/nexus-earth.html"
     },
     {
       "source": "/nexus-earth.html",
-      "destination": "/nexus-earth.html"
+      "destination": "/nexus-earth/nexus-earth.html"
     },
     {
       "source": "/",
@@ -17,14 +17,6 @@
       "source": "/index.html",
       "has": [{"type": "host", "value": "family.kaneonexus.net"}],
       "destination": "/family/index.html"
-    }
-  ]
-}
-{
-  "rewrites": [
-    {
-      "source": "/nexus-earth",
-      "destination": "/nexus-earth/nexus-earth.html"
     }
   ]
 }
