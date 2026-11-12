@@ -5,6 +5,10 @@
       "destination": "/nexus-earth.html"
     },
     {
+      "source": "/nexus-earth.html",
+      "destination": "/nexus-earth.html"
+    },
+    {
       "source": "/",
       "has": [{"type": "host", "value": "family.kaneonexus.net"}],
       "destination": "/family/index.html"
